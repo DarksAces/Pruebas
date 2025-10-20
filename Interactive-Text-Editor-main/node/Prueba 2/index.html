@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editor Live</title>
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Consolas, monospace;
+      font-size: 20px;
+      padding: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">Cargando...</div>
+
+  <script>
+    const contentDiv = document.getElementById('content');
+
+    // Recibir actualizaciones desde main
+    window.electronAPI.onFileChange((text) => {
+      contentDiv.textContent = text;
+    });
+  </script>
+</body>
+</html>
