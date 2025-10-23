@@ -1,0 +1,9 @@
+# Ignorar dependencias de Node
+node_modules/
+
+# Ignorar el archivo de lock (opcional)
+package-lock.json
+
+imagenes/
+
+.vscode/
