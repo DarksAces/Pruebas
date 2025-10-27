@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let winSelector;
-let windows = []; // Todas las ventanas (principal + fondo)
+let windows = [];
 
 const htmlDir = path.join(__dirname, 'html');
 const resourcesDir = path.join(__dirname, 'recursos');
@@ -31,7 +31,7 @@ function createSelectorWindow() {
 }
 
 // ----------------------
-// Crear ventana (principal o fondo)
+// Crear ventana
 // ----------------------
 function createWindow(bounds, isMain = false) {
     const win = new BrowserWindow({
@@ -40,52 +40,115 @@ function createWindow(bounds, isMain = false) {
         width: bounds.width,
         height: bounds.height,
         frame: false,
+        transparent: true,
         resizable: false,
-        alwaysOnTop: isMain,
-        backgroundColor: '#1e1e1e',
+        alwaysOnTop: true,
+        focusable: false,
+        backgroundColor: '#00000000',
+        hasShadow: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true
+            contextIsolation: true,
+            webSecurity: false
         }
     });
 
-    if (isMain) win.loadFile(path.join(htmlDir, 'index.html'));
-    else win.loadFile(path.join(htmlDir, 'background.html'));
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.moveTop();
+
+    if (isMain) {
+        win.loadFile(path.join(htmlDir, 'index.html'));
+    } else {
+        win.loadFile(path.join(htmlDir, 'background.html'));
+        win.setIgnoreMouseEvents(true);
+    }
 
     return win;
 }
 
-// ----------------------
-// Calcular posiciones según tamaño y posición elegida
-// ----------------------
+// Update calculatePositions to use display bounds instead of workArea
 function calculatePositions(size, selectedPos) {
     const display = screen.getAllDisplays()[1] || screen.getPrimaryDisplay();
     const { width: sw, height: sh, x: sx, y: sy } = display.bounds;
-
-    let positions = [];
-
+    
     if (size === "3") {
-        positions.push({ x: sx, y: sy, width: sw, height: sh });
-    } else if (size === "2") {
-        positions = [
-            { x: sx, y: sy, width: sw/2, height: sh },
-            { x: sx + sw/2, y: sy, width: sw/2, height: sh },
-            { x: sx, y: sy, width: sw, height: sh/2 },
-            { x: sx, y: sy + sh/2, width: sw, height: sh/2 }
-        ];
-    } else if (size === "1") {
-        positions = [
-            { x: sx, y: sy, width: sw/2, height: sh/2 },
-            { x: sx + sw/2, y: sy, width: sw/2, height: sh/2 },
-            { x: sx, y: sy + sh/2, width: sw/2, height: sh/2 },
-            { x: sx + sw/2, y: sy + sh/2, width: sw/2, height: sh/2 }
-        ];
+        return {
+            mainBounds: { x: sx, y: sy, width: sw, height: sh },
+            otherBounds: []
+        };
     }
+    
+    if (size === "2") {
+        const isVertical = selectedPos <= 2;
+        const mainPos = {
+            x: isVertical ? sx + (selectedPos-1)*(sw/2) : sx,
+            y: sy,
+            width: isVertical ? sw/2 : sw,
+            height: sh
+        };
+        
+        const otherPos = {
+            x: isVertical ? sx + ((selectedPos === 1) ? sw/2 : 0) : sx,
+            y: sy,
+            width: isVertical ? sw/2 : sw,
+            height: sh
+        };
 
-    return {
-        mainBounds: positions[selectedPos-1],
-        otherBounds: positions.filter((_,i)=>i!==selectedPos-1)
-    };
+        return { mainBounds: mainPos, otherBounds: [otherPos] };
+    }
+    
+    if (size === "1") {
+        const positions = [
+            { x: sx, y: sy },               // Top-left
+            { x: sx + sw/2, y: sy },        // Top-right
+            { x: sx, y: sy + sh/2 },        // Bottom-left
+            { x: sx + sw/2, y: sy + sh/2 }  // Bottom-right
+        ];
+        
+        const mainPos = {
+            ...positions[selectedPos-1],
+            width: sw/2,
+            height: sh/2
+        };
+        
+        const others = positions
+            .filter((_, i) => i !== selectedPos-1)
+            .map(pos => ({
+                ...pos,
+                width: sw/2,
+                height: sh/2
+            }));
+
+        return { mainBounds: mainPos, otherBounds: others };
+    }
+}
+
+// ----------------------
+// Leer medios de carpeta
+// ----------------------
+// Modify the getMediaFiles function to include priority
+function getMediaFiles(dir) {
+    if (!fs.existsSync(dir)) return [];
+    let files = [];
+    fs.readdirSync(dir, { withFileTypes: true }).forEach(f => {
+        const fullPath = path.join(dir, f.name);
+        if (f.isDirectory()) {
+            files.push(...getMediaFiles(fullPath));
+        } else if (/\.(png|jpe?g|gif|webp|mp4)$/i.test(f.name)) {
+            const priority = f.name.charAt(0);
+            if (['1','2','3'].includes(priority)) {
+                const isVideo = /\.(mp4)$/i.test(f.name);
+                const isGif = /\.(gif)$/i.test(f.name);
+                files.push({
+                    type: isVideo ? 'video' : isGif ? 'gif' : 'image',
+                    src: 'file://' + fullPath.replace(/\\/g, '/'),
+                    name: f.name,
+                    priority: parseInt(priority)
+                });
+            }
+        }
+    });
+    return files;
 }
 
 // ----------------------
@@ -98,56 +161,90 @@ function createGridWindows(size, position) {
 
     const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
 
-    // Ventana principal
+    // Create main window
     const mainWin = createWindow(mainBounds, true);
     windows.push(mainWin);
 
-    // Ventanas de fondo
-    otherBounds.forEach(bounds => {
+    // Create background windows in correct positions
+    otherBounds.forEach((bounds, i) => {
         const bgWin = createWindow(bounds, false);
         windows.push(bgWin);
     });
 
-    // Enviar datos al cargar la ventana principal
+    // ----------------------
+    // Al cargar la ventana principal
+    // ----------------------
     mainWin.webContents.on('did-finish-load', () => {
+        const allMediaFiles = getMediaFiles(resourcesDir)
+            .sort((a, b) => a.priority - b.priority);
+        
+        // Get banners
+        const bannersTop = fs.existsSync(path.join(imagesDir,'BannersTop')) 
+            ? fs.readdirSync(path.join(imagesDir,'BannersTop'))
+                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                .map(f => 'file://' + path.join(imagesDir,'BannersTop',f)) 
+            : [];
+        const bannersBottom = fs.existsSync(path.join(imagesDir,'BannersBottom')) 
+            ? fs.readdirSync(path.join(imagesDir,'BannersBottom'))
+                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                .map(f => 'file://' + path.join(imagesDir,'BannersBottom',f)) 
+            : [];
+        const mobileImgs = fs.existsSync(path.join(imagesDir,'Moviles')) 
+            ? fs.readdirSync(path.join(imagesDir,'Moviles'))
+                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                .map(f => 'file://' + path.join(imagesDir,'Moviles',f)) 
+            : [];
 
-        // 1️⃣ Contenido TXT
+        // File watcher for content.txt
+        const watcher = fs.watch(resourcesDir, (eventType, filename) => {
+            if (filename === 'contenido.txt') {
+                if (!fs.existsSync(userFile)) {
+                    mainWin.webContents.send('no-file', { 
+                        welcomePath: 'file://' + welcomeImage 
+                    });
+                } else if (eventType === 'change') {
+                    const text = fs.readFileSync(userFile, 'utf-8');
+                    mainWin.webContents.send('file-changed', text);
+                    mainWin.webContents.send('load-images', {
+                        bannersTop,
+                        bannersBottom,
+                        mobileImgs,
+                        mediaFiles: []
+                    });
+                }
+            }
+        });
+
+        mainWin.on('closed', () => watcher.close());
+
+        // Initial content load
         if (fs.existsSync(userFile)) {
             const text = fs.readFileSync(userFile, 'utf-8');
             mainWin.webContents.send('file-changed', text);
-
-            // Monitorear cambios
-            fs.watch(userFile, (eventType) => {
-                if (eventType === 'change') {
-                    const updatedText = fs.readFileSync(userFile, 'utf-8');
-                    mainWin.webContents.send('file-changed', updatedText);
-                }
+            mainWin.webContents.send('load-images', {
+                bannersTop,
+                bannersBottom,
+                mobileImgs,
+                mediaFiles: []
             });
         } else {
-            mainWin.webContents.send('no-file', { welcomePath: 'file://' + welcomeImage });
+            mainWin.webContents.send('no-file', { 
+                welcomePath: 'file://' + welcomeImage 
+            });
         }
 
-        // 2️⃣ Cargar imágenes y videos, priorizando por nombre
-        let mediaFiles = [];
-
-        if (fs.existsSync(imagesDir)) {
-            mediaFiles.push(...fs.readdirSync(imagesDir)
-                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => ({ type: 'img', path: path.join(imagesDir,f), name: f }))
-            );
-        }
-
-        if (fs.existsSync(videosDir)) {
-            mediaFiles.push(...fs.readdirSync(videosDir)
-                .filter(f => /\.mp4$/i.test(f))
-                .map(f => ({ type: 'video', path: path.join(videosDir,f), name: f }))
-            );
-        }
-
-        // Ordenar por prioridad: 1=alta, 2=media, 3=baja
-        mediaFiles.sort((a,b) => parseInt(a.name[0]) - parseInt(b.name[0]));
-
-        mainWin.webContents.send('load-images', mediaFiles);
+        // Background windows
+        const bgWindows = windows.filter(w => w !== mainWin);
+        bgWindows.forEach((bgWin, i) => {
+            bgWin.webContents.once('did-finish-load', () => {
+                const mediaForWindow = allMediaFiles.filter(m => m.priority === (i + 1));
+                if (mediaForWindow.length > 0) {
+                    bgWin.webContents.send('load-images', {
+                        mediaFiles: [mediaForWindow[0]]
+                    });
+                }
+            });
+        });
     });
 
     // Cerrar selector
@@ -160,9 +257,7 @@ function createGridWindows(size, position) {
 // ----------------------
 // IPC
 // ----------------------
-ipcMain.on('selection-made', (e, { size, position }) => {
-    createGridWindows(size, position);
-});
+ipcMain.on('selection-made', (e, { size, position }) => createGridWindows(size, position));
 
 // ----------------------
 // App ready
@@ -172,6 +267,4 @@ app.whenReady().then(createSelectorWindow);
 // ----------------------
 // Cerrar app
 // ----------------------
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-});
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

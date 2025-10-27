@@ -1,62 +1,63 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8">
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: black;
-    width: 100%;
-    height: 100%;
-  }
-
-  .media {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-  }
-</style>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            height: 100vh;
+            width: 100vw;
+        }
+        #media-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        img, video {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+        }
+        .gif {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+    </style>
 </head>
 <body>
-
-<script>
-  const mediaList = [
-    { type: 'video', src: '../recursos/videos/1.gif', priority: 1 },
-    { type: 'img', src: '../recursos/videos/2.png', priority: 2 },
-    { type: 'img', src: '../recursos/videos/3.png', priority: 3 }
-  ];
-
-  // Ordenar por prioridad (1 = más alta)
-  mediaList.sort((a,b) => a.priority - b.priority);
-
-  // Solo mostrar el de mayor prioridad visible y apilar los otros detrás con opacidad baja
-  mediaList.forEach((item, index) => {
-    let el;
-    if(item.type === 'img') {
-      el = document.createElement('img');
-      el.src = item.src;
-    } else if(item.type === 'video') {
-      el = document.createElement('video');
-      el.src = item.src;
-      el.autoplay = true;
-      el.loop = true;
-      el.muted = true;
-    }
-
-    el.classList.add('media');
-    el.style.zIndex = index; // el primero está arriba
-    // Si no es el de máxima prioridad, lo ponemos semi-transparente
-    if(index > 0) el.style.opacity = 0.3;
-
-    document.body.appendChild(el);
-  });
-</script>
-
+    <div id="media-container"></div>
+    <script>
+        window.electronAPI.onLoadImages(({ mediaFiles }) => {
+            const container = document.getElementById('media-container');
+            container.innerHTML = '';
+            
+            if (mediaFiles && mediaFiles.length > 0) {
+                const media = mediaFiles[0];
+                const element = media.type === 'video' 
+                    ? document.createElement('video')
+                    : document.createElement('img');
+                
+                element.src = media.src;
+                if (media.type === 'video') {
+                    element.autoplay = true;
+                    element.loop = true;
+                    element.muted = true;
+                    element.playsinline = true;
+                } else if (media.type === 'gif') {
+                    element.classList.add('gif');
+                }
+                
+                container.appendChild(element);
+                console.log('Loaded media:', media);
+            }
+        });
+    </script>
 </body>
 </html>
