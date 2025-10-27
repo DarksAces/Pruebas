@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: black;
+    width: 100%;
+    height: 100%;
+  }
+
+  .media {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+
+<script>
+  const mediaList = [
+    { type: 'video', src: '../recursos/videos/1.gif', priority: 1 },
+    { type: 'img', src: '../recursos/videos/2.png', priority: 2 },
+    { type: 'img', src: '../recursos/videos/3.png', priority: 3 }
+  ];
+
+  // Ordenar por prioridad (1 = más alta)
+  mediaList.sort((a,b) => a.priority - b.priority);
+
+  // Solo mostrar el de mayor prioridad visible y apilar los otros detrás con opacidad baja
+  mediaList.forEach((item, index) => {
+    let el;
+    if(item.type === 'img') {
+      el = document.createElement('img');
+      el.src = item.src;
+    } else if(item.type === 'video') {
+      el = document.createElement('video');
+      el.src = item.src;
+      el.autoplay = true;
+      el.loop = true;
+      el.muted = true;
+    }
+
+    el.classList.add('media');
+    el.style.zIndex = index; // el primero está arriba
+    // Si no es el de máxima prioridad, lo ponemos semi-transparente
+    if(index > 0) el.style.opacity = 0.3;
+
+    document.body.appendChild(el);
+  });
+</script>
+
+</body>
+</html>

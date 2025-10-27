@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Selecciona ventana</title>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+h2, h3 { margin: 10px 0; }
+select, button { margin-top: 10px; padding: 5px; font-size: 16px; }
+#position-container { margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Elige tamaño de la ventana:</h2>
+<select id="size">
+  <option value="1">1/4 pantalla</option>
+  <option value="2">1/2 pantalla</option>
+  <option value="3">Pantalla completa</option>
+</select>
+
+<div id="position-container">
+  <h3>Elige posición:</h3>
+  <select id="position"></select>
+</div>
+
+<button id="openBtn">Abrir ventana</button>
+
+<script>
+const sizeSelect = document.getElementById('size');
+const posSelect = document.getElementById('position');
+const posContainer = document.getElementById('position-container');
+
+function updatePositions() {
+  const size = sizeSelect.value;
+  posSelect.innerHTML = '';
+
+  if (size === '1') {
+    posSelect.innerHTML = `
+      <option value="1">Superior Izquierda</option>
+      <option value="2">Superior Derecha</option>
+      <option value="3">Inferior Izquierda</option>
+      <option value="4">Inferior Derecha</option>
+    `;
+    posContainer.style.display = 'block';
+  } else if (size === '2') {
+    posSelect.innerHTML = `
+      <option value="1">Mitad Izquierda</option>
+      <option value="2">Mitad Derecha</option>
+      <option value="3">Mitad Superior</option>
+      <option value="4">Mitad Inferior</option>
+    `;
+    posContainer.style.display = 'block';
+  } else {
+    // Pantalla completa, no necesita posición
+    posContainer.style.display = 'none';
+  }
+}
+
+// Inicializar
+updatePositions();
+sizeSelect.addEventListener('change', updatePositions);
+
+// Abrir ventana principal
+document.getElementById('openBtn').addEventListener('click', () => {
+  window.electronAPI.sendSelection({
+    size: sizeSelect.value,
+    position: posSelect.value || '1' // default
+  });
+});
+</script>
+
+</body>
+</html>
