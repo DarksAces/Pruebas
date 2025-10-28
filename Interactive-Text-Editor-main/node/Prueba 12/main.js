@@ -8,12 +8,21 @@ const url = require('url');
 let winSelector;
 let windows = [];
 
-const htmlDir = path.join(__dirname, 'html');
-const resourcesDir = path.join(__dirname, 'recursos');
+// ----------------------
+// Directorios Absolutos
+// ----------------------
+// Usamos path.resolve con el formato Windows para máxima compatibilidad.
+const resourcesDir = path.resolve('C:\\recursos'); 
+
+// CONSOLA DE DIAGNÓSTICO: Imprimimos la ruta final para verificar
+console.log(`[DIAGNÓSTICO] Ruta de recursos resuelta: ${resourcesDir}`);
+
+
+const htmlDir = path.join(__dirname, 'html'); 
 const imagesDir = path.join(resourcesDir, 'imagenes');
-const videosDir = path.join(resourcesDir, 'video');
 const userFile = path.join(resourcesDir, 'contenido.txt');
 const welcomeImage = path.join(imagesDir, 'Bienvenida', 'welcome.png');
+// ----------------------
 
 // ----------------------
 // Ventana selector
@@ -45,7 +54,8 @@ function createWindow(bounds, isMain = false) {
         frame: false,
         transparent: true,
         resizable: false,
-        alwaysOnTop: true,
+        // Mantener como true para que la ventana esté siempre encima de las apps
+        alwaysOnTop: true, 
         focusable: false,
         backgroundColor: '#00000000',
         hasShadow: false,
@@ -56,14 +66,18 @@ function createWindow(bounds, isMain = false) {
         }
     });
 
-    win.setAlwaysOnTop(true, 'screen-saver');
+    // Usamos 'normal' para que respete el Z-index del sistema (Taskbar)
+    win.setAlwaysOnTop(true, 'normal'); 
     win.moveTop();
 
     if (isMain) {
         win.loadFile(path.join(htmlDir, 'index.html'));
+        // Permitimos interacciones de ratón en la ventana principal (contenido)
+        win.setIgnoreMouseEvents(false);
     } else {
         win.loadFile(path.join(htmlDir, 'background.html'));
-        win.setIgnoreMouseEvents(true);
+        // Eliminamos la interacción con el ratón de las ventanas de fondo
+        win.setIgnoreMouseEvents(true); 
     }
     
     if (bounds.index) {
@@ -89,7 +103,9 @@ ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
         filters: [
             { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] }
         ],
-        message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`
+        message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
+        // FORZAR RUTA: Usamos la ruta resuelta y robusta
+        defaultPath: resourcesDir 
     });
 
     if (result.canceled) {
@@ -100,9 +116,20 @@ ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
 
 // Update calculatePositions para retornar el índice de posición absoluta (1-4)
 function calculatePositions(size, selectedPos) {
-    const display = screen.getAllDisplays()[1] || screen.getPrimaryDisplay();
-    const { width: sw, height: sh, x: sx, y: sy } = display.bounds;
+    // Intentamos usar el SEGUNDO monitor (índice 1). Si no existe, usamos el principal.
+    const displays = screen.getAllDisplays();
+    const targetDisplay = displays.length > 1 ? displays[1] : displays[0];
     
+    // Usamos workArea para obtener el área DISPONIBLE sin Taskbar ni menús.
+    const { width: sw, height: sh, x: sx, y: sy } = targetDisplay.workArea;
+
+    // --- NUEVO LOG PARA DIAGNÓSTICO DE DIMENSIONES ---
+    console.log(`[DIAGNÓSTICO] Monitor de Destino: ${targetDisplay.id}`);
+    console.log(`[DIAGNÓSTICO] Área de Trabajo (WorkArea) - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
+    // --- FIN LOG ---
+
+    // NOTA: Los cálculos de mitad y cuartos ahora se basan en el área de trabajo disponible.
+    // Usamos sx y sy para el inicio de las ventanas.
     const quarterPositions = [
         { x: sx, y: sy, width: sw/2, height: sh/2, index: 1 },
         { x: sx + sw/2, y: sy, width: sw/2, height: sh/2, index: 2 },
@@ -119,6 +146,7 @@ function calculatePositions(size, selectedPos) {
     
     if (size === "2") {
         const halfPositions = [
+             // Las coordenadas inician en sx, sy (inicio del workArea)
              { x: sx, y: sy, width: sw/2, height: sh, index: 1 },
              { x: sx + sw/2, y: sy, width: sw/2, height: sh, index: 2 },
              { x: sx, y: sy, width: sw, height: sh/2, index: 3 },
@@ -177,23 +205,14 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
     const userMediaMap = {}; 
 
     if (size === '1') {
-        // 1/4 de pantalla: Usamos asignación secuencial si no hay posiciones explícitas (que ya no se piden)
-        if (Object.keys(imagePositions).length === 0) { 
-            mediaFiles.forEach((filePath, idx) => {
-                // otherBounds contiene las 3 posiciones de fondo disponibles.
-                if (idx < otherBounds.length) {
-                    userMediaMap[otherBounds[idx].index] = filePath;
-                }
-            });
-        } else {
-             // Lógica de asignación explícita (mantenida por si acaso)
-            Object.keys(imagePositions).forEach(filePath => {
-                const pos = parseInt(imagePositions[filePath]);
-                userMediaMap[pos] = filePath;
-            });
-        }
+        // Asignación secuencial a las 3 ventanas de fondo
+        mediaFiles.forEach((filePath, idx) => {
+            if (idx < otherBounds.length) {
+                userMediaMap[otherBounds[idx].index] = filePath;
+            }
+        });
     } else if (size === '2' && otherBounds.length > 0) {
-        // 1/2 pantalla: asignar el primer archivo secuencialmente a la única ventana de fondo
+        // Asignar el primer archivo secuencialmente a la única ventana de fondo
         mediaFiles.forEach((filePath, idx) => {
             if (idx < otherBounds.length) { // otherBounds.length es 1 en este caso
                 userMediaMap[otherBounds[idx].index] = filePath;
@@ -216,22 +235,45 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
     // ----------------------
     mainWin.webContents.once('did-finish-load', () => {
         
+        // --- DIAGNÓSTICO DE CARGA DE BANNERS ---
+        console.log(`Ruta base de imágenes: ${imagesDir}`);
+
+        const bannersTopPath = path.join(imagesDir,'BannersTop');
+        const bannersBottomPath = path.join(imagesDir,'BannersBottom');
+        const mobileImgsPath = path.join(imagesDir,'Moviles');
+
+        if (!fs.existsSync(imagesDir)) {
+            console.error(`ERROR: El directorio base de imágenes ${imagesDir} no existe.`);
+        }
+        if (!fs.existsSync(bannersTopPath)) {
+            console.warn(`ADVERTENCIA: Carpeta de Banners Top no encontrada en ${bannersTopPath}`);
+        }
+        if (!fs.existsSync(bannersBottomPath)) {
+            console.warn(`ADVERTENCIA: Carpeta de Banners Bottom no encontrada en ${bannersBottomPath}`);
+        }
+        if (!fs.existsSync(mobileImgsPath)) {
+            console.warn(`ADVERTENCIA: Carpeta de Móviles no encontrada en ${mobileImgsPath}`);
+        }
+        // --- FIN DIAGNÓSTICO ---
+
+
         // Cargar banners y móviles desde el disco 
-        const bannersTop = fs.existsSync(path.join(imagesDir,'BannersTop')) 
-            ? fs.readdirSync(path.join(imagesDir,'BannersTop'))
+        const bannersTop = fs.existsSync(bannersTopPath) 
+            ? fs.readdirSync(bannersTopPath)
                 .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(imagesDir,'BannersTop',f)).href) 
+                .map(f => url.pathToFileURL(path.join(bannersTopPath,f)).href) 
             : [];
-        const bannersBottom = fs.existsSync(path.join(imagesDir,'BannersBottom')) 
-            ? fs.readdirSync(path.join(imagesDir,'BannersBottom'))
+        const bannersBottom = fs.existsSync(bannersBottomPath) 
+            ? fs.readdirSync(bannersBottomPath)
                 .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(imagesDir,'BannersBottom',f)).href) 
+                .map(f => url.pathToFileURL(path.join(bannersBottomPath,f)).href) 
             : [];
-        const mobileImgs = fs.existsSync(path.join(imagesDir,'Moviles')) 
-            ? fs.readdirSync(path.join(imagesDir,'Moviles'))
+        const mobileImgs = fs.existsSync(mobileImgsPath) 
+            ? fs.readdirSync(mobileImgsPath)
                 .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(imagesDir,'Moviles',f)).href) 
+                .map(f => url.pathToFileURL(path.join(mobileImgsPath,f)).href) 
             : [];
+
 
         // File watcher for content.txt 
         const watcher = fs.watch(resourcesDir, (eventType, filename) => {
@@ -243,6 +285,8 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
                 } else if (eventType === 'change') {
                     const text = fs.readFileSync(userFile, 'utf-8');
                     mainWin.webContents.send('file-changed', text);
+                    
+                    // REENVIAR banners/móviles tras cambio de archivo si es necesario (mantengo la estructura)
                     mainWin.webContents.send('load-images', {
                         bannersTop,
                         bannersBottom,
@@ -265,14 +309,20 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
             });
         }
         
-        // Enviar la carga de imágenes (banners/móviles) a la ventana principal
+        // --- DIAGNÓSTICO DE CONTENIDO ENVIADO ---
+        console.log(`Banners Top encontrados (${bannersTop.length}):`, bannersTop.map(u => path.basename(new URL(u).pathname)));
+        console.log(`Banners Bottom encontrados (${bannersBottom.length}):`, bannersBottom.map(u => path.basename(new URL(u).pathname)));
+        console.log(`Móviles encontrados (${mobileImgs.length}):`, mobileImgs.map(u => path.basename(new URL(u).pathname)));
+        // --- FIN DIAGNÓSTICO ---
+
+
+        // ENVIAR la carga de imágenes (banners/móviles) a la ventana principal
         mainWin.webContents.send('load-images', {
             bannersTop,
             bannersBottom,
             mobileImgs,
             mediaFiles: [] 
         });
-
 
         // Background windows - cargar medios del usuario
         const bgWindows = windows.filter(w => w !== mainWin);

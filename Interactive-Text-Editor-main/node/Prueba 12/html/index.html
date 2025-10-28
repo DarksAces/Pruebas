@@ -7,7 +7,8 @@
   body {
     margin: 0;
     padding: 0;
-    background-color: #1e1e1e;
+    /* Dejamos el fondo transparente en el body */
+    background-color: transparent; 
     color: #fff;
     font-family: Consolas, monospace;
     font-size: 28px;
@@ -15,6 +16,7 @@
     overflow: hidden;
   }
 
+  /* Contenedores de banners RESTAURADOS */
   #banner-top, #banner-bottom {
     position: fixed;
     width: 100%;
@@ -37,6 +39,7 @@
 
   #content-wrapper {
     position: absolute;
+    /* Ajustado para dejar espacio a los banners */
     top: 100px;
     bottom: 100px;
     left: 0;
@@ -50,12 +53,11 @@
     line-height: 1.2;
   }
 
-  /* Remove animation related styles */
   .line {
     opacity: 1;
   }
-  /* Remove @keyframes fadeIn */
 
+  /* Estilos para imagen móvil RESTAURADOS */
   img.mobile {
     width: auto;
     height: 150px;
@@ -68,14 +70,9 @@
   .welcome { display: block; margin: 50px auto 20px; max-width: 300px; height: auto; }
   .welcome-text { text-align: center; font-size: 22px; color: #555; }
 
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
-  }
-
   .content-container {
-    background-color: #1e1e1e;
+    /* El fondo del contenido principal sigue siendo oscuro */
+    background-color: #1e1e1e; 
     width: 100%;
     height: 100%;
   }
@@ -95,7 +92,6 @@
     const contentDiv = document.getElementById('content');
     const wrapper = document.getElementById('content-wrapper');
 
-    // Usar electronAPI en vez de ipcRenderer directo
     window.electronAPI.onFileChange((text) => {
       contentDiv.innerHTML = '';
       const lines = text.split('\n');
@@ -127,6 +123,7 @@
       contentDiv.appendChild(wrapperDiv);
     });
 
+    // SCRIPT DE CARGA DE BANNERS RESTAURADO
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
       const topDiv = document.getElementById('banner-top');
       const bottomDiv = document.getElementById('banner-bottom');

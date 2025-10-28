@@ -20,11 +20,12 @@
             overflow: hidden;
         }
         
-        /* CORRECCIÓN: Aplicar estilos directos para asegurar que cubran el 100% */
+        /* CORRECCIÓN FINAL: Aseguramos que cubran 100% y usamos 'cover' para evitar distorsión */
         img, video, .gif {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Cambiado de 'fill' a 'cover' para evitar distorsión, aunque 'fill' también debería funcionar si prefieres estirar. */
+            width: 100% !important;
+            height: 100% !important;
+            /* 'cover' asegura que toda la ventana esté cubierta, recortando la imagen si es necesario */
+            object-fit: cover !important; 
             display: block;
         }
     </style>

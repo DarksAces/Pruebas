@@ -6,6 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onNoFile: (callback) => ipcRenderer.on('no-file', (e, data) => callback(data)),
   onLoadImages: (callback) => ipcRenderer.on('load-images', (e, data) => callback(data)),
   
-  // NUEVA FUNCIÓN: Permite abrir el diálogo de selección de archivos en el proceso principal
+  // VUELTO A LO ORIGINAL: Solo pasa maxFiles
   selectMediaDialog: (maxFiles) => ipcRenderer.invoke('open-media-dialog', maxFiles) 
 });
