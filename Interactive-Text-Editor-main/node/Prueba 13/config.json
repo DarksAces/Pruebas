@@ -5,7 +5,6 @@
   "htmlDirName": "html",
   "imageDirName": "imagenes",
   "userFileName": "contenido.txt",
-
   "bannersTopDirName": "BannersTop",      
   "bannersBottomDirName": "BannersBottom",  
   "mobileImgsDirName": "Moviles"           
