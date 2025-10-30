@@ -11,28 +11,24 @@ let windows = [];
 // ----------------------
 // 1. CARGAR CONFIGURACIÓN
 // ----------------------
+// ----------------------
+// 1. CARGAR CONFIGURACIÓN
+// ----------------------
 const configPath = path.join(__dirname, 'config.json');
 let config;
 
 try {
+    // Lectura Síncrona: Bloquea hasta que se lee el archivo (ideal para configuración de inicio).
     const configData = fs.readFileSync(configPath, 'utf-8');
     config = JSON.parse(configData);
     console.log('[CONFIG] Archivo de configuración cargado con éxito.');
 } catch (error) {
-    console.error('[CONFIG ERROR] No se pudo cargar o parsear config.json. Usando valores por defecto.', error);
-    // Definir valores por defecto en caso de fallo
-    config = {
-        resourcesDir: 'C:\\recursos',
-        inactivityTimeMs: 300000, 
-        defaultWelcomeImagePath: 'Bienvenida/welcome.png',
-        htmlDirName: 'html',
-        imageDirName: 'imagenes',
-        userFileName: 'contenido.txt',
-        bannersTopDirName: "BannersTop",      
-        bannersBottomDirName: "BannersBottom",  
-        mobileImgsDirName: "Moviles"
-    };
+    // Si falla la lectura o el parseo, lanzamos el error y terminamos la app
+    // forzando al usuario a tener un config.json válido.
+    console.error('[CONFIG FATAL ERROR] No se pudo cargar o parsear config.json. ¡La aplicación no puede continuar!', error);
+    app.quit(); // Salir de la aplicación si no se puede cargar la configuración
 }
+// ----------------------
 // ----------------------
 
 
