@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Importante: Mantener background-color transparente o el color base de tu fondo */
+            background-color: transparent; 
+            height: 100vh;
+            width: 100vw;
+        }
+        #media-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* CORRECCIÓN FINAL: Aseguramos que cubran 100% y usamos 'cover' para evitar distorsión */
+        img, video, .gif {
+            width: 100% !important;
+            height: 100% !important;
+            /* 'cover' asegura que toda la ventana esté cubierta, recortando la imagen si es necesario */
+            object-fit: cover !important; 
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="media-container"></div>
+    <script>
+        window.electronAPI.onLoadImages(({ mediaFiles }) => {
+            const container = document.getElementById('media-container');
+            container.innerHTML = '';
+            
+            if (mediaFiles && mediaFiles.length > 0) {
+                const media = mediaFiles[0];
+                const element = media.type === 'video' 
+                    ? document.createElement('video')
+                    : document.createElement('img');
+                
+                element.src = media.src;
+                
+                if (media.type === 'video') {
+                    element.autoplay = true;
+                    element.loop = true;
+                    element.muted = true;
+                    element.playsinline = true;
+                    // Agregar event listener para asegurar el inicio (a veces Chrome lo bloquea)
+                    element.oncanplay = () => {
+                        element.play().catch(e => console.error("Error al intentar iniciar video:", e));
+                    };
+                } else if (media.type === 'gif') {
+                    element.classList.add('gif');
+                }
+                
+                container.appendChild(element);
+                console.log('Loaded media:', media);
+            } else {
+                console.log('No media files received for this background window.');
+            }
+        });
+    </script>
+</body>
+</html>

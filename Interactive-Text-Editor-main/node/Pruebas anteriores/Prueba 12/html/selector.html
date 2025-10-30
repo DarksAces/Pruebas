@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Selecciona ventana</title>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+h2, h3 { margin: 10px 0; }
+select, button { margin-top: 10px; padding: 5px; font-size: 16px; }
+#position-container { margin-top: 10px; }
+#fileList { max-height: 80px; overflow-y: auto; background-color: #f0f0f0; padding: 5px; border-radius: 3px; }
+
+/* Ocultar la sección de asignación de posición para el modo automático */
+#image-positions-container { display: none !important; } 
+
+</style>
+</head>
+<body>
+
+<!-- INICIO: TAMAÑO Y POSICIÓN DE VENTANA PRINCIPAL -->
+<h2>Elige tamaño de la ventana principal:</h2>
+<select id="size">
+  <option value="1">1/4 pantalla</option>
+  <option value="2">1/2 pantalla</option>
+  <option value="3">Pantalla completa</option>
+</select>
+
+<div id="position-container">
+  <h3>Elige posición de la ventana principal:</h3>
+  <select id="position"></select>
+</div>
+<!-- FIN: TAMAÑO Y POSICIÓN DE VENTANA PRINCIPAL -->
+
+
+<!-- INICIO: IMÁGENES DE FONDO (MOVIDO ABAJO) -->
+<h2>Imágenes de Fondo (Máx 3):</h2>
+<select id="num-images">
+  <option value="0">0 (Solo Texto)</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+</select>
+
+<div id="image-selection-area" style="margin-top: 10px; display: none;">
+    <button id="selectFilesBtn">Seleccionar Archivos de Imagen/Video</button>
+    <div id="fileList" style="margin-top: 5px; font-size: 14px;"></div>
+    
+    <div id="image-positions-container" style="margin-top: 10px;">
+        </div>
+</div>
+<!-- FIN: IMÁGENES DE FONDO -->
+
+<button id="openBtn" disabled>Abrir ventana</button>
+
+<script>
+const sizeSelect = document.getElementById('size');
+const posSelect = document.getElementById('position');
+const posContainer = document.getElementById('position-container');
+const numImagesSelect = document.getElementById('num-images');
+const imageSelectionArea = document.getElementById('image-selection-area');
+const selectFilesBtn = document.getElementById('selectFilesBtn');
+const fileListDiv = document.getElementById('fileList');
+const openBtn = document.getElementById('openBtn');
+const imagePositionsContainer = document.getElementById('image-positions-container'); 
+
+let selectedFiles = [];
+let imagePositions = {}; 
+
+function updateOpenButtonState(numRequired, numSelected) {
+    if (numRequired === 0) {
+        openBtn.disabled = false;
+    } else {
+        openBtn.disabled = numSelected === 0;
+    }
+}
+
+
+function updatePositions() {
+  const size = sizeSelect.value;
+  posSelect.innerHTML = '';
+
+  if (size === '1') {
+    posSelect.innerHTML = `
+      <option value="1">Superior Izquierda</option>
+      <option value="2">Superior Derecha</option>
+      <option value="3">Inferior Izquierda</option>
+      <option value="4">Inferior Derecha</option>
+    `;
+    posContainer.style.display = 'block';
+  } else if (size === '2') {
+    posSelect.innerHTML = `
+      <option value="1">Mitad Izquierda</option>
+      <option value="2">Mitad Derecha</option>
+      <option value="3">Mitad Superior</option>
+      <option value="4">Mitad Inferior</option>
+    `;
+    posContainer.style.display = 'block';
+  } else {
+    posContainer.style.display = 'none';
+  }
+}
+
+
+// Habilitar/deshabilitar botón y mostrar área de selección de archivos
+numImagesSelect.addEventListener('change', () => {
+    const num = parseInt(numImagesSelect.value);
+    
+    if (num > 0) {
+        imageSelectionArea.style.display = 'block';
+        
+        updateOpenButtonState(num, selectedFiles.length); 
+        
+        fileListDiv.textContent = selectedFiles.length > 0 
+            ? 'Archivos elegidos:<br>' + selectedFiles.map(f => `<span>- ${f.split(/[\\/]/).pop()}</span>`).join('<br>') 
+            : 'Esperando selección...';
+    } else {
+        imageSelectionArea.style.display = 'none';
+        openBtn.disabled = false;
+        selectedFiles = []; 
+        fileListDiv.textContent = '';
+    }
+});
+
+// Manejar la selección de archivos
+selectFilesBtn.addEventListener('click', async () => {
+    const num = parseInt(numImagesSelect.value);
+    if (num > 0 && window.electronAPI.selectMediaDialog) {
+        // Llamamos sin el segundo parámetro de ruta, ya que la ruta está forzada en el main process.
+        const files = await window.electronAPI.selectMediaDialog(num); 
+        if (files && files.length > 0) {
+            selectedFiles = files.slice(0, num); 
+            fileListDiv.innerHTML = 'Archivos elegidos:<br>' + selectedFiles.map(f => `<span>- ${f.split(/[\\/]/).pop()}</span>`).join('<br>');
+            
+            updateOpenButtonState(num, selectedFiles.length); 
+        } else {
+            if (files && files.length === 0) selectedFiles = []; 
+
+            updateOpenButtonState(num, selectedFiles.length); 
+            
+            fileListDiv.textContent = selectedFiles.length > 0 
+                ? 'Archivos elegidos:<br>' + selectedFiles.map(f => `<span>- ${f.split(/[\\/]/).pop()}</span>`).join('<br>') 
+                : 'No se seleccionaron archivos.';
+        }
+    }
+});
+
+// Inicializar y manejar cambios de tamaño
+updatePositions();
+sizeSelect.addEventListener('change', () => {
+    updatePositions();
+});
+numImagesSelect.dispatchEvent(new Event('change'));
+
+// Abrir ventana principal
+document.getElementById('openBtn').addEventListener('click', () => {
+    window.electronAPI.sendSelection({
+        size: sizeSelect.value,
+        position: posSelect.value || '1',
+        mediaFiles: selectedFiles,
+        imagePositions: {} 
+    });
+});
+</script>
+
+</body>
+</html>

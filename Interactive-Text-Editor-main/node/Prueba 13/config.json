@@ -1,0 +1,12 @@
+{
+  "resourcesDir": "C:\\recursos",
+  "inactivityTimeMs": 300000,
+  "defaultWelcomeImagePath": "Bienvenida/welcome.png",
+  "htmlDirName": "html",
+  "imageDirName": "imagenes",
+  "userFileName": "contenido.txt",
+
+  "bannersTopDirName": "BannersTop",      
+  "bannersBottomDirName": "BannersBottom",  
+  "mobileImgsDirName": "Moviles"           
+}

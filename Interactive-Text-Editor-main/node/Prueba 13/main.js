@@ -9,19 +9,54 @@ let winSelector;
 let windows = [];
 
 // ----------------------
+// 1. CARGAR CONFIGURACIÓN
+// ----------------------
+const configPath = path.join(__dirname, 'config.json');
+let config;
+
+try {
+    const configData = fs.readFileSync(configPath, 'utf-8');
+    config = JSON.parse(configData);
+    console.log('[CONFIG] Archivo de configuración cargado con éxito.');
+} catch (error) {
+    console.error('[CONFIG ERROR] No se pudo cargar o parsear config.json. Usando valores por defecto.', error);
+    // Definir valores por defecto en caso de fallo
+    config = {
+        resourcesDir: 'C:\\recursos',
+        inactivityTimeMs: 300000, 
+        defaultWelcomeImagePath: 'Bienvenida/welcome.png',
+        htmlDirName: 'html',
+        imageDirName: 'imagenes',
+        userFileName: 'contenido.txt',
+        bannersTopDirName: "BannersTop",      
+        bannersBottomDirName: "BannersBottom",  
+        mobileImgsDirName: "Moviles"
+    };
+}
+// ----------------------
+
+
+// ----------------------
+// GESTIÓN DE INACTIVIDAD
+// ----------------------
+let inactivityTimer = null;
+const INACTIVITY_TIME_MS = config.inactivityTimeMs; // USANDO CONFIG
+// ----------------------
+
+// ----------------------
 // Directorios Absolutos
 // ----------------------
-// Usamos path.resolve con el formato Windows para máxima compatibilidad.
-const resourcesDir = path.resolve('C:\\recursos'); 
+// Usamos path.resolve con el valor del config
+const resourcesDir = path.resolve(config.resourcesDir); // USANDO CONFIG
 
 // CONSOLA DE DIAGNÓSTICO: Imprimimos la ruta final para verificar
 console.log(`[DIAGNÓSTICO] Ruta de recursos resuelta: ${resourcesDir}`);
 
 
-const htmlDir = path.join(__dirname, 'html'); 
-const imagesDir = path.join(resourcesDir, 'imagenes');
-const userFile = path.join(resourcesDir, 'contenido.txt');
-const welcomeImage = path.join(imagesDir, 'Bienvenida', 'welcome.png');
+const htmlDir = path.join(__dirname, config.htmlDirName); // USANDO CONFIG
+const imagesDir = path.join(resourcesDir, config.imageDirName); // USANDO CONFIG
+const userFile = path.join(resourcesDir, config.userFileName); // USANDO CONFIG
+const welcomeImage = path.join(imagesDir, config.defaultWelcomeImagePath); // USANDO CONFIG
 // ----------------------
 
 // ----------------------
@@ -114,6 +149,53 @@ ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
     return result.filePaths;
 });
 
+
+// ----------------------
+// LÓGICA DEL TEMPORIZADOR Y RESET (NUEVO)
+// ----------------------
+function resetToWelcome(mainWin) {
+    if (fs.existsSync(userFile)) {
+        // Usamos fs.unlink para eliminar el archivo
+        fs.unlink(userFile, (err) => { 
+            if (err) {
+                console.error('Error al eliminar contenido.txt por inactividad:', err);
+            } else {
+                console.log('contenido.txt eliminado por inactividad. Volviendo a bienvenida.');
+                // NOTA: El watcher detectará que el archivo desapareció y enviará 'no-file'.
+            }
+            // Si el archivo no existió o hubo error en unlink, forzamos la bienvenida por si el watcher falla.
+            if (mainWin && !mainWin.isDestroyed()) {
+                 mainWin.webContents.send('no-file', {
+                     welcomePath: url.pathToFileURL(welcomeImage).href
+                 });
+            }
+        });
+    } else {
+        // Si ya no existe, solo forzamos la bienvenida (por si acaso)
+        if (mainWin && !mainWin.isDestroyed()) {
+            mainWin.webContents.send('no-file', {
+                welcomePath: url.pathToFileURL(welcomeImage).href
+            });
+        }
+    }
+}
+
+function startInactivityTimer(mainWin) {
+    // 1. Limpiar el temporizador previo si existe
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+
+    // 2. Iniciar un nuevo temporizador
+    inactivityTimer = setTimeout(() => {
+        // Cuando el temporizador termine, eliminar el archivo y volver
+        resetToWelcome(mainWin);
+    }, INACTIVITY_TIME_MS);
+    console.log(`[TEMPORIZADOR] Reiniciado. El archivo se eliminara en ${INACTIVITY_TIME_MS / 1000} segundos si no hay cambios.`);
+}
+// ----------------------
+
+
 // Update calculatePositions para retornar el índice de posición absoluta (1-4)
 function calculatePositions(size, selectedPos) {
     // Intentamos usar el SEGUNDO monitor (índice 1). Si no existe, usamos el principal.
@@ -188,6 +270,12 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
     // Cerrar previas
     windows.forEach(w => w.close());
     windows = [];
+    
+    // Limpiar temporizador al abrir nuevas ventanas
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
 
     const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
 
@@ -235,12 +323,13 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
     // ----------------------
     mainWin.webContents.once('did-finish-load', () => {
         
-        // --- DIAGNÓSTICO DE CARGA DE BANNERS ---
+        // --- DEFINICIÓN DE RUTAS USANDO CONFIG ---
         console.log(`Ruta base de imágenes: ${imagesDir}`);
 
-        const bannersTopPath = path.join(imagesDir,'BannersTop');
-        const bannersBottomPath = path.join(imagesDir,'BannersBottom');
-        const mobileImgsPath = path.join(imagesDir,'Moviles');
+        const bannersTopPath = path.join(imagesDir, config.bannersTopDirName); // USANDO CONFIG
+        const bannersBottomPath = path.join(imagesDir, config.bannersBottomDirName); // USANDO CONFIG
+        const mobileImgsPath = path.join(imagesDir, config.mobileImgsDirName); // USANDO CONFIG
+        // --- FIN DEFINICIÓN DE RUTAS USANDO CONFIG ---
 
         if (!fs.existsSync(imagesDir)) {
             console.error(`ERROR: El directorio base de imágenes ${imagesDir} no existe.`);
@@ -277,7 +366,11 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
 
         // File watcher for content.txt 
         const watcher = fs.watch(resourcesDir, (eventType, filename) => {
-            if (filename === 'contenido.txt') {
+            if (filename === config.userFileName) { // USANDO CONFIG
+                
+                // REINICIAR el temporizador en cada CAMBIO (Nuevo)
+                startInactivityTimer(mainWin); 
+
                 if (!fs.existsSync(userFile)) {
                     mainWin.webContents.send('no-file', { 
                         welcomePath: url.pathToFileURL(welcomeImage).href 
@@ -297,12 +390,21 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
             }
         });
 
-        mainWin.on('closed', () => watcher.close());
+        mainWin.on('closed', () => {
+            watcher.close();
+            // Limpiar el temporizador al cerrar la ventana principal (Nuevo)
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = null;
+            }
+        });
 
         // Initial content load
         if (fs.existsSync(userFile)) {
             const text = fs.readFileSync(userFile, 'utf-8');
             mainWin.webContents.send('file-changed', text);
+            // INICIAR el temporizador al cargar contenido inicialmente (Nuevo)
+            startInactivityTimer(mainWin); 
         } else {
             mainWin.webContents.send('no-file', { 
                 welcomePath: url.pathToFileURL(welcomeImage).href 
