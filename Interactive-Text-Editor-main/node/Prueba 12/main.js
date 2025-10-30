@@ -252,7 +252,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
             console.warn(`ADVERTENCIA: Carpeta de Banners Bottom no encontrada en ${bannersBottomPath}`);
         }
         if (!fs.existsSync(mobileImgsPath)) {
-            console.warn(`ADVERTENCIA: Carpeta de Móviles no encontrada en ${mobileImgsPath}`);
+            console.warn(`ADVERTENCIA: Carpeta de Moviles no encontrada en ${mobileImgsPath}`);
         }
         // --- FIN DIAGNÓSTICO ---
 
@@ -316,7 +316,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
         // --- DIAGNÓSTICO DE CONTENIDO ENVIADO ---
         console.log(`Banners Top encontrados (${bannersTop.length}):`, bannersTop.map(u => path.basename(new URL(u).pathname)));
         console.log(`Banners Bottom encontrados (${bannersBottom.length}):`, bannersBottom.map(u => path.basename(new URL(u).pathname)));
-        console.log(`Móviles encontrados (${mobileImgs.length}):`, mobileImgs.map(u => path.basename(new URL(u).pathname)));
+        console.log(`Moviles encontrados (${mobileImgs.length}):`, mobileImgs.map(u => path.basename(new URL(u).pathname)));
         // --- FIN DIAGNÓSTICO ---
 
 
@@ -335,7 +335,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
                 const positionIndex = bgWin.positionIndex;
                 const mediaFilePath = userMediaMap[positionIndex];
                 
-                console.log(`Ventana en posición ${positionIndex}, archivo: ${mediaFilePath}`);
+                console.log(`Ventana en posicion ${positionIndex}, archivo: ${mediaFilePath}`);
                 
                 if (mediaFilePath && fs.existsSync(mediaFilePath)) {
                     const fileName = path.basename(mediaFilePath);
@@ -357,7 +357,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
                         mediaFiles: [mediaForWindow]
                     });
                 } else {
-                    console.log(`No hay archivo para posición ${positionIndex}`);
+                    console.log(`No hay archivo para posicion ${positionIndex}`);
                 }
             });
         });
