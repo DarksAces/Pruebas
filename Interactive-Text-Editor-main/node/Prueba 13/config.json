@@ -5,7 +5,21 @@
   "htmlDirName": "html",
   "imageDirName": "imagenes",
   "userFileName": "contenido.txt",
-  "bannersTopDirName": "BannersTop",      
-  "bannersBottomDirName": "BannersBottom",  
-  "mobileImgsDirName": "Moviles"           
+  "bannersTopDirName": "BannersTop",
+  "bannersBottomDirName": "BannersBottom",
+  "mobileImgsDirName": "Moviles",
+  "lastConfiguration": {
+    "size": "1",
+    "position": "1",
+    "mediaFiles": [
+      "C:\\recursos\\14533634_3840_2160_30fps.mp4",
+      "C:\\recursos\\2.gif"
+    ],
+    "distributionScheme": "two_halves",
+    "assignmentMap": {
+      "fusedFileIndex": 1,
+      "individualFileIndex": 0,
+      "individualArea": 2
+    }
+  }
 }

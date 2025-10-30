@@ -6,8 +6,8 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            /* Importante: Mantener background-color transparente o el color base de tu fondo */
-            background-color: transparent; 
+            /* Fondo negro sólido para imágenes transparentes */
+            background-color: #000;
             height: 100vh;
             width: 100vw;
         }
@@ -20,12 +20,11 @@
             overflow: hidden;
         }
         
-        /* CORRECCIÓN FINAL: Aseguramos que cubran 100% y usamos 'cover' para evitar distorsión */
         img, video, .gif {
             width: 100% !important;
             height: 100% !important;
-            /* 'cover' asegura que toda la ventana esté cubierta, recortando la imagen si es necesario */
-            object-fit: cover !important; 
+            /* Usar 'contain' para AJUSTAR la imagen completa (sin recorte) */
+            object-fit: contain !important; 
             display: block;
         }
     </style>
@@ -43,6 +42,16 @@
                     ? document.createElement('video')
                     : document.createElement('img');
                 
+                // CLAVE: Añadir un listener de error para diagnóstico
+                element.onerror = (e) => {
+                    console.error("Error al cargar el medio:", media.src, e);
+                    container.innerHTML = `<p style="color:red; margin:20px;">ERROR: No se pudo cargar el archivo. Revisar consola (F12) para detalles.</p><p style="color:white; font-size: 12px; word-wrap: break-word;">Ruta esperada: ${media.src}</p>`;
+                };
+                
+                // Primero añadir al contenedor
+                container.appendChild(element);
+
+                // Luego asignar la fuente para que el navegador comience a cargarla
                 element.src = media.src;
                 
                 if (media.type === 'video') {
@@ -50,15 +59,17 @@
                     element.loop = true;
                     element.muted = true;
                     element.playsinline = true;
-                    // Agregar event listener para asegurar el inicio (a veces Chrome lo bloquea)
-                    element.oncanplay = () => {
-                        element.play().catch(e => console.error("Error al intentar iniciar video:", e));
+
+                    // Manejo robusto del play
+                    element.onloadeddata = () => {
+                         element.play().catch(e => {
+                             console.warn("Video Play Fallido (posiblemente por permisos/autoplay):", e);
+                         });
                     };
                 } else if (media.type === 'gif') {
                     element.classList.add('gif');
                 }
                 
-                container.appendChild(element);
                 console.log('Loaded media:', media);
             } else {
                 console.log('No media files received for this background window.');

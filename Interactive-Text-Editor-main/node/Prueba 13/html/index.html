@@ -16,13 +16,13 @@
     overflow: hidden;
   }
 
-  /* --- NUEVO ESTILO PARA 1/4 DE PANTALLA --- */
+  /* --- ESTILO PARA 1/4 DE PANTALLA --- */
   body.font-small {
       font-size: 150%; /* Tamaño de fuente reducido */
   }
   /* ------------------------------------------- */
 
-  /* Contenedores de banners RESTAURADOS */
+  /* Contenedores de banners */
   #banner-top, #banner-bottom {
     position: fixed;
     width: 100%;
@@ -64,7 +64,7 @@
     opacity: 1;
   }
 
-  /* Estilos para imagen móvil RESTAURADOS */
+  /* Estilos para imagen móvil */
   img.mobile {
     width: auto;
     height: 150px;
@@ -131,7 +131,7 @@
       contentDiv.appendChild(wrapperDiv);
     });
 
-    // SCRIPT DE CARGA DE BANNERS RESTAURADO
+    // SCRIPT DE CARGA DE BANNERS
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
       const topDiv = document.getElementById('banner-top');
       const bottomDiv = document.getElementById('banner-bottom');
@@ -190,7 +190,7 @@
       });
     });
 
-    // --- NUEVO MANEJO DEL TAMAÑO DE VENTANA ---
+    // --- MANEJO DEL TAMAÑO DE VENTANA ---
     window.electronAPI.onWindowSizeSelected(({ size }) => {
         if (size === '1') {
             // Aplica la clase si es 1/4 de pantalla
