@@ -309,6 +309,10 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, imagePositions })
             });
         }
         
+        // --- ENVÍO DEL TAMAÑO DE LA VENTANA (NUEVO) ---
+        mainWin.webContents.send('window-size-selected', { size: size });
+        // ---------------------------------------------
+        
         // --- DIAGNÓSTICO DE CONTENIDO ENVIADO ---
         console.log(`Banners Top encontrados (${bannersTop.length}):`, bannersTop.map(u => path.basename(new URL(u).pathname)));
         console.log(`Banners Bottom encontrados (${bannersBottom.length}):`, bannersBottom.map(u => path.basename(new URL(u).pathname)));
