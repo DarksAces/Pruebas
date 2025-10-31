@@ -30,15 +30,15 @@ function saveLastConfig(data) {
         let currentConfig = JSON.parse(currentConfigData);
         currentConfig[LAST_CONFIG_KEY] = data;
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2), 'utf-8');
-        console.log('[CONFIG] Última configuración guardada con éxito.');
+        console.log('[CONFIG] Ultima configuración guardada con exito.');
     } catch (error) {
-        console.error('[CONFIG ERROR] No se pudo guardar la última configuración:', error);
+        console.error('[CONFIG ERROR] No se pudo guardar la ultima configuración:', error);
     }
 }
 
 function loadLastConfig() {
     if (config && config[LAST_CONFIG_KEY]) {
-        console.log('[INIT] Última configuración encontrada.');
+        console.log('[INIT] Ultima configuración encontrada.');
         return config[LAST_CONFIG_KEY];
     }
     return null;
@@ -54,7 +54,7 @@ const INACTIVITY_TIME_MS = config.inactivityTimeMs;
 // Directorios Absolutos
 // ----------------------
 const resourcesDir = path.resolve(config.resourcesDir); 
-console.log(`[DIAGNÓSTICO] Ruta de recursos resuelta: ${resourcesDir}`);
+console.log(`[DIAGNOSTICO] Ruta de recursos resuelta: ${resourcesDir}`);
 const htmlDir = path.join(__dirname, config.htmlDirName); 
 const imagesDir = path.join(resourcesDir, config.imageDirName); 
 const userFile = path.join(resourcesDir, config.userFileName); 
@@ -203,7 +203,7 @@ function calculatePositions(size, selectedPos) {
 
     const { width: sw, height: sh, x: sx, y: sy } = targetDisplay.bounds;
 
-    console.log(`[DIAGNÓSTICO] Display Target - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
+    console.log(`[DIAGNOSTICO] Display Target - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
 
     const quarterPositionsBase = [
         { x: sx, y: sy, width: sw/2, height: sh/2, index: 1 },
@@ -281,7 +281,7 @@ function calculatePositions(size, selectedPos) {
 ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
     
     try {
-        console.log('[SELECCIÓN] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
+        console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
         
         windows.forEach(w => w.close());
         windows = [];
@@ -310,7 +310,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                 finalOtherBounds = [combinedBounds];
                 userMediaMap[99] = mediaFiles[0];
 
-                console.log('[FUSIONADO] Fondo único creado:', combinedBounds);
+                console.log('[FUSIONADO] Fondo unico creado:', combinedBounds);
 
             } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
                 finalOtherBounds = remainingBounds;
@@ -434,14 +434,14 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
             });
 
             // Carga inicial
-            console.log(`[DIAGNÓSTICO] Verificando archivo de usuario en: ${userFile}`); 
+            console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${userFile}`); 
             if (fs.existsSync(userFile)) {
-                console.log('[DIAGNÓSTICO] Archivo encontrado. Cargando contenido.'); 
+                console.log('[DIAGNOSTICO] Archivo encontrado. Cargando contenido.'); 
                 const text = fs.readFileSync(userFile, 'utf-8');
                 mainWin.webContents.send('file-changed', text);
                 startInactivityTimer(mainWin); 
             } else {
-                console.log(`[DIAGNÓSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${url.pathToFileURL(welcomeImage).href}`);
+                console.log(`[DIAGNOSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${url.pathToFileURL(welcomeImage).href}`);
                 mainWin.webContents.send('no-file', { 
                     welcomePath: url.pathToFileURL(welcomeImage).href 
                 });
@@ -494,7 +494,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
 
     } catch (error) {
         // Bloque de recuperación: Muestra error y vuelve al selector.
-        console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas. ¡LA APLICACIÓN FALLÓ!', error.message, error.stack);
+        console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas. ¡LA APLICACION FALLO!', error.message, error.stack);
         
         // Cierra todas las ventanas que pudieron haberse abierto parcialmente.
         windows.forEach(w => {

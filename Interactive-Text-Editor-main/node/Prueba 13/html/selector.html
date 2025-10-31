@@ -42,8 +42,8 @@ select, button { margin-top: 10px; padding: 8px; font-size: 16px; width: 100%; b
     <select id="distribution-scheme">
       <option value="none">0 - Solo Contenido (Sin Fondos)</option>
       <option value="three_individual">3 - Tres Fondos Individuales (1/4 c/u)</option>
-      <option value="one_big">1 - Un Fondo Grande (Fusionar las 3 áreas restantes)</option>
-      <option value="two_halves">2 - Dos Fondos (Fusionar 2 áreas y dejar 1 individual)</option>
+      <option value="one_big">1 - Un Fondo Grande (Fusionar las 3 areas restantes)</option>
+      <option value="two_halves">2 - Dos Fondos (Fusionar 2 areas y dejar 1 individual)</option>
     </select>
 </div>
 
@@ -54,11 +54,11 @@ select, button { margin-top: 10px; padding: 8px; font-size: 16px; width: 100%; b
     <div id="advanced-assignment" style="display: none;">
         <p style="margin-top: 10px;">**Asignación de Fondos (Modo 2 Fondos):**</p>
         <div class="assignment-box">
-            <label for="fusedMedia">Fondo Fusionado (Área Grande):</label>
+            <label for="fusedMedia">Fondo Fusionado (Area Grande):</label>
             <select id="fusedMedia"></select>
         </div>
         <div class="assignment-box">
-            <label for="individualMedia">Fondo Individual (Área Pequeña):</label>
+            <label for="individualMedia">Fondo Individual (Area Pequeña):</label>
             <select id="individualMedia"></select>
             <p style="margin-top: 10px;">**Elige la posición del 1/4 individual restante:**</p>
             <select id="individualArea"></select>
@@ -243,7 +243,7 @@ document.getElementById('openBtn').addEventListener('click', () => {
 
              // Asegurarse de que no sean el mismo archivo si se eligieron en el selector
              if (fusedFile === individualFile) {
-                 alert("Error: No puedes asignar el mismo archivo al área fusionada y al área individual. Por favor, selecciona archivos diferentes.");
+                 alert("Error: No puedes asignar el mismo archivo al area fusionada y al área individual. Por favor, selecciona archivos diferentes.");
                  return;
              }
              finalMediaFiles = [fusedFile, individualFile];
