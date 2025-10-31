@@ -7,10 +7,10 @@ const url = require('url');
 
 let winSelector;
 let windows = [];
-const LAST_CONFIG_KEY = 'lastConfiguration'; // Clave para guardar en config.json
+const LAST_CONFIG_KEY = 'lastConfiguration';
 
 // ----------------------
-// 1. GESTIÓN DE CONFIGURACIÓN
+// GESTIÓN DE CONFIGURACIÓN
 // ----------------------
 const configPath = path.join(__dirname, 'config.json');
 let config;
@@ -24,15 +24,11 @@ try {
     app.quit(); 
 }
 
-// Función para guardar la última configuración usada
 function saveLastConfig(data) {
     try {
         const currentConfigData = fs.readFileSync(configPath, 'utf-8');
         let currentConfig = JSON.parse(currentConfigData);
-
-        // Almacena solo los parámetros esenciales de la selección
         currentConfig[LAST_CONFIG_KEY] = data;
-
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2), 'utf-8');
         console.log('[CONFIG] Última configuración guardada con éxito.');
     } catch (error) {
@@ -40,7 +36,6 @@ function saveLastConfig(data) {
     }
 }
 
-// Función para cargar la última configuración guardada
 function loadLastConfig() {
     if (config && config[LAST_CONFIG_KEY]) {
         console.log('[INIT] Última configuración encontrada.');
@@ -48,8 +43,6 @@ function loadLastConfig() {
     }
     return null;
 }
-// ----------------------
-
 
 // ----------------------
 // GESTIÓN DE INACTIVIDAD
@@ -66,7 +59,6 @@ const htmlDir = path.join(__dirname, config.htmlDirName);
 const imagesDir = path.join(resourcesDir, config.imageDirName); 
 const userFile = path.join(resourcesDir, config.userFileName); 
 const welcomeImage = path.join(imagesDir, config.defaultWelcomeImagePath); 
-// ----------------------
 
 // ----------------------
 // Ventana selector
@@ -76,7 +68,7 @@ function createSelectorWindow() {
     
     winSelector = new BrowserWindow({
         width: 450, 
-        height: 650, // Aumentado para la nueva UI
+        height: 650,
         frame: true,
         resizable: false,
         webPreferences: {
@@ -88,7 +80,6 @@ function createSelectorWindow() {
     winSelector.loadFile(path.join(htmlDir, 'selector.html'));
 
     winSelector.on('closed', () => {
-        // Cierra la app si no hay ventanas de contenido abiertas (solo si se cierra el selector manualmente)
         if (!windows.length) {
             app.quit();
         }
@@ -96,32 +87,35 @@ function createSelectorWindow() {
 }
 
 // ----------------------
-// Crear ventana (webSecurity: false asegurado)
+// Crear ventana
 // ----------------------
 function createWindow(bounds, isMain = false) {
+    console.log(`[VENTANA] Creando ventana ${isMain ? 'PRINCIPAL' : 'FONDO'} en:`, bounds);
+    
+    const isTransparent = !isMain; 
+
     const win = new BrowserWindow({
         x: bounds.x,
         y: bounds.y,
         width: bounds.width,
         height: bounds.height,
         frame: false,
-        transparent: true,
+        transparent: isTransparent, 
         resizable: false,
         alwaysOnTop: true, 
-        focusable: false,
-        backgroundColor: '#00000000',
+        focusable: isMain, 
+        skipTaskbar: !isMain, 
+        backgroundColor: '#000000',
         hasShadow: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            // CLAVE: Permite cargar archivos locales (file://) sin restricción
             webSecurity: false 
         }
     });
 
-    win.setAlwaysOnTop(true, 'normal'); 
-    win.moveTop();
-
+    win.setAlwaysOnTop(true, 'screen-saver');
+    
     if (isMain) {
         win.loadFile(path.join(htmlDir, 'index.html'));
         win.setIgnoreMouseEvents(false);
@@ -130,7 +124,7 @@ function createWindow(bounds, isMain = false) {
         win.setIgnoreMouseEvents(true); 
     }
     
-    if (bounds.index) {
+    if (bounds.index !== undefined) {
         win.positionIndex = bounds.index;
     }
 
@@ -138,7 +132,7 @@ function createWindow(bounds, isMain = false) {
 }
 
 // ----------------------
-// Función para abrir el diálogo de selección de archivos (sin cambios)
+// Función para abrir el diálogo de selección de archivos
 // ----------------------
 ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
     const window = BrowserWindow.fromWebContents(event.sender);
@@ -163,9 +157,8 @@ ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
     return result.filePaths;
 });
 
-
 // ----------------------
-// LÓGICA DEL TEMPORIZADOR Y RESET (sin cambios)
+// LÓGICA DEL TEMPORIZADOR Y RESET
 // ----------------------
 function resetToWelcome(mainWin) {
     if (fs.existsSync(userFile)) {
@@ -199,26 +192,26 @@ function startInactivityTimer(mainWin) {
     }, INACTIVITY_TIME_MS);
     console.log(`[TEMPORIZADOR] Reiniciado. El archivo se eliminara en ${INACTIVITY_TIME_MS / 1000} segundos si no hay cambios.`);
 }
+
+// ----------------------
+// CÁLCULO DE POSICIONES (Superposición de Ventana Principal)
 // ----------------------
 
-
-// Update calculatePositions para retornar el índice de posición absoluta (1-4)
 function calculatePositions(size, selectedPos) {
     const displays = screen.getAllDisplays();
     const targetDisplay = displays.length > 1 ? displays[1] : displays[0];
 
-    // Usamos bounds para superponer la barra de tareas
     const { width: sw, height: sh, x: sx, y: sy } = targetDisplay.bounds;
 
-    console.log(`[DIAGNÓSTICO] Área Total (Bounds) - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
+    console.log(`[DIAGNÓSTICO] Display Target - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
 
-    const quarterPositions = [
+    const quarterPositionsBase = [
         { x: sx, y: sy, width: sw/2, height: sh/2, index: 1 },
         { x: sx + sw/2, y: sy, width: sw/2, height: sh/2, index: 2 },
         { x: sx, y: sy + sh/2, width: sw/2, height: sh/2, index: 3 },
         { x: sx + sw/2, y: sy + sh/2, width: sw/2, height: sh/2, index: 4 }
     ];
-
+    
     if (size === "3") {
         return {
             mainBounds: { x: sx, y: sy, width: sw, height: sh, index: 0 }, 
@@ -248,79 +241,92 @@ function calculatePositions(size, selectedPos) {
     }
     
     if (size === "1") {
-        const mainPos = quarterPositions[selectedPos - 1];
-        
-        const others = quarterPositions
-            .filter(pos => pos.index !== selectedPos)
-            .map(pos => pos); 
+        const mainPosBase = quarterPositionsBase[selectedPos - 1];
+        const pixelAdj = 1; // Superposición de 1 píxel
 
-        return { mainBounds: mainPos, otherBounds: others };
+        let mainBounds = { ...mainPosBase };
+        
+        // La ventana principal se agranda 1px y se desplaza para superponerse al fondo.
+        
+        // Si la ventana principal está a la izquierda (1 o 3), aumenta el ancho (cubre el borde del fondo derecho).
+        if (selectedPos === 1 || selectedPos === 3) {
+            mainBounds.width += pixelAdj; 
+        }
+        // Si la ventana principal está arriba (1 o 2), aumenta la altura (cubre el borde del fondo inferior).
+        if (selectedPos === 1 || selectedPos === 2) {
+            mainBounds.height += pixelAdj;
+        }
+        // Si la ventana principal está a la derecha (2 o 4), mueve el inicio X a la izquierda y aumenta el ancho.
+        if (selectedPos === 2 || selectedPos === 4) {
+            mainBounds.x -= pixelAdj;
+            mainBounds.width += pixelAdj;
+        }
+        // Si la ventana principal está abajo (3 o 4), mueve el inicio Y hacia arriba y aumenta la altura.
+        if (selectedPos === 3 || selectedPos === 4) {
+            mainBounds.y -= pixelAdj;
+            mainBounds.height += pixelAdj;
+        }
+
+        const others = quarterPositionsBase
+            .filter(pos => pos.index !== selectedPos)
+            .map(pos => pos); // Las ventanas de fondo usan su tamaño base (sin superposición)
+
+        return { mainBounds: mainBounds, otherBounds: others };
     }
 }
-
 
 // ----------------------
 // Crear todas las ventanas y cargar contenido
 // ----------------------
-// AHORA RECIBE EL distributionScheme y assignmentMap
 ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
     
-    console.log('Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
-    
-    windows.forEach(w => w.close());
-    windows = [];
-    
-    if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-    }
-
-    const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
-
-    let finalOtherBounds = otherBounds;
-    let userMediaMap = {};
-    
-    // --- LÓGICA DE DISTRIBUCIÓN AVANZADA ---
-    if (size === '1') {
-        const remainingBounds = otherBounds; 
+    try {
+        console.log('[SELECCIÓN] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
         
-        if (distributionScheme === 'one_big' && mediaFiles.length >= 1) {
-            // Caso 1: FUSIONAR LAS 3
-            const minX = Math.min(...remainingBounds.map(b => b.x));
-            const minY = Math.min(...remainingBounds.map(b => b.y));
-            const maxX = Math.max(...remainingBounds.map(b => b.x + b.width));
-            const maxY = Math.max(...remainingBounds.map(b => b.y + b.height));
-
-            const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 99 };
-            finalOtherBounds = [combinedBounds];
-            userMediaMap[99] = mediaFiles[0]; // Asignar el primer archivo al área fusionada
-
-            console.log('[FUSIONADO] Fondo único creado para 1/4 restante.');
-
-        } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
-            // Caso 2: TRES INDIVIDUALES
-            finalOtherBounds = remainingBounds;
-            remainingBounds.forEach((bounds, idx) => {
-                 // Asignar los archivos 0, 1, 2 a los índices libres 
-                 userMediaMap[bounds.index] = mediaFiles[idx];
-            });
-
-        } else if (distributionScheme === 'none') {
-             finalOtherBounds = []; // No hay ventanas de fondo
+        windows.forEach(w => w.close());
+        windows = [];
         
-        } else if (size === '1' && distributionScheme === 'two_halves') {
-            // Caso 3: Fusionar 2 y dejar 1 individual (LÓGICA BASADA EN assignmentMap)
-            // Se necesita al menos 2 archivos.
-            if (mediaFiles.length >= 2) {
-                
-                // 1. Identificar el índice de la ventana individual (p.ej., 2)
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = null;
+        }
+
+        const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
+
+        let finalOtherBounds = otherBounds;
+        let userMediaMap = {};
+        
+        // --- LÓGICA DE DISTRIBUCIÓN AVANZADA ---
+        if (size === '1') {
+            const remainingBounds = otherBounds; 
+            
+            if (distributionScheme === 'one_big' && mediaFiles.length >= 1) {
+                const minX = Math.min(...remainingBounds.map(b => b.x));
+                const minY = Math.min(...remainingBounds.map(b => b.y));
+                const maxX = Math.max(...remainingBounds.map(b => b.x + b.width));
+                const maxY = Math.max(...remainingBounds.map(b => b.y + b.height));
+
+                const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 99 };
+                finalOtherBounds = [combinedBounds];
+                userMediaMap[99] = mediaFiles[0];
+
+                console.log('[FUSIONADO] Fondo único creado:', combinedBounds);
+
+            } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
+                finalOtherBounds = remainingBounds;
+                remainingBounds.forEach((bounds, idx) => {
+                     userMediaMap[bounds.index] = mediaFiles[idx];
+                     console.log(`[INDIVIDUAL] Asignado archivo ${idx} a index ${bounds.index}`);
+                });
+
+            } else if (distributionScheme === 'none') {
+                 finalOtherBounds = [];
+            
+            } else if (distributionScheme === 'two_halves' && mediaFiles.length >= 2) {
                 const individualIndex = parseInt(assignmentMap.individualArea); 
-                // 2. Encontrar los bounds de las dos áreas a fusionar
                 const boundsToFuse = remainingBounds.filter(b => b.index !== individualIndex);
-                // 3. Obtener el bound de la ventana individual restante
                 const individualBound = remainingBounds.find(b => b.index === individualIndex);
                 
-                // 4. Calcular el bound fusionado
                 const minX = Math.min(...boundsToFuse.map(b => b.x));
                 const minY = Math.min(...boundsToFuse.map(b => b.y));
                 const maxX = Math.max(...boundsToFuse.map(b => b.x + b.width));
@@ -328,168 +334,188 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                 
                 const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 98 };
                 
-                // 5. Definir los bounds finales
                 finalOtherBounds = [combinedBounds, individualBound];
                 
-                // 6. Asignar archivos (el primero al fusionado, el segundo al individual)
-                userMediaMap[98] = mediaFiles[0];
-                userMediaMap[individualBound.index] = mediaFiles[1];
+                userMediaMap[98] = mediaFiles[0]; 
+                userMediaMap[individualBound.index] = mediaFiles[1]; 
                 
-                console.log('[FUSIONADO AVANZADO] Fusionadas 2 áreas y 1 individual restante.');
+                console.log('[FUSIONADO AVANZADO] Bounds fusionados:', combinedBounds);
+                console.log('[FUSIONADO AVANZADO] Bound individual:', individualBound);
             }
         }
-    } 
-    // --- FIN LÓGICA DE DISTRIBUCIÓN AVANZADA ---
 
-    // Cerrar selector
-    if (winSelector) {
-        winSelector.close();
-        winSelector = null;
-    }
+        // Cerrar selector
+        if (winSelector) {
+            winSelector.close();
+            winSelector = null;
+        }
 
-    // 1. Create main window
-    const mainWin = createWindow(mainBounds, true);
-    windows.push(mainWin);
-    
-    // 2. Create background windows (usando el array fusionado o normal)
-    finalOtherBounds.forEach((bounds) => {
-        const bgWin = createWindow(bounds, false);
-        windows.push(bgWin);
-    });
-    
-    // --- GUARDAR CONFIGURACIÓN ---
-    saveLastConfig({ 
-        size, 
-        position, 
-        mediaFiles, 
-        distributionScheme, 
-        assignmentMap 
-    });
-    // --- FIN GUARDAR CONFIGURACIÓN ---
-
-
-    // ----------------------
-    // Al cargar la ventana principal 
-    // ----------------------
-    mainWin.webContents.once('did-finish-load', () => {
+        // 1. Crear ventana principal
+        const mainWin = createWindow(mainBounds, true);
+        windows.push(mainWin);
         
-        const bannersTopPath = path.join(imagesDir, config.bannersTopDirName); 
-        const bannersBottomPath = path.join(imagesDir, config.bannersBottomDirName); 
-        const mobileImgsPath = path.join(imagesDir, config.mobileImgsDirName); 
+        // 2. Crear ventanas de fondo
+        finalOtherBounds.forEach((bounds) => {
+            const bgWin = createWindow(bounds, false);
+            windows.push(bgWin);
+        });
+        
+        // Guardar configuración
+        saveLastConfig({ 
+            size, 
+            position, 
+            mediaFiles, 
+            distributionScheme, 
+            assignmentMap 
+        });
 
-        // Generar rutas de banners (CLAVE: usar url.pathToFileURL().href)
-        const bannersTop = fs.existsSync(bannersTopPath) 
-            ? fs.readdirSync(bannersTopPath)
-                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(bannersTopPath,f)).href) 
-            : [];
-        const bannersBottom = fs.existsSync(bannersBottomPath) 
-            ? fs.readdirSync(bannersBottomPath)
-                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(bannersBottomPath,f)).href) 
-            : [];
-        const mobileImgs = fs.existsSync(mobileImgsPath) 
-            ? fs.readdirSync(mobileImgsPath)
-                .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                .map(f => url.pathToFileURL(path.join(mobileImgsPath,f)).href) 
-            : [];
+        // ----------------------
+        // Al cargar la ventana principal 
+        // ----------------------
+        mainWin.webContents.once('did-finish-load', () => {
+            
+            const bannersTopPath = path.join(imagesDir, config.bannersTopDirName); 
+            const bannersBottomPath = path.join(imagesDir, config.bannersBottomDirName); 
+            const mobileImgsPath = path.join(imagesDir, config.mobileImgsDirName); 
 
+            const bannersTop = fs.existsSync(bannersTopPath) 
+                ? fs.readdirSync(bannersTopPath)
+                    .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                    .map(f => url.pathToFileURL(path.join(bannersTopPath,f)).href) 
+                : [];
+            const bannersBottom = fs.existsSync(bannersBottomPath) 
+                ? fs.readdirSync(bannersBottomPath)
+                    .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                    .map(f => url.pathToFileURL(path.join(bannersBottomPath,f)).href) 
+                : [];
+            const mobileImgs = fs.existsSync(mobileImgsPath) 
+                ? fs.readdirSync(mobileImgsPath)
+                    .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                    .map(f => url.pathToFileURL(path.join(mobileImgsPath,f)).href) 
+                : [];
 
-        const watcher = fs.watch(resourcesDir, (eventType, filename) => {
-            if (filename === config.userFileName) { 
+            const watcher = fs.watch(resourcesDir, (eventType, filename) => {
+                if (filename === config.userFileName) { 
+                    
+                    startInactivityTimer(mainWin); 
+
+                    if (!fs.existsSync(userFile)) {
+                        mainWin.webContents.send('no-file', { 
+                            welcomePath: url.pathToFileURL(welcomeImage).href 
+                        });
+                    } else if (eventType === 'change') {
+                        const text = fs.readFileSync(userFile, 'utf-8');
+                        mainWin.webContents.send('file-changed', text);
+                        
+                        mainWin.webContents.send('load-images', {
+                            bannersTop,
+                            bannersBottom,
+                            mobileImgs,
+                            mediaFiles: []
+                        });
+                    }
+                }
+            });
+
+    // CIERRE FORZADO DE FONDOS
+    mainWin.on('closed', () => {
+                watcher.close();
+                if (inactivityTimer) {
+                    clearTimeout(inactivityTimer);
+                    inactivityTimer = null;
+                }
                 
+                windows.forEach(w => {
+                    if (!w.isDestroyed()) {
+                        w.close();
+                    }
+                });
+                windows = [];
+            });
+
+            // Carga inicial
+            console.log(`[DIAGNÓSTICO] Verificando archivo de usuario en: ${userFile}`); 
+            if (fs.existsSync(userFile)) {
+                console.log('[DIAGNÓSTICO] Archivo encontrado. Cargando contenido.'); 
+                const text = fs.readFileSync(userFile, 'utf-8');
+                mainWin.webContents.send('file-changed', text);
                 startInactivityTimer(mainWin); 
-
-                if (!fs.existsSync(userFile)) {
-                    mainWin.webContents.send('no-file', { 
-                        welcomePath: url.pathToFileURL(welcomeImage).href 
-                    });
-                } else if (eventType === 'change') {
-                    const text = fs.readFileSync(userFile, 'utf-8');
-                    mainWin.webContents.send('file-changed', text);
-                    
-                    mainWin.webContents.send('load-images', {
-                        bannersTop,
-                        bannersBottom,
-                        mobileImgs,
-                        mediaFiles: []
-                    });
-                }
+            } else {
+                console.log(`[DIAGNÓSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${url.pathToFileURL(welcomeImage).href}`);
+                mainWin.webContents.send('no-file', { 
+                    welcomePath: url.pathToFileURL(welcomeImage).href 
+                });
             }
-        });
-
-        mainWin.on('closed', () => {
-            watcher.close();
-            if (inactivityTimer) {
-                clearTimeout(inactivityTimer);
-                inactivityTimer = null;
-            }
-        });
-
-        // Carga inicial
-        if (fs.existsSync(userFile)) {
-            const text = fs.readFileSync(userFile, 'utf-8');
-            mainWin.webContents.send('file-changed', text);
-            startInactivityTimer(mainWin); 
-        } else {
-            mainWin.webContents.send('no-file', { 
-                welcomePath: url.pathToFileURL(welcomeImage).href 
+            
+            mainWin.webContents.send('window-size-selected', { size: size });
+            
+            mainWin.webContents.send('load-images', {
+                bannersTop,
+                bannersBottom,
+                mobileImgs,
+                mediaFiles: [] 
             });
-        }
-        
-        mainWin.webContents.send('window-size-selected', { size: size });
-        
-        mainWin.webContents.send('load-images', {
-            bannersTop,
-            bannersBottom,
-            mobileImgs,
-            mediaFiles: [] 
-        });
 
-        // Background windows - cargar medios del usuario
-        const bgWindows = windows.filter(w => w !== mainWin);
-        bgWindows.forEach((bgWin) => {
-            bgWin.webContents.once('did-finish-load', () => {
-                const positionIndex = bgWin.positionIndex;
-                const mediaFilePath = userMediaMap[positionIndex];
-                
-                if (mediaFilePath && fs.existsSync(mediaFilePath)) {
-                    const fileName = path.basename(mediaFilePath);
-                    const isVideo = /\.(mp4)$/i.test(fileName);
-                    const isGif = /\.(gif)$/i.test(fileName);
+            // Cargar medios en ventanas de fondo
+            const bgWindows = windows.filter(w => w !== mainWin);
+            bgWindows.forEach((bgWin) => {
+                bgWin.webContents.once('did-finish-load', () => {
+                    const positionIndex = bgWin.positionIndex;
+                    const mediaFilePath = userMediaMap[positionIndex];
                     
-                    // --- AJUSTE CLAVE DE RUTA PARA COMPATIBILIDAD CON WINDOWS ---
-                    // Reemplazamos barras invertidas por diagonales
-                    const sanitizedPath = mediaFilePath.replace(/\\/g, '/');
-                    // Generar la URL de archivo segura (file://)
-                    const mediaUrl = url.pathToFileURL(sanitizedPath).href;
-                    // ------------------------------------------------------------
+                    console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
                     
-                    const mediaForWindow = {
-                        type: isVideo ? 'video' : isGif ? 'gif' : 'image',
-                        src: mediaUrl, // CLAVE: Aquí se pasa la URL segura file://
-                        name: fileName,
-                        priority: positionIndex
-                    };
+                    if (mediaFilePath && fs.existsSync(mediaFilePath)) {
+                        const fileName = path.basename(mediaFilePath);
+                        const isVideo = /\.(mp4)$/i.test(fileName);
+                        const isGif = /\.(gif)$/i.test(fileName);
+                        
+                        const sanitizedPath = mediaFilePath.replace(/\\/g, '/');
+                        const mediaUrl = url.pathToFileURL(sanitizedPath).href;
+                        
+                        const mediaForWindow = {
+                            type: isVideo ? 'video' : isGif ? 'gif' : 'image',
+                            src: mediaUrl,
+                            name: fileName,
+                            priority: positionIndex
+                        };
 
-                    bgWin.webContents.send('load-images', {
-                        mediaFiles: [mediaForWindow]
-                    });
-                }
+                        console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
+
+                        bgWin.webContents.send('load-images', {
+                            mediaFiles: [mediaForWindow]
+                        });
+                    } else {
+                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado o no encontrado.`);
+                    }
+                });
             });
         });
-    });
+
+    } catch (error) {
+        // Bloque de recuperación: Muestra error y vuelve al selector.
+        console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas. ¡LA APLICACIÓN FALLÓ!', error.message, error.stack);
+        
+        // Cierra todas las ventanas que pudieron haberse abierto parcialmente.
+        windows.forEach(w => {
+            if (!w.isDestroyed()) {
+                w.close();
+            }
+        });
+        windows = [];
+        
+        // Abre el selector para que el usuario pueda reconfigurar.
+        createSelectorWindow();
+    }
 });
 
-
 // ----------------------
-// App ready - Carga la última configuración o el selector
+// App ready
 // ----------------------
 app.whenReady().then(() => {
     const lastConfig = loadLastConfig();
     
     if (lastConfig && lastConfig.size) {
-        // Usamos process.nextTick para evitar errores de EventEmitter al emitir inmediatamente
         process.nextTick(() => {
             ipcMain.emit('selection-made', null, lastConfig); 
         });
@@ -499,7 +525,7 @@ app.whenReady().then(() => {
 });
 
 // ----------------------
-// Cerrar app (sin cambios)
+// Cerrar app
 // ----------------------
 app.on('window-all-closed', () => { 
     if (process.platform !== 'darwin') app.quit(); 

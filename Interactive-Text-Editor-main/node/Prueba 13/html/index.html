@@ -7,7 +7,7 @@
   body {
     margin: 0;
     padding: 0;
-    /* Dejamos el fondo transparente en el body */
+    /* Dejamos el fondo transparente en el body (la ventana principal es opaca) */
     background-color: transparent; 
     color: #fff;
     font-family: Consolas, monospace;
@@ -78,7 +78,7 @@
   .welcome-text { text-align: center; font-size: 22px; color: #555; }
 
   .content-container {
-    /* El fondo del contenido principal sigue siendo oscuro */
+    /* ** CRÍTICO: Fondo oscuro y opaco para cubrir los fondos adyacentes ** */
     background-color: #1e1e1e; 
     width: 100%;
     height: 100%;

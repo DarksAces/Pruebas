@@ -13,12 +13,12 @@
     "position": "1",
     "mediaFiles": [
       "C:\\recursos\\14533634_3840_2160_30fps.mp4",
-      "C:\\recursos\\2.gif"
+      "C:\\recursos\\aaa.png"
     ],
     "distributionScheme": "two_halves",
     "assignmentMap": {
-      "fusedFileIndex": 1,
-      "individualFileIndex": 0,
+      "fusedFileIndex": 0,
+      "individualFileIndex": 1,
       "individualArea": 2
     }
   }

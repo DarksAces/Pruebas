@@ -2,18 +2,26 @@
 <html>
 <head>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            /* Fondo negro sólido para imágenes transparentes */
-            background-color: #000;
-            height: 100vh;
-            width: 100vw;
+            box-sizing: border-box;
         }
-        #media-container {
+        
+        html, body {
             width: 100%;
             height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        #media-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%;
+            
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,10 +29,14 @@
         }
         
         img, video, .gif {
-            width: 100% !important;
-            height: 100% !important;
-            /* Usar 'contain' para AJUSTAR la imagen completa (sin recorte) */
-            object-fit: contain !important; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Esto asegura que la imagen llene el contenedor (con recorte centrado) */
+            object-fit: cover; 
+            object-position: center; 
             display: block;
         }
     </style>
@@ -32,26 +44,33 @@
 <body>
     <div id="media-container"></div>
     <script>
+        // Añadir log para debugging
+        console.log('Background window cargada');
+        
         window.electronAPI.onLoadImages(({ mediaFiles }) => {
+            console.log('Recibido evento load-images:', mediaFiles);
+            
             const container = document.getElementById('media-container');
             container.innerHTML = '';
             
             if (mediaFiles && mediaFiles.length > 0) {
                 const media = mediaFiles[0];
+                console.log('Cargando media:', media);
+                
                 const element = media.type === 'video' 
                     ? document.createElement('video')
                     : document.createElement('img');
                 
-                // CLAVE: Añadir un listener de error para diagnóstico
                 element.onerror = (e) => {
                     console.error("Error al cargar el medio:", media.src, e);
-                    container.innerHTML = `<p style="color:red; margin:20px;">ERROR: No se pudo cargar el archivo. Revisar consola (F12) para detalles.</p><p style="color:white; font-size: 12px; word-wrap: break-word;">Ruta esperada: ${media.src}</p>`;
+                    container.innerHTML = `<p style="color:red; margin:20px;">ERROR: No se pudo cargar el archivo.</p><p style="color:white; font-size: 12px; word-wrap: break-word;">Ruta: ${media.src}</p>`;
                 };
                 
-                // Primero añadir al contenedor
+                element.onload = () => {
+                    console.log('Imagen cargada exitosamente:', media.src);
+                };
+                
                 container.appendChild(element);
-
-                // Luego asignar la fuente para que el navegador comience a cargarla
                 element.src = media.src;
                 
                 if (media.type === 'video') {
@@ -60,19 +79,17 @@
                     element.muted = true;
                     element.playsinline = true;
 
-                    // Manejo robusto del play
                     element.onloadeddata = () => {
+                         console.log('Video cargado, intentando reproducir...');
                          element.play().catch(e => {
-                             console.warn("Video Play Fallido (posiblemente por permisos/autoplay):", e);
+                             console.warn("Video Play Fallido:", e);
                          });
                     };
                 } else if (media.type === 'gif') {
                     element.classList.add('gif');
                 }
-                
-                console.log('Loaded media:', media);
             } else {
-                console.log('No media files received for this background window.');
+                console.log('No hay archivos de media para esta ventana de fondo.');
             }
         });
     </script>
