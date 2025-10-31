@@ -119,9 +119,34 @@ function createWindow(bounds, isMain = false) {
     if (isMain) {
         win.loadFile(path.join(htmlDir, 'index.html'));
         win.setIgnoreMouseEvents(false);
+        
+        // Registrar atajo de teclado para volver al selector
+        win.webContents.on('before-input-event', (event, input) => {
+            if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+                console.log('[ATAJO] Ctrl+Shift+R detectado - Volviendo al selector');
+                event.preventDefault();
+                
+                // Cerrar todas las ventanas
+                windows.forEach(w => {
+                    if (!w.isDestroyed()) {
+                        w.close();
+                    }
+                });
+                windows = [];
+                
+                // Limpiar temporizador
+                if (inactivityTimer) {
+                    clearTimeout(inactivityTimer);
+                    inactivityTimer = null;
+                }
+                
+                // Abrir selector
+                createSelectorWindow();
+            }
+        });
     } else {
         win.loadFile(path.join(htmlDir, 'background.html'));
-        win.setIgnoreMouseEvents(true); 
+        win.setIgnoreMouseEvents(true);
     }
     
     if (bounds.index !== undefined) {
@@ -242,26 +267,20 @@ function calculatePositions(size, selectedPos) {
     
     if (size === "1") {
         const mainPosBase = quarterPositionsBase[selectedPos - 1];
-        const pixelAdj = 1; // Superposición de 1 píxel
+        const pixelAdj = 1;
 
         let mainBounds = { ...mainPosBase };
         
-        // La ventana principal se agranda 1px y se desplaza para superponerse al fondo.
-        
-        // Si la ventana principal está a la izquierda (1 o 3), aumenta el ancho (cubre el borde del fondo derecho).
         if (selectedPos === 1 || selectedPos === 3) {
             mainBounds.width += pixelAdj; 
         }
-        // Si la ventana principal está arriba (1 o 2), aumenta la altura (cubre el borde del fondo inferior).
         if (selectedPos === 1 || selectedPos === 2) {
             mainBounds.height += pixelAdj;
         }
-        // Si la ventana principal está a la derecha (2 o 4), mueve el inicio X a la izquierda y aumenta el ancho.
         if (selectedPos === 2 || selectedPos === 4) {
             mainBounds.x -= pixelAdj;
             mainBounds.width += pixelAdj;
         }
-        // Si la ventana principal está abajo (3 o 4), mueve el inicio Y hacia arriba y aumenta la altura.
         if (selectedPos === 3 || selectedPos === 4) {
             mainBounds.y -= pixelAdj;
             mainBounds.height += pixelAdj;
@@ -269,7 +288,7 @@ function calculatePositions(size, selectedPos) {
 
         const others = quarterPositionsBase
             .filter(pos => pos.index !== selectedPos)
-            .map(pos => pos); // Las ventanas de fondo usan su tamaño base (sin superposición)
+            .map(pos => pos);
 
         return { mainBounds: mainBounds, otherBounds: others };
     }
@@ -311,12 +330,13 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                 userMediaMap[99] = mediaFiles[0];
 
                 console.log('[FUSIONADO] Fondo unico creado:', combinedBounds);
+                console.log('[FUSIONADO] Archivo asignado:', mediaFiles[0]);
 
             } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
                 finalOtherBounds = remainingBounds;
                 remainingBounds.forEach((bounds, idx) => {
                      userMediaMap[bounds.index] = mediaFiles[idx];
-                     console.log(`[INDIVIDUAL] Asignado archivo ${idx} a index ${bounds.index}`);
+                     console.log(`[INDIVIDUAL] Asignado archivo ${idx} (${mediaFiles[idx]}) a index ${bounds.index}`);
                 });
 
             } else if (distributionScheme === 'none') {
@@ -340,9 +360,27 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                 userMediaMap[individualBound.index] = mediaFiles[1]; 
                 
                 console.log('[FUSIONADO AVANZADO] Bounds fusionados:', combinedBounds);
+                console.log('[FUSIONADO AVANZADO] Archivo fusionado:', mediaFiles[0]);
                 console.log('[FUSIONADO AVANZADO] Bound individual:', individualBound);
+                console.log('[FUSIONADO AVANZADO] Archivo individual:', mediaFiles[1]);
             }
+        } else if (size === '2' && mediaFiles.length >= 1) {
+            // LÓGICA PARA 1/2 PANTALLA
+            if (otherBounds.length > 0) {
+                finalOtherBounds = otherBounds;
+                userMediaMap[otherBounds[0].index] = mediaFiles[0];
+                console.log('[MITAD PANTALLA] Archivo asignado a ventana de fondo:', {
+                    index: otherBounds[0].index,
+                    file: mediaFiles[0]
+                });
+            }
+        } else if (size === '3') {
+            // Pantalla completa no tiene fondos
+            finalOtherBounds = [];
         }
+
+        console.log('[DEBUG] userMediaMap final:', userMediaMap);
+        console.log('[DEBUG] finalOtherBounds:', finalOtherBounds);
 
         // Cerrar selector
         if (winSelector) {
@@ -417,8 +455,7 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                 }
             });
 
-    // CIERRE FORZADO DE FONDOS
-    mainWin.on('closed', () => {
+            mainWin.on('closed', () => {
                 watcher.close();
                 if (inactivityTimer) {
                     clearTimeout(inactivityTimer);
@@ -458,20 +495,34 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
 
             // Cargar medios en ventanas de fondo
             const bgWindows = windows.filter(w => w !== mainWin);
-            bgWindows.forEach((bgWin) => {
+            
+            console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
+            
+            bgWindows.forEach((bgWin, winIdx) => {
+                console.log(`[DEBUG] Procesando ventana de fondo ${winIdx + 1}`);
+                
                 bgWin.webContents.once('did-finish-load', () => {
                     const positionIndex = bgWin.positionIndex;
                     const mediaFilePath = userMediaMap[positionIndex];
                     
                     console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
                     
-                    if (mediaFilePath && fs.existsSync(mediaFilePath)) {
+                    if (mediaFilePath) {
+                        // Verificar que el archivo existe
+                        if (!fs.existsSync(mediaFilePath)) {
+                            console.error(`[ERROR] El archivo NO existe: ${mediaFilePath}`);
+                            return;
+                        }
+                        
+                        console.log(`[OK] El archivo existe: ${mediaFilePath}`);
+                        
                         const fileName = path.basename(mediaFilePath);
                         const isVideo = /\.(mp4)$/i.test(fileName);
                         const isGif = /\.(gif)$/i.test(fileName);
                         
-                        const sanitizedPath = mediaFilePath.replace(/\\/g, '/');
-                        const mediaUrl = url.pathToFileURL(sanitizedPath).href;
+                        // Normalizar la ruta
+                        const normalizedPath = path.normalize(mediaFilePath);
+                        const mediaUrl = url.pathToFileURL(normalizedPath).href;
                         
                         const mediaForWindow = {
                             type: isVideo ? 'video' : isGif ? 'gif' : 'image',
@@ -486,17 +537,15 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
                             mediaFiles: [mediaForWindow]
                         });
                     } else {
-                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado o no encontrado.`);
+                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
                     }
                 });
             });
         });
 
     } catch (error) {
-        // Bloque de recuperación: Muestra error y vuelve al selector.
-        console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas. ¡LA APLICACION FALLO!', error.message, error.stack);
+        console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
         
-        // Cierra todas las ventanas que pudieron haberse abierto parcialmente.
         windows.forEach(w => {
             if (!w.isDestroyed()) {
                 w.close();
@@ -504,7 +553,6 @@ ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionSchem
         });
         windows = [];
         
-        // Abre el selector para que el usuario pueda reconfigurar.
         createSelectorWindow();
     }
 });

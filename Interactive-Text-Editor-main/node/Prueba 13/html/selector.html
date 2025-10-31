@@ -156,7 +156,7 @@ function updatePositions() {
       <option value="2">Superior Derecha</option>
       <option value="3">Inferior Izquierda</option>
       <option value="4">Inferior Derecha</option>
-    `;
+    `; 
     posContainer.style.display = 'block';
   } else if (size === '2') {
     posSelect.innerHTML = `
@@ -170,11 +170,26 @@ function updatePositions() {
     posContainer.style.display = 'none';
   }
   
+  // Reiniciar mainPosition al cambiar el tamaño
+  // Esto asegura que siempre comience con la primera opción disponible
+  if (posSelect.options.length > 0) {
+      mainPosition = parseInt(posSelect.options[0].value); // Siempre toma el primer valor
+      posSelect.value = String(mainPosition); // Sincroniza el select visual
+  } else {
+      mainPosition = 0; // Para 'Pantalla completa' (sin opciones)
+  }
+
   // Refrescar la distribución y la asignación al cambiar el tamaño o la posición
   distributionScheme.dispatchEvent(new Event('change'));
-  mainPosition = parseInt(posSelect.value);
   updateAssignmentArea(size, mainPosition);
 }
+
+// Asegurar que cualquier cambio manual al select quede reflejado inmediatamente
+posSelect.addEventListener('change', () => {
+    mainPosition = parseInt(posSelect.value) || mainPosition;
+    console.log('[DEBUG] posSelect.change -> mainPosition actualizado a:', mainPosition);
+    updateAssignmentArea(sizeSelect.value, mainPosition);
+});
 
 // Habilitar/deshabilitar botón y establecer el número de archivos necesarios
 distributionScheme.addEventListener('change', () => {
@@ -202,23 +217,44 @@ distributionScheme.addEventListener('change', () => {
 
 // Manejar la selección de archivos
 selectFilesBtn.addEventListener('click', async () => {
-    if (maxFilesNeeded > 0 && window.electronAPI.selectMediaDialog) {
-        const files = await window.electronAPI.selectMediaDialog(maxFilesNeeded); 
-        if (files && files.length > 0) {
-            // Solo toma los archivos necesarios, si se seleccionan más
-            selectedFiles = files.slice(0, maxFilesNeeded); 
-        } else {
-            selectedFiles = [];
+    // Permitimos abrir el diálogo de selección en cualquier tamaño.
+    // Si maxFilesNeeded > 0, pasamos ese límite; si es 0, dejamos que el diálogo devuelva todos
+    // los archivos seleccionados (sin recortar).
+    if (window.electronAPI && window.electronAPI.selectMediaDialog) {
+        try {
+            // Si no hay un límite explícito, pasamos un límite grande para permitir
+            // selecciones múltiples (el main añadirá multiSelections si maxFiles > 1).
+            const limit = maxFilesNeeded > 0 ? maxFilesNeeded : 100;
+            console.log('[DEBUG] Llamando a selectMediaDialog con límite:', limit);
+            const files = await window.electronAPI.selectMediaDialog(limit);
+            console.log('[DEBUG] Resultado de selectMediaDialog:', files);
+
+            if (files && files.length > 0) {
+                if (maxFilesNeeded > 0) {
+                    // Solo toma los archivos necesarios, si se seleccionan más
+                    selectedFiles = files.slice(0, maxFilesNeeded);
+                } else {
+                    // Cuando no hay un límite forzado, aceptar todos los seleccionados
+                    selectedFiles = files;
+                }
+            } else {
+                selectedFiles = [];
+            }
+            updateFileDisplay();
+            updateOpenButtonState();
+        } catch (err) {
+            console.error('[ERROR] selectMediaDialog falló:', err);
+            alert('Error al abrir el diálogo de selección: ' + (err && err.message ? err.message : err));
         }
-        updateFileDisplay();
-        updateOpenButtonState();
+    } else {
+        alert('La API de selección de archivos no está disponible en este contexto (window.electronAPI).');
     }
 });
 
 // Inicializar y manejar cambios de tamaño/posición
 updatePositions();
 sizeSelect.addEventListener('change', updatePositions);
-posSelect.addEventListener('change', updatePositions);
+// NO agregamos listener de change a posSelect aquí, ya existe uno arriba
 distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
 
 // Abrir ventana principal
@@ -254,9 +290,11 @@ document.getElementById('openBtn').addEventListener('click', () => {
     }
 
 
+    console.log('[DEBUG] Enviando selección. size=', sizeSelect.value, 'position(mainPosition)=', mainPosition, 'posSelect.value=', posSelect.value);
     window.electronAPI.sendSelection({
         size: sizeSelect.value,
-        position: posSelect.value || '1',
+        // Usar mainPosition para evitar discrepancias si el select no refleja el cambio inmediato
+        position: String(mainPosition || (posSelect.value || '1')),
         mediaFiles: finalMediaFiles,
         distributionScheme: distributionScheme.value,
         assignmentMap: assignmentMap

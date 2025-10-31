@@ -7,7 +7,6 @@
   body {
     margin: 0;
     padding: 0;
-    /* Dejamos el fondo transparente en el body (la ventana principal es opaca) */
     background-color: transparent; 
     color: #fff;
     font-family: Consolas, monospace;
@@ -18,9 +17,8 @@
 
   /* --- ESTILO PARA 1/4 DE PANTALLA --- */
   body.font-small {
-      font-size: 150%; /* Tamaño de fuente reducido */
+      font-size: 150%;
   }
-  /* ------------------------------------------- */
 
   /* Contenedores de banners */
   #banner-top, #banner-bottom {
@@ -45,7 +43,6 @@
 
   #content-wrapper {
     position: absolute;
-    /* Ajustado para dejar espacio a los banners */
     top: 100px;
     bottom: 100px; 
     left: 0;
@@ -78,10 +75,38 @@
   .welcome-text { text-align: center; font-size: 22px; color: #555; }
 
   .content-container {
-    /* ** CRÍTICO: Fondo oscuro y opaco para cubrir los fondos adyacentes ** */
     background-color: #1e1e1e; 
     width: 100%;
     height: 100%;
+  }
+
+  /* Indicador de atajo de teclado */
+  .keyboard-hint {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #888;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+  }
+
+  .keyboard-hint:hover {
+    opacity: 1;
+  }
+
+  .keyboard-hint kbd {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 11px;
   }
 
 </style>
@@ -93,12 +118,15 @@
       <div id="content"></div>
     </div>
     <div id="banner-bottom"></div>
+    <div class="keyboard-hint">
+      <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> para cambiar configuración
+    </div>
   </div>
 
   <script>
     const contentDiv = document.getElementById('content');
     const wrapper = document.getElementById('content-wrapper');
-    const body = document.body; // Referencia al body para aplicar la clase
+    const body = document.body;
 
     window.electronAPI.onFileChange((text) => {
       contentDiv.innerHTML = '';
@@ -193,14 +221,11 @@
     // --- MANEJO DEL TAMAÑO DE VENTANA ---
     window.electronAPI.onWindowSizeSelected(({ size }) => {
         if (size === '1') {
-            // Aplica la clase si es 1/4 de pantalla
             body.classList.add('font-small'); 
         } else {
-            // Remueve la clase para otros tamaños
             body.classList.remove('font-small'); 
         }
     });
-    // ------------------------------------------
 
   </script>
 </body>
