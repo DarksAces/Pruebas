@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Selecciona ventana</title>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+h2, h3 { margin: 10px 0; }
+select, button { margin-top: 10px; padding: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
+#position-container, #distribution-container { margin-top: 15px; }
+#fileList { max-height: 80px; overflow-y: auto; background-color: #f0f0f0; padding: 5px; border-radius: 3px; }
+#fileList span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Contenedor de asignación avanzada */
+.assignment-box { 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    margin-top: 10px; 
+    background-color: #fff;
+    border-radius: 4px;
+}
+.assignment-box label { display: block; margin-bottom: 5px; font-weight: bold; }
+.assignment-box select { width: 100%; margin-top: 0; }
+
+</style>
+</head>
+<body>
+
+<h2>Elige tamaño de la ventana principal:</h2>
+<select id="size">
+  <option value="1">1/4 pantalla</option>
+  <option value="2">1/2 pantalla</option>
+  <option value="3">Pantalla completa</option>
+</select>
+
+<div id="position-container">
+  <h3>Elige posición de la ventana principal:</h3>
+  <select id="position"></select>
+  <div id="posDebug" style="margin-top:8px; font-size:14px; color:#333;"></div>
+</div>
+<div id="distribution-container">
+    <h2>Distribución de Fondos (Solo 1/4 de pantalla):</h2>
+    <select id="distribution-scheme">
+      <option value="none">0 - Solo Contenido (Sin Fondos)</option>
+      <option value="three_individual">3 - Tres Fondos Individuales (1/4 c/u)</option>
+      <option value="one_big">1 - Un Fondo Grande (Fusionar las 3 areas restantes)</option>
+      <option value="two_halves">2 - Dos Fondos (Fusionar 2 areas y dejar 1 individual)</option>
+    </select>
+</div>
+
+<div id="media-selection-area" style="margin-top: 15px;">
+    <button id="selectFilesBtn">Seleccionar Archivos de Imagen/Video</button>
+    <div id="fileList" style="margin-top: 5px; font-size: 14px;"></div>
+
+    <div id="advanced-assignment" style="display: none;">
+        <p style="margin-top: 10px;">**Asignación de Fondos (Modo 2 Fondos):**</p>
+        <div class="assignment-box">
+            <label for="fusedMedia">Fondo Fusionado (Area Grande):</label>
+            <select id="fusedMedia"></select>
+        </div>
+        <div class="assignment-box">
+            <label for="individualMedia">Fondo Individual (Area Pequeña):</label>
+            <select id="individualMedia"></select>
+            <p style="margin-top: 10px;">**Elige la posición del 1/4 individual restante:**</p>
+            <select id="individualArea"></select>
+        </div>
+    </div>
+</div>
+<button id="openBtn" disabled>Abrir ventana</button>
+
+<script>
+const sizeSelect = document.getElementById('size');
+const posSelect = document.getElementById('position');
+const posContainer = document.getElementById('position-container');
+const distributionContainer = document.getElementById('distribution-container');
+const distributionScheme = document.getElementById('distribution-scheme');
+const selectFilesBtn = document.getElementById('selectFilesBtn');
+const fileListDiv = document.getElementById('fileList');
+const openBtn = document.getElementById('openBtn');
+const advancedAssignment = document.getElementById('advanced-assignment');
+const fusedMedia = document.getElementById('fusedMedia');
+const individualMedia = document.getElementById('individualMedia');
+const individualArea = document.getElementById('individualArea');
+
+let selectedFiles = [];
+let maxFilesNeeded = 0; 
+let mainPosition = 1;
+
+// --- Funciones de Utilidad ---
+
+const quarterNames = {
+    1: 'Superior Izquierda', 2: 'Superior Derecha', 3: 'Inferior Izquierda', 4: 'Inferior Derecha'
+};
+
+function updateOpenButtonState() {
+    openBtn.disabled = selectedFiles.length < maxFilesNeeded;
+}
+
+function updateFileDisplay() {
+    fileListDiv.innerHTML = selectedFiles.length > 0 
+        ? 'Archivos elegidos:<br>' + selectedFiles.map(f => `<span>- ${f.split(/[\\\/]/).pop()}</span>`).join('<br>') 
+        : 'Esperando selección...';
+    
+    // Actualizar selectores de asignación para 'two_halves'
+    if (distributionScheme.value === 'two_halves') {
+        fusedMedia.innerHTML = '';
+        individualMedia.innerHTML = '';
+        
+        selectedFiles.forEach((f, i) => {
+            const name = f.split(/[\\\/]/).pop();
+            const option = `<option value="${i}">${name}</option>`;
+            fusedMedia.innerHTML += option;
+            individualMedia.innerHTML += option;
+        });
+        
+        // Asegurarse de que el índice individual no sea el mismo que el fusionado por defecto
+        if (selectedFiles.length >= 2) {
+            fusedMedia.value = 0;
+            individualMedia.value = 1; 
+        } else if (selectedFiles.length === 1) {
+            individualMedia.value = 0;
+        }
+    }
+}
+
+
+function updateAssignmentArea(size, position) {
+    distributionContainer.style.display = size === '1' ? 'block' : 'none';
+    advancedAssignment.style.display = distributionScheme.value === 'two_halves' && size === '1' ? 'block' : 'none';
+
+    // Rellenar las opciones de la posición individual restante
+    if (size === '1' && distributionScheme.value === 'two_halves') {
+        const availableIndexes = [1, 2, 3, 4].filter(i => i !== parseInt(position));
+        individualArea.innerHTML = '';
+        availableIndexes.forEach(i => {
+             const name = quarterNames[i];
+             individualArea.innerHTML += `<option value="${i}">${name}</option>`;
+        });
+        // Si el área individual ya estaba seleccionada y sigue siendo válida, mantenla
+        if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
+            // No hacer nada, se mantiene
+        } else if (individualArea.options.length > 0) {
+            individualArea.value = individualArea.options[0].value;
+        }
+    }
+}
+
+// --- Event Handlers ---
+
+function updatePositions() {
+  const size = sizeSelect.value;
+  posSelect.innerHTML = '';
+
+  if (size === '1') {
+    posSelect.innerHTML = `
+      <option value="1">Superior Izquierda</option>
+      <option value="2">Superior Derecha</option>
+      <option value="3">Inferior Izquierda</option>
+      <option value="4">Inferior Derecha</option>
+    `; 
+    posContainer.style.display = 'block';
+  } else if (size === '2') {
+    posSelect.innerHTML = `
+      <option value="1">Mitad Izquierda</option>
+      <option value="2">Mitad Derecha</option>
+      <option value="3">Mitad Superior</option>
+      <option value="4">Mitad Inferior</option>
+    `;
+    posContainer.style.display = 'block';
+  } else {
+    posContainer.style.display = 'none';
+  }
+  
+  // Reiniciar mainPosition al cambiar el tamaño
+  // Esto asegura que siempre comience con la primera opción disponible
+  if (posSelect.options.length > 0) {
+      mainPosition = parseInt(posSelect.options[0].value); // Siempre toma el primer valor
+      posSelect.value = String(mainPosition); // Sincroniza el select visual
+  } else {
+      mainPosition = 0; // Para 'Pantalla completa' (sin opciones)
+  }
+
+  // Refrescar la distribución y la asignación al cambiar el tamaño o la posición
+  distributionScheme.dispatchEvent(new Event('change'));
+  updateAssignmentArea(size, mainPosition);
+  
+  // Actualizar display de depuración
+  const debug = document.getElementById('posDebug');
+  if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+}
+
+// Asegurar que cualquier cambio manual al select quede reflejado inmediatamente
+posSelect.addEventListener('change', () => {
+    mainPosition = parseInt(posSelect.value) || mainPosition;
+    console.log('[DEBUG] posSelect.change -> mainPosition actualizado a:', mainPosition);
+    updateAssignmentArea(sizeSelect.value, mainPosition);
+    const debug = document.getElementById('posDebug');
+    if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+});
+
+// Habilitar/deshabilitar botón y establecer el número de archivos necesarios
+distributionScheme.addEventListener('change', () => {
+    const scheme = distributionScheme.value;
+    
+    if (scheme === 'one_big') {
+        maxFilesNeeded = 1;
+    } else if (scheme === 'three_individual') {
+        maxFilesNeeded = 3;
+    } else if (scheme === 'two_halves') {
+        maxFilesNeeded = 2;
+    } else { // 'none'
+        maxFilesNeeded = 0;
+    }
+    
+    // Si el esquema no es 1/4, forzamos a 0 archivos
+    if (sizeSelect.value !== '1') {
+        maxFilesNeeded = 0;
+    }
+
+    updateOpenButtonState();
+    updateAssignmentArea(sizeSelect.value, mainPosition);
+    updateFileDisplay(); // Actualiza los selectores de asignación
+});
+
+// Manejar la selección de archivos
+selectFilesBtn.addEventListener('click', async () => {
+    // Permitimos abrir el diálogo de selección en cualquier tamaño.
+    // Si maxFilesNeeded > 0, pasamos ese límite; si es 0, dejamos que el diálogo devuelva todos
+    // los archivos seleccionados (sin recortar).
+    if (window.electronAPI && window.electronAPI.selectMediaDialog) {
+        try {
+            // Si no hay un límite explícito, pasamos un límite grande para permitir
+            // selecciones múltiples (el main añadirá multiSelections si maxFiles > 1).
+            const limit = maxFilesNeeded > 0 ? maxFilesNeeded : 100;
+            console.log('[DEBUG] Llamando a selectMediaDialog con límite:', limit);
+            const files = await window.electronAPI.selectMediaDialog(limit);
+            console.log('[DEBUG] Resultado de selectMediaDialog:', files);
+
+            if (files && files.length > 0) {
+                if (maxFilesNeeded > 0) {
+                    // Solo toma los archivos necesarios, si se seleccionan más
+                    selectedFiles = files.slice(0, maxFilesNeeded);
+                } else {
+                    // Cuando no hay un límite forzado, aceptar todos los seleccionados
+                    selectedFiles = files;
+                }
+            } else {
+                selectedFiles = [];
+            }
+            updateFileDisplay();
+            updateOpenButtonState();
+        } catch (err) {
+            console.error('[ERROR] selectMediaDialog falló:', err);
+            alert('Error al abrir el diálogo de selección: ' + (err && err.message ? err.message : err));
+        }
+    } else {
+        alert('La API de selección de archivos no está disponible en este contexto (window.electronAPI).');
+    }
+});
+
+// Inicializar y manejar cambios de tamaño/posición
+updatePositions();
+sizeSelect.addEventListener('change', updatePositions);
+// NO agregamos listener de change a posSelect aquí, ya existe uno arriba
+distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
+
+// Abrir ventana principal
+document.getElementById('openBtn').addEventListener('click', () => {
+    
+    // 1. Recoger los datos de asignación
+    let assignmentMap = {};
+    let finalMediaFiles = [...selectedFiles];
+
+    if (distributionScheme.value === 'two_halves') {
+        assignmentMap = {
+            fusedFileIndex: parseInt(fusedMedia.value),
+            individualFileIndex: parseInt(individualMedia.value),
+            individualArea: parseInt(individualArea.value)
+        };
+        
+        // 2. Determinar la lista de archivos ordenada según la asignación para main.js
+        // main.js espera el orden: [fusionado, individual]
+        if (selectedFiles.length >= 2) {
+             const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
+             const individualFile = selectedFiles[assignmentMap.individualFileIndex];
+
+             // Asegurarse de que no sean el mismo archivo si se eligieron en el selector
+             if (fusedFile === individualFile) {
+                 alert("Error: No puedes asignar el mismo archivo al area fusionada y al área individual. Por favor, selecciona archivos diferentes.");
+                 return;
+             }
+             finalMediaFiles = [fusedFile, individualFile];
+        }
+    } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
+        // Asegurar que se envíen exactamente 3 archivos para que la asignación secuencial funcione
+        finalMediaFiles = selectedFiles.slice(0, 3);
+    }
+
+
+    console.log('[DEBUG] Enviando selección. size=', sizeSelect.value, 'position(mainPosition)=', mainPosition, 'posSelect.value=', posSelect.value);
+    window.electronAPI.sendSelection({
+        size: sizeSelect.value,
+        // Usar mainPosition para evitar discrepancias si el select no refleja el cambio inmediato
+        position: String(mainPosition || (posSelect.value || '1')),
+        mediaFiles: finalMediaFiles,
+        distributionScheme: distributionScheme.value,
+        assignmentMap: assignmentMap
+    });
+});
+</script>
+
+</body>
+</html>
