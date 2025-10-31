@@ -35,7 +35,7 @@
             width: 100%;
             height: 100%;
             /* Esto asegura que la imagen llene el contenedor (con recorte centrado) */
-            object-fit: cover; 
+            object-fit: contain; 
             object-position: center; 
             display: block;
         }
@@ -45,7 +45,6 @@
     <div id="media-container"></div>
     <script>
         // Añadir log para debugging
-        console.log('Background window cargada');
         
         window.electronAPI.onLoadImages(({ mediaFiles }) => {
             console.log('Recibido evento load-images:', mediaFiles);
