@@ -1,7 +1,7 @@
 {
-  "name": "prueba-11",
+  "name": "funcional-1",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "JavaScript/main.js",
   "scripts": {
     "start": "electron ."
   },

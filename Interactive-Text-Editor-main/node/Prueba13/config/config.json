@@ -11,8 +11,12 @@
   "lastConfiguration": {
     "size": "1",
     "position": "1",
-    "mediaFiles": [],
-    "distributionScheme": "none",
+    "mediaFiles": [
+      "C:\\recursos\\2.gif",
+      "C:\\recursos\\14533634_3840_2160_30fps.mp4",
+      "C:\\recursos\\aaa.png"
+    ],
+    "distributionScheme": "three_individual",
     "assignmentMap": {}
   }
 }
