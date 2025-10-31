@@ -77,11 +77,10 @@
                     element.loop = true;
                     element.muted = true;
                     element.playsinline = true;
-
                     element.onloadeddata = () => {
                          console.log('Video cargado, intentando reproducir...');
                          element.play().catch(e => {
-                             console.warn("Video Play Fallido:", e);
+                         console.warn("Video Play Fallido:", e);
                          });
                     };
                 } else if (media.type === 'gif') {
