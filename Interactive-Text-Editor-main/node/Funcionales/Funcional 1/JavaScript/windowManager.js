@@ -1,6 +1,7 @@
 // JavaScript/windowManager.js
 
 const { app, BrowserWindow } = require('electron');
+const path = require('path'); // --- AÑADIDO --- El módulo 'path' para crear rutas de archivo
 const appState = require('./appState');
 const pathManager = require('./pathManager');
 const { clearInactivityTimer } = require('./inactivityManager');
@@ -13,12 +14,20 @@ function createSelectorWindow() {
         height: 650,
         frame: true,
         resizable: false,
+        // --- AÑADIDO --- Ruta a tu icono.
+        icon: 'C:\\recursos\\imagenes\\icon\\icon.png',
         webPreferences: {
             preload: pathManager.preloadScript, // Ruta actualizada
             contextIsolation: true,
             nodeIntegration: false
+            
         }
+        
     });
+
+    // --- AÑADIDO --- Esta línea elimina el menú "File", "Edit", etc.
+    win.setMenu(null); 
+
     win.loadFile(pathManager.selectorHtml); // Ruta actualizada
 
     win.on('closed', () => {
