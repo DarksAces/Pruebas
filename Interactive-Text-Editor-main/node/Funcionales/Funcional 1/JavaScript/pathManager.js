@@ -1,5 +1,18 @@
 // JavaScript/pathManager.js
 
+/*
+ * Centraliza la resolución de rutas del proyecto.
+ * - Provee getters que dependen de la configuración cargada en configManager
+ * - Evita evaluar rutas dinámicas al cargar el módulo (usa getters que llaman a getConfig())
+ *
+ * Uso:
+ *  const pathManager = require('./pathManager');
+ *  win.loadFile(pathManager.selectorHtml);
+ *
+ * Nota: Asegúrate de que configManager.loadConfig() se haya ejecutado antes de usar
+ * las propiedades que dependen de la configuración.
+ */
+
 const path = require('path');
 const url = require('url');
 const { getConfig } = require('./configManager');
@@ -8,7 +21,7 @@ const { getConfig } = require('./configManager');
 const appRoot = path.join(__dirname, '..'); // Sube un nivel desde /JavaScript
 const preloadScript = path.join(__dirname, 'preload.js'); 
 
-// Helper para URLs
+// Helper para convertir rutas de sistema a URLs tipo file://
 function getFileUrl(filePath) {
     return url.pathToFileURL(path.normalize(filePath)).href;
 }

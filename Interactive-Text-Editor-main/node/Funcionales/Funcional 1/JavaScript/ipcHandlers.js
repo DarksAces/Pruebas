@@ -1,5 +1,27 @@
 // JavaScript/ipcHandlers.js
 
+/*
+ * Módulo que registra handlers IPC (ipcMain) usados por la UI (renderer) para
+ * interactuar con el proceso principal.
+ *
+ * Canales principales:
+ *  - 'open-media-dialog' (ipcMain.handle): abre diálogo de selección de archivos
+ *      Input: maxFiles (number) -> si >1 activa multiSelections
+ *      Output: array de paths o null si cancelado
+ *
+ *  - 'selection-made' (ipcMain.on): evento que contiene la configuración final
+ *      Payload esperado: { size, position, mediaFiles, distributionScheme, assignmentMap }
+ *      - size: '1'|'2'|'3' (quarter/half/full)
+ *      - position: string (índice 1..4)
+ *      - mediaFiles: array de rutas absolutas
+ *      - distributionScheme: string identificador (none/three_individual/one_big/two_halves)
+ *      - assignmentMap: objeto con asignaciones específicas para modos avanzados
+ *
+ * Implementación nota:
+ *  - Para distribuciones que fusionan regiones se usan índices especiales: 98 y 99
+ *    (98: fusion avanzado 'two_halves', 99: 'one_big' que fusiona las 3 areas restantes)
+ */
+
 const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +37,9 @@ const { calculatePositions } = require('./positionCalculator');
 function registerHandlers() {
 
     // ----------------------
-    // Función para abrir el diálogo de selección de archivos
+    // Handler: abrir diálogo de selección de archivos
+    // - Usa pathManager.resourcesDir como defaultPath
+    // - Devuelve array de rutas, o null si el usuario cancela
     // ----------------------
     ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
         const window = BrowserWindow.fromWebContents(event.sender);
@@ -41,16 +65,18 @@ function registerHandlers() {
     });
 
     // ----------------------
-    // Crear todas las ventanas y cargar contenido
+    // Evento: crear ventanas y cargar contenido según la selección
     // ----------------------
     ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
         
         try {
             console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
             
+            // Cerrar ventanas anteriores y resetear timers
             windowManager.closeAllWindows();
             inactivityManager.clearInactivityTimer();
 
+            // Calcular bounds para la ventana principal y las de fondo
             const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
 
             let finalOtherBounds = otherBounds;
@@ -61,6 +87,7 @@ function registerHandlers() {
                 const remainingBounds = otherBounds; 
                 
                 if (distributionScheme === 'one_big' && mediaFiles.length >= 1) {
+                    // Fusiona las 3 areas restantes en una grande (index 99)
                     const minX = Math.min(...remainingBounds.map(b => b.x));
                     const minY = Math.min(...remainingBounds.map(b => b.y));
                     const maxX = Math.max(...remainingBounds.map(b => b.x + b.width));
@@ -74,6 +101,7 @@ function registerHandlers() {
                     console.log('[FUSIONADO] Archivo asignado:', mediaFiles[0]);
 
                 } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
+                    // Asignación 1:1 a las 3 areas restantes
                     finalOtherBounds = remainingBounds;
                     remainingBounds.forEach((bounds, idx) => {
                          userMediaMap[bounds.index] = mediaFiles[idx];
@@ -84,6 +112,7 @@ function registerHandlers() {
                      finalOtherBounds = [];
                 
                 } else if (distributionScheme === 'two_halves' && mediaFiles.length >= 2) {
+                    // Fusionar dos areas y dejar una individual (index 98 para fusionadas)
                     const individualIndex = parseInt(assignmentMap.individualArea); 
                     const boundsToFuse = remainingBounds.filter(b => b.index !== individualIndex);
                     const individualBound = remainingBounds.find(b => b.index === individualIndex);
@@ -106,7 +135,7 @@ function registerHandlers() {
                     console.log('[FUSIONADO AVANZADO] Archivo individual:', mediaFiles[1]);
                 }
             } else if (size === '2' && mediaFiles.length >= 1) {
-                // LÓGICA PARA 1/2 PANTALLA
+                // LÓGICA PARA 1/2 PANTALLA: asignar primer media al fondo disponible
                 if (otherBounds.length > 0) {
                     finalOtherBounds = otherBounds;
                     userMediaMap[otherBounds[0].index] = mediaFiles[0];
@@ -123,7 +152,7 @@ function registerHandlers() {
             console.log('[DEBUG] userMediaMap final:', userMediaMap);
             console.log('[DEBUG] finalOtherBounds:', finalOtherBounds);
 
-            // Cerrar selector
+            // Cerrar selector si está abierto
             if (appState.winSelector) {
                 appState.winSelector.close();
                 appState.winSelector = null;
@@ -133,13 +162,13 @@ function registerHandlers() {
             const mainWin = windowManager.createWindow(mainBounds, true);
             appState.windows.push(mainWin);
             
-            // 2. Crear ventanas de fondo
+            // 2. Crear ventanas de fondo según finalOtherBounds
             finalOtherBounds.forEach((bounds) => {
                 const bgWin = windowManager.createWindow(bounds, false);
                 appState.windows.push(bgWin);
             });
             
-            // Guardar configuración
+            // Guardar la configuración para posible re-aplicación al iniciar
             configManager.saveLastConfig({ 
                 size, 
                 position, 
@@ -149,7 +178,7 @@ function registerHandlers() {
             });
 
             // ----------------------
-            // Al cargar la ventana principal 
+            // Al cargar la ventana principal: inicializar watcher y enviar datos al renderer
             // ----------------------
             mainWin.webContents.once('did-finish-load', () => {
                 
@@ -167,7 +196,7 @@ function registerHandlers() {
                 
                 const bannersTop = fs.existsSync(bannersTopPath) 
                     ? fs.readdirSync(bannersTopPath)
-                        .filter(f => /\.\.(png|jpe?g|gif|webp)$/i.test(f) === false && /\.(png|jpe?g|gif|webp)$/i.test(f))
+                        .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
                         .map(f => getFileUrl(path.join(bannersTopPath,f))) 
                     : [];
                 const bannersBottom = fs.existsSync(bannersBottomPath) 
@@ -181,6 +210,7 @@ function registerHandlers() {
                         .map(f => getFileUrl(path.join(mobileImgsPath,f))) 
                     : [];
 
+                // Vigilar cambios en el directorio de recursos para reaccionar ante actualizaciones
                 const watcher = fs.watch(resourcesDir, (eventType, filename) => {
                     if (filename === config.userFileName) { 
                         
@@ -210,7 +240,7 @@ function registerHandlers() {
                     windowManager.closeAllWindows(); // Cierra todas las demás ventanas (fondo)
                 });
 
-                // Carga inicial
+                // Carga inicial: si existe userFile, enviarlo; si no, enviar bienvenida
                 console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${userFile}`); 
                 if (fs.existsSync(userFile)) {
                     console.log('[DIAGNOSTICO] Archivo encontrado. Cargando contenido.'); 
@@ -282,6 +312,7 @@ function registerHandlers() {
             });
 
         } catch (error) {
+            // En caso de error, volvemos al selector para permitir al usuario reintentar
             console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
             
             windowManager.closeAllWindows();

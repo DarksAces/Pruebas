@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <title>Selecciona ventana</title>
+<!--
+    selector.html
+    --------------------------------------------------
+    Interfaz de selección de tamaño/posición y asignación de archivos.
+
+    Puntos importantes:
+    - Usa `window.electronAPI.selectMediaDialog(limit)` para abrir el diálogo seguro (preload)
+    - `mainPosition` es la "fuente de la verdad" para la posición enviada al main
+    - En modo 'two_halves' permite asignación avanzada (fusionado + individual)
+    - El script añade handlers y actualiza el DOM; no requiere Node en el renderer
+-->
 <style>
 body { font-family: sans-serif; padding: 20px; }
 h2, h3 { margin: 10px 0; }
