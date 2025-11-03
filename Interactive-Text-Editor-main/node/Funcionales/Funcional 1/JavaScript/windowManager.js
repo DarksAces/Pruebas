@@ -1,24 +1,11 @@
 // JavaScript/windowManager.js
 
-/*
- * Helpers para crear, posicionar y cerrar ventanas BrowserWindow.
- * Funciones exportadas:
- *  - createSelectorWindow(): crea la ventana del selector (UI de configuración)
- *  - createWindow(bounds, isMain=false): crea una ventana (main o fondo) con los bounds proporcionados
- *  - closeAllWindows(): cierra todas las ventanas de appState.windows
- *
- * Notas importantes:
- *  - Las ventanas de fondo se crean transparentes y no reciben eventos de ratón
- *  - La ventana principal (isMain=true) recibe eventos y carga `index.html`
- */
-
 const { app, BrowserWindow } = require('electron');
 const appState = require('./appState');
 const pathManager = require('./pathManager');
 const { clearInactivityTimer } = require('./inactivityManager');
 
 function createSelectorWindow() {
-    // Evitar crear más de una instancia del selector
     if (appState.winSelector) return;
     
     const win = new BrowserWindow({
@@ -27,17 +14,15 @@ function createSelectorWindow() {
         frame: true,
         resizable: false,
         webPreferences: {
-            // Preload script protegido para exponer solo la API necesaria
-            preload: pathManager.preloadScript,
+            preload: pathManager.preloadScript, // Ruta actualizada
             contextIsolation: true,
             nodeIntegration: false
         }
     });
-    win.loadFile(pathManager.selectorHtml);
+    win.loadFile(pathManager.selectorHtml); // Ruta actualizada
 
     win.on('closed', () => {
         appState.winSelector = null;
-        // Si no hay ventanas activas, cerramos la app
         if (!appState.windows.length) {
             app.quit();
         }
@@ -65,20 +50,19 @@ function createWindow(bounds, isMain = false) {
         backgroundColor: '#000000',
         hasShadow: false,
         webPreferences: {
-            preload: pathManager.preloadScript,
+            preload: pathManager.preloadScript, // Ruta actualizada
             contextIsolation: true,
-            webSecurity: false // Necesario si se cargan file:// y recursos mixtos
+            webSecurity: false 
         }
     });
 
     win.setAlwaysOnTop(true, 'screen-saver');
     
     if (isMain) {
-        // Ventana principal: carga el index y acepta eventos de teclado
-        win.loadFile(pathManager.indexHtml);
+        win.loadFile(pathManager.indexHtml); // Ruta actualizada
         win.setIgnoreMouseEvents(false);
         
-        // Registrar atajo de teclado para volver al selector (Ctrl+Shift+R)
+        // Registrar atajo de teclado para volver al selector
         win.webContents.on('before-input-event', (event, input) => {
             if (input.control && input.shift && input.key.toLowerCase() === 'r') {
                 console.log('[ATAJO] Ctrl+Shift+R detectado - Volviendo al selector');
@@ -90,12 +74,10 @@ function createWindow(bounds, isMain = false) {
             }
         });
     } else {
-        // Ventana de fondo: no interacciona con el usuario
-        win.loadFile(pathManager.backgroundHtml);
+        win.loadFile(pathManager.backgroundHtml); // Ruta actualizada
         win.setIgnoreMouseEvents(true);
     }
     
-    // Guardar índice de posición (si viene) en la instancia para usarlo luego
     if (bounds.index !== undefined) {
         win.positionIndex = bounds.index;
     }

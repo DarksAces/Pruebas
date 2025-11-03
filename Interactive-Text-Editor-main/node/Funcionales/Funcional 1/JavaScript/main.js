@@ -1,18 +1,5 @@
 // JavaScript/main.js
 
-/*
- * Punto de entrada del proceso principal (main) de Electron.
- * Responsabilidades:
- *  - Cargar config.json (mediante configManager)
- *  - Registrar handlers IPC (ipcHandlers)
- *  - Restaurar la última configuración si existe o abrir el selector
- *  - Manejar cierre de la app
- *
- * Notas:
- *  - `__dirname` aquí apunta a la carpeta `JavaScript`, por eso usamos '..' para subir
- *  - Si la carga de config falla, la aplicación finaliza inmediatamente
- */
-
 const { app, ipcMain } = require('electron');
 const path = require('path');
 const configManager = require('./configManager');
@@ -31,10 +18,10 @@ try {
     return; // Salir del script si la config falla
 }
 
-// 2. Registrar todos los manejadores IPC (función expuesta por ipcHandlers.js)
+// 2. Registrar todos los manejadores IPC
 registerHandlers();
 
-// 3. Iniciar la aplicación: si existe la última configuración, re-aplicar; si no, abrir selector
+// 3. Iniciar la aplicación
 app.whenReady().then(() => {
     const lastConfig = configManager.loadLastConfig();
     
@@ -51,7 +38,7 @@ app.whenReady().then(() => {
     }
 });
 
-// 4. Manejar cierre de la aplicación (comportamiento cross-platform)
+// 4. Manejar cierre
 app.on('window-all-closed', () => { 
     if (process.platform !== 'darwin') app.quit(); 
 });

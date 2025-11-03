@@ -1,17 +1,5 @@
 // JavaScript/configManager.js
 
-/*
- * Módulo encargado de leer/escribir la configuración global del proyecto
- * - loadConfig(path): carga y parsea `config.json` y lo deja disponible via getConfig()
- * - saveLastConfig(data): escribe en el campo LAST_CONFIG_KEY dentro de config.json
- * - loadLastConfig(): retorna la última configuración guardada (o null)
- *
- * Contratos y comportamientos importantes:
- *  - loadConfig debe invocarse al inicio (main.js) antes de acceder a getters en otros módulos.
- *  - Si loadConfig falla, se relanza el error (main.js debe manejar y terminar si es crítico).
- *  - saveLastConfig hace una lectura-modificación-escritura sencilla; no es transaccional.
- */
-
 const fs = require('fs');
 const LAST_CONFIG_KEY = 'lastConfiguration';
 
@@ -26,8 +14,7 @@ function loadConfig(filePath) {
         return config;
     } catch (error) {
         console.error('[CONFIG FATAL ERROR] Error en loadConfig:', error);
-        // Relanzamos para que el proceso que llama (normalmente main.js) decida qué hacer
-        throw error;
+        throw error; // Relanzar para que main.js lo atrape
     }
 }
 

@@ -3,20 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Pantalla de Caja Dinámica</title>
-<!--
-  index.html
-  --------------------------------------------------
-  Plantilla de la ventana principal (contenido): muestra texto, banners y elementos móviles.
-
-  Listeners expuestos (preload -> window.electronAPI):
-  - onFileChange(text) -> actualiza contenido de texto
-  - onNoFile({ welcomePath }) -> muestra imagen de bienvenida
-  - onLoadImages({ bannersTop, mobileImgs, bannersBottom }) -> carga banners y elementos móviles
-  - onWindowSizeSelected({ size }) -> ajusta estilos según tamaño
-
-  El script del final registra los listeners y actualiza el DOM. Mantén la separación entre
-  presentación (HTML/CSS) y lógica (renderer via preload).
--->
 <style>
   body {
     margin: 0;

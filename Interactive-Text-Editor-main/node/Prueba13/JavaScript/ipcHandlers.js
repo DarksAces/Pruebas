@@ -6,7 +6,7 @@ const path = require('path');
 
 // Módulos propios
 const appState = require('./appState');
-const pathManager = require('./pathManager');
+const pathManager = require('./pathManager'); // pathManager está disponible en todo el archivo
 const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const inactivityManager = require('./inactivityManager');
@@ -31,7 +31,7 @@ function registerHandlers() {
                 { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] }
             ],
             message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
-            defaultPath: pathManager.resourcesDir 
+            defaultPath: pathManager.resourcesDir // <-- Se usa pathManager. directamente
         });
 
         if (result.canceled) {
@@ -134,9 +134,11 @@ function registerHandlers() {
             appState.windows.push(mainWin);
             
             // 2. Crear ventanas de fondo
+            const bgWindows = [];
             finalOtherBounds.forEach((bounds) => {
                 const bgWin = windowManager.createWindow(bounds, false);
                 appState.windows.push(bgWin);
+                bgWindows.push(bgWin); // Guardar en una lista separada
             });
             
             // Guardar configuración
@@ -148,50 +150,43 @@ function registerHandlers() {
                 assignmentMap 
             });
 
-            // ----------------------
-            // Al cargar la ventana principal 
-            // ----------------------
+            // ----------------------------------------------------
+            // Al cargar la ventana principal (SOLO LÓGICA DE MAINWIN)
+            // ----------------------------------------------------
             mainWin.webContents.once('did-finish-load', () => {
                 
-                const { 
-                    bannersTopPath, 
-                    bannersBottomPath, 
-                    mobileImgsPath,
-                    userFile,
-                    welcomeImage,
-                    resourcesDir,
-                    getFileUrl
-                } = pathManager;
-
+                // --- CAMBIO CLAVE ---
+                // Ya no destructuramos pathManager. Usaremos pathManager.propiedad
+                
                 const config = configManager.getConfig();
                 
-                const bannersTop = fs.existsSync(bannersTopPath) 
-                    ? fs.readdirSync(bannersTopPath)
+                const bannersTop = fs.existsSync(pathManager.bannersTopPath) 
+                    ? fs.readdirSync(pathManager.bannersTopPath)
                         .filter(f => /\.\.(png|jpe?g|gif|webp)$/i.test(f) === false && /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => getFileUrl(path.join(bannersTopPath,f))) 
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersTopPath,f))) // <-- CORREGIDO
                     : [];
-                const bannersBottom = fs.existsSync(bannersBottomPath) 
-                    ? fs.readdirSync(bannersBottomPath)
+                const bannersBottom = fs.existsSync(pathManager.bannersBottomPath) 
+                    ? fs.readdirSync(pathManager.bannersBottomPath)
                         .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => getFileUrl(path.join(bannersBottomPath,f))) 
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersBottomPath,f))) // <-- CORREGIDO
                     : [];
-                const mobileImgs = fs.existsSync(mobileImgsPath) 
-                    ? fs.readdirSync(mobileImgsPath)
+                const mobileImgs = fs.existsSync(pathManager.mobileImgsPath) 
+                    ? fs.readdirSync(pathManager.mobileImgsPath)
                         .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => getFileUrl(path.join(mobileImgsPath,f))) 
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.mobileImgsPath,f))) // <-- CORREGIDO
                     : [];
 
-                const watcher = fs.watch(resourcesDir, (eventType, filename) => {
+                const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { // <-- CORREGIDO
                     if (filename === config.userFileName) { 
                         
                         inactivityManager.startInactivityTimer(mainWin); 
 
-                        if (!fs.existsSync(userFile)) {
+                        if (!fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
                             mainWin.webContents.send('no-file', { 
-                                welcomePath: getFileUrl(welcomeImage) 
+                                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
                             });
                         } else if (eventType === 'change') {
-                            const text = fs.readFileSync(userFile, 'utf-8');
+                            const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
                             mainWin.webContents.send('file-changed', text);
                             
                             mainWin.webContents.send('load-images', {
@@ -211,16 +206,16 @@ function registerHandlers() {
                 });
 
                 // Carga inicial
-                console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${userFile}`); 
-                if (fs.existsSync(userFile)) {
+                console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${pathManager.userFile}`); // <-- CORREGIDO
+                if (fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
                     console.log('[DIAGNOSTICO] Archivo encontrado. Cargando contenido.'); 
-                    const text = fs.readFileSync(userFile, 'utf-8');
+                    const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
                     mainWin.webContents.send('file-changed', text);
                     inactivityManager.startInactivityTimer(mainWin); 
                 } else {
-                    console.log(`[DIAGNOSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${getFileUrl(welcomeImage)}`);
+                    console.log(`[DIAGNOSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${pathManager.getFileUrl(pathManager.welcomeImage)}`); // <-- CORREGIDO
                     mainWin.webContents.send('no-file', { 
-                        welcomePath: getFileUrl(welcomeImage) 
+                        welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
                     });
                 }
                 
@@ -232,52 +227,57 @@ function registerHandlers() {
                     mobileImgs,
                     mediaFiles: [] 
                 });
+            });
 
-                // Cargar medios en ventanas de fondo
-                const bgWindows = appState.windows.filter(w => w !== mainWin);
+
+            // -----------------------------------------------------------
+            // Al cargar las ventanas de fondo (LÓGICA SEPARADA E INMEDIATA)
+            // -----------------------------------------------------------
+            console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
+            
+            bgWindows.forEach((bgWin, winIdx) => {
+                console.log(`[DEBUG] Procesando ventana de fondo ${winIdx + 1}`);
                 
-                console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
-                
-                bgWindows.forEach((bgWin, winIdx) => {
-                    console.log(`[DEBUG] Procesando ventana de fondo ${winIdx + 1}`);
+                // Adjuntamos el listener INMEDIATAMENTE
+                bgWin.webContents.once('did-finish-load', () => {
+                    const positionIndex = bgWin.positionIndex;
+                    const mediaFilePath = userMediaMap[positionIndex];
                     
-                    bgWin.webContents.once('did-finish-load', () => {
-                        const positionIndex = bgWin.positionIndex;
-                        const mediaFilePath = userMediaMap[positionIndex];
-                        
-                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
-                        
-                        if (mediaFilePath) {
-                            if (!fs.existsSync(mediaFilePath)) {
-                                console.error(`[ERROR] El archivo NO existe: ${mediaFilePath}`);
-                                return;
-                            }
-                            
-                            console.log(`[OK] El archivo existe: ${mediaFilePath}`);
-                            
-                            const fileName = path.basename(mediaFilePath);
-                            const isVideo = /\.(mp4)$/i.test(fileName);
-                            const isGif = /\.(gif)$/i.test(fileName);
-                            
-                            const normalizedPath = path.normalize(mediaFilePath);
-                            const mediaUrl = getFileUrl(normalizedPath);
-                            
-                            const mediaForWindow = {
-                                type: isVideo ? 'video' : isGif ? 'gif' : 'image',
-                                src: mediaUrl,
-                                name: fileName,
-                                priority: positionIndex
-                            };
-
-                            console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
-
-                            bgWin.webContents.send('load-images', {
-                                mediaFiles: [mediaForWindow]
-                            });
-                        } else {
-                            console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
+                    console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
+                    
+                    if (mediaFilePath) {
+                        if (!fs.existsSync(mediaFilePath)) {
+                            console.error(`[ERROR] El archivo NO existe: ${mediaFilePath}`);
+                            return;
                         }
-                    });
+                        
+                        console.log(`[OK] El archivo existe: ${mediaFilePath}`);
+                        
+                        const fileName = path.basename(mediaFilePath);
+                        const isVideo = /\.(mp4)$/i.test(fileName);
+                        const isGif = /\.(gif)$/i.test(fileName);
+                        
+                        const normalizedPath = path.normalize(mediaFilePath);
+                        
+                        // --- ESTA ES LA LÍNEA DEL ERROR ---
+                        // Corregida para usar pathManager.getFileUrl()
+                        const mediaUrl = pathManager.getFileUrl(normalizedPath);
+                        
+                        const mediaForWindow = {
+                            type: isVideo ? 'video' : isGif ? 'gif' : 'image',
+                            src: mediaUrl,
+                            name: fileName,
+                            priority: positionIndex
+                        };
+
+                        console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
+
+                        bgWin.webContents.send('load-images', {
+                            mediaFiles: [mediaForWindow]
+                        });
+                    } else {
+                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
+                    }
                 });
             });
 
