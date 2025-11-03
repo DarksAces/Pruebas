@@ -1,0 +1,11 @@
+{
+  "name": "prueba14",
+  "version": "1.0.0",
+  "main": "JavaScript/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.5.1"
+  }
+}
