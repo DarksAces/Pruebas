@@ -177,6 +177,3 @@ Para desarrollo, usa las DevTools (Ctrl+Shift+I) para ver logs detallados.
    - Priorización de fixes
    - Updates regulares
 
----
-
-Esta documentación se actualizará con cada release significativa.
