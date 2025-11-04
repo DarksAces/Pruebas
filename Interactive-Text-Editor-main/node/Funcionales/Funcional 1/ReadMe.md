@@ -1,43 +1,49 @@
-# ReadMe — Funcional 1
+# 📖 ReadMe — Funcional 1 (Mejoras UX y Fondos Avanzados)
 
-Este documento resume qué cambia en **Funcional 1** (renombrado desde Prueba 13) respecto a entregas anteriores del repositorio, además de incluir instrucciones de ejecución, pruebas y resolución de problemas.
+Este documento resume las principales novedades en **Funcional 1** respecto a entregas anteriores, además de incluir instrucciones de ejecución, pruebas y resolución de problemas.
 
-## Resumen rápido
+## 🚀 Resumen Rápido
 
-Funcional 1 refina la gestión de ventanas (1/4, 1/2 y pantalla completa), mejora la selección y asignación de medios para ventanas de fondo y corrige problemas de UX relacionados con el selector de archivos y la posición de la ventana principal.
+**Funcional 1** (renombrado desde Prueba 13) refina la gestión de ventanas, mejora la selección y asignación de medios para ventanas de fondo, y corrige problemas de UX y lógica.
 
-Los cambios clave se centran en tres áreas principales:
-- Lógica del selector (UI y JS en `html/selector.html`)
-- Exposición de API segura (preload en `preload.js`)
-- Lógica principal de ventanas y diálogo de archivos (`main.js`)
+Los **cambios clave** se centran en tres áreas principales:
 
-## ¿Qué cambia respecto a versiones anteriores?
+1.  **UX del Selector de Medios (Nuevo) ✨:** Permite la **selección de múltiples archivos en sucesivas llamadas** al diálogo de archivos y la **eliminación individual** de archivos de la lista.
+2.  **Fondos Avanzados (Refinado) 📐:** La distribución `two_halves` (Fondo Dividido) en modo 1/4 de pantalla ahora **restringe la posición del fondo individual** para garantizar que las dos áreas fusionadas sean **contiguas** (formando media pantalla), resolviendo el "bug visual" de la fusión.
+3.  **Sincronización de Posición (Corregido) ✅:** Asegura que la posición de la ventana principal (`mainPosition`) se mantenga sincronizada con el selector de posición.
 
-- Selector de archivos:
-  - Antes: el handler que abría el diálogo de selección de archivos sólo se ejecutaba cuando un contador/límite (`maxFilesNeeded`) era mayor que 0. Esto provocaba que, en modos como "1/2 pantalla" o "pantalla completa", el botón no hiciera nada y el usuario no pudiera seleccionar archivos.
-  - Ahora: el selector permite abrir siempre el diálogo. Si no hay un límite forzado, se pasa un límite grande al main para habilitar multiSelección; cuando existe un requisito, se recorta la lista al número requerido. Se añadieron try/catch, mensajes y logs para facilitar diagnóstico.
+***
 
-- Sincronización de posición (mitades y cuartos):
-  - Antes: existían condiciones en las que `posSelect` (el select visual) y la variable interna `mainPosition` podían desincronizarse, provocando que al pulsar "Abrir ventana" la posición enviada al `main.js` fuera incorrecta o siempre la izquierda.
-  - Ahora: `mainPosition` se actualiza y se fuerza en el select tras cambios de tamaño; además el envío usa `mainPosition` como fuente de la verdad. Se agregó un indicador de depuración en la UI que muestra `posSelect.value` y `mainPosition` en tiempo real.
+## ⚙️ ¿Qué cambia respecto a versiones anteriores?
 
-- Diálogo de archivos (IPC):
-  - `preload.js` sigue exponiendo `electronAPI.selectMediaDialog(maxFiles)` mediante `ipcRenderer.invoke('open-media-dialog', maxFiles)`.
-  - `main.js` maneja `open-media-dialog` y activa `multiSelections` cuando `maxFiles > 1`. El mensaje del diálogo ahora refleja el valor pasado y el `defaultPath` apunta al directorio de recursos configurado en `config.json`.
+### 1. Gestión de Archivos Multimedia (UX Mejorada)
+* **Adición Acumulativa:** El botón de selección ahora **añade** los nuevos archivos elegidos a la lista existente (`selectedFiles`), permitiendo al usuario seleccionar la cantidad requerida en varias tandas.
+* **Eliminación Individual:** Se ha implementado un botón **`[X]`** junto a cada archivo en la lista, el cual llama a la función `removeFile(index)` para eliminar archivos específicos sin borrar toda la selección.
+* **Límite Dinámico:** El diálogo de selección ahora informa cuántos archivos **faltan** por seleccionar (`maxFilesNeeded - selectedFiles.length`) y limita la selección a ese número.
 
-- Distribuciones avanzadas de fondos:
-  - Se añadieron esquemas de distribución para 1/4 de pantalla: `none`, `three_individual`, `one_big`, `two_halves`.
-  - Para `two_halves` se permite asignar un archivo fusionado que cubrirá dos áreas y un archivo individual para el cuarto restante; los bounds fusionados usan índices especiales (98, 99) para distinguirlos internamente.
+### 2. Distribuciones Avanzadas de Fondos (Lógica Corregida)
+* **Validación de Fusión:** En el esquema `Fondo Dividido` (`two_halves`) y tamaño `1/4 de pantalla`, se implementó una estricta validación. El selector de **Posición Individual** ahora solo ofrece las dos posiciones que, al quedar excluidas de la fusión, garantizan que las dos áreas restantes formen una **unidad contigua** de media pantalla (horizontal o vertical). Esto soluciona el problema de la fusión "bugueada".
 
-## Archivos modificados relevantes
+### 3. Selector de Posición y Sincronización
+* **Sincronización de Posición:** Se mantiene la corrección para asegurar que la variable interna `mainPosition` y el valor del `select` visual (`posSelect`) estén siempre sincronizados.
+* **Diálogo de Archivos (IPC):** `ipcHandlers.js` activa `multiSelections` cuando el límite de archivos es mayor que 1.
 
-- `html/selector.html` — Ajustes en el flujo de selección, límite de archivos y sincronización de posición; añadido panel de depuración y logs.
-- `preload.js` — Exposición de `electronAPI.selectMediaDialog(maxFiles)` y otros canales (sendSelection/onFileChange/onNoFile/onLoadImages).
-- `main.js` — Manejo del diálogo (`ipcMain.handle('open-media-dialog')`), cálculo de posiciones (`calculatePositions`) y creación de ventanas (main + fondo), además de lógica de fusión/distribución de fondos.
+***
 
-## Cómo ejecutar (Windows — PowerShell)
+## 🗄️ Archivos Modificados Relevantes
 
-Desde la carpeta `Funcional 1`:
+| Archivo | Resumen de la Modificación |
+| :--- | :--- |
+| `html/selector.html` | **Principal cambio:** Implementación de la lógica de **adición/eliminación** de archivos y las **restricciones de posición** para la fusión contigua en `two_halves`. |
+| `ipcHandlers.js` | Maneja la selección múltiple en el diálogo de archivos y la lógica de fusión. |
+| `preload.js` | Exposición de `electronAPI.selectMediaDialog(maxFiles)` y otros canales. |
+| `main.js` | Contiene la lógica principal de manejo de diálogos y creación de ventanas. |
+
+***
+
+## ▶️ Cómo ejecutar (Windows — PowerShell)
+
+Desde la carpeta `Funcional 1` (o la carpeta raíz de la aplicación):
 
 ```powershell
 # Instalar dependencias (si no están instaladas)
@@ -45,47 +51,3 @@ npm install
 
 # Ejecutar la app (arranca Electron)
 npm start
-```
-
-Si estás desarrollando, abre DevTools en la ventana `selector` para ver los logs y la salida de depuración (Ctrl+Shift+I o Menú > Ver > Desarrollador).
-
-## Pruebas y verificación (pasos para reproducir y comprobar corrección)
-
-1. Inicia la app (`npm start`) y espera a que aparezca la ventana `selector`.
-2. En "Elige tamaño de la ventana principal" selecciona "1/2 pantalla".
-3. En "Elige posición" prueba cada opción: Mitad Izquierda, Mitad Derecha, Mitad Superior, Mitad Inferior.
-   - Observa el panel de depuración bajo el selector: debe mostrar "Selector value: X — mainPosition: Y" y actualizarse al cambiar la opción.
-4. Haz clic en "Seleccionar Archivos de Imagen/Video".
-   - Debe abrirse un diálogo de selección. Si no hay un límite, puedes seleccionar varios archivos; si hay un límite (por ejemplo 2), sólo se tomarán los primeros 2.
-   - Revisa DevTools: deberías ver logs que empiezan por `[DEBUG] Llamando a selectMediaDialog...` y el resultado.
-5. Pulsa "Abrir ventana".
-   - Observa la consola del proceso principal (si la tienes visible al ejecutar `npm start`) y revisa el log `[SELECCION] Recibido:` con `position` igual al valor mostrado en `mainPosition`.
-   - Comprueba que la ventana principal aparece en la mitad/posición elegida. Si no, revisa si tienes múltiples monitores (el cálculo usa `screen.getAllDisplays()` y por defecto apunta al segundo monitor si existe).
-
-## Resolución de problemas comunes
-
-- "No se abre el diálogo de selección":
-  - Abre DevTools en la ventana selector y revisa si hay un `alert(...)` indicando que `window.electronAPI` no está disponible.
-  - Confirma que `preload.js` está correctamente referenciado en `main.js` al crear la ventana selector (propiedad `webPreferences.preload`).
-
-- "Selecciono Mitad Derecha y siempre se abre en la Izquierda":
-  - Revisa el panel `Selector value` bajo el select. Si el valor cambia pero la ventana se abre igual, copia el log `[DEBUG] Enviando selección...` y compáralo con el log del proceso principal `[SELECCION] Recibido:`.
-  - Si `position` enviado en el evento IPC no coincide con `mainPosition`, informar y adjuntar los logs.
-
-- "Seleccioné archivos pero no aparecen en fondos":
-  - Revisa que los caminos de los archivos existan y que `main.js` pueda acceder a ellos (permisos y rutas). `main.js` convierte rutas Windows a URL con `url.pathToFileURL(...)`.
-
-## Notas para desarrolladores
-
-- El límite `maxFiles` que se pasa al diálogo se usa para decidir si habilitar `multiSelections` (cuando `>1`). Para pruebas locales, si la API del sistema de diálogos no acepta `undefined`, desde la UI se pasa un número grande (`100`) cuando no hay límite, para forzar multiSelección.
-- La lógica de fusión usa índices especiales (98/99) para distinguir bounds fusionados del resto. Si cambias esa lógica, actualiza también el mapeo `userMediaMap` en `main.js`.
-
-## Siguientes pasos sugeridos
-
-- Añadir tests unitarios para `calculatePositions()` para asegurar comportamiento multi-monitor.
-- Añadir validaciones UI que impidan asignar el mismo archivo a dos áreas (actualmente hay un alert, pero puede mejorarse deshabilitando la opción duplicada en el select).
-- Mejorar el diálogo de selección para mostrar miniaturas al seleccionar (UX).
-
----
-
-Si quieres, puedo añadir un pequeño script de prueba o snapshots de logs para automatizar la verificación de la selección y posicionamiento. ¿Te lo preparo?
