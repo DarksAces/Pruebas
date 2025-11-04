@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-R">
+<meta charset="UTF-8">
 <title>Extra Screen Config</title>
 <style>
 /* --- Estilos Generales --- */
@@ -377,12 +377,39 @@ function updateAssignmentArea(size, position) {
 
     // Rellenar las opciones de la posición individual restante
     if (size === '1' && distributionScheme.value === 'two_halves') {
-        const availableIndexes = [1, 2, 3, 4].filter(i => i !== parseInt(position));
+        const principalIndex = parseInt(position);
+        let availableIndexes = [];
+        
+        // REGISTRO DE RESTRICCIÓN PARA EVITAR EL BUG DE FUSIÓN NO CONTIGUA
+        // El individual restante solo puede ser la esquina que al fusionar las otras 
+        // dos áreas restantes, forma un rectángulo contiguo (media pantalla).
+        switch(principalIndex) {
+            case 1: // Superior Izquierda (1)
+                // Individual debe ser 2 o 3. (Fusion: 3&4 o 2&4) -> Fusión contigua
+                availableIndexes = [2, 3]; 
+                break;
+            case 2: // Superior Derecha (2)
+                // Individual debe ser 1 o 4. (Fusion: 3&4 o 1&3) -> Fusión contigua
+                availableIndexes = [1, 4];
+                break;
+            case 3: // Inferior Izquierda (3)
+                // Individual debe ser 1 o 4. (Fusion: 2&4 o 1&2) -> Fusión contigua
+                availableIndexes = [2, 4];
+                break;
+            case 4: // Inferior Derecha (4)
+                // Individual debe ser 2 o 3. (Fusion: 1&3 o 1&2) -> Fusión contigua
+                availableIndexes = [1, 3]; // Corregido el caso de 4. Fusion 1&2 (Sup) o 1&3 (Izq)
+                break;
+            default:
+                availableIndexes = [];
+        }
+        
         individualArea.innerHTML = '';
         availableIndexes.forEach(i => {
              const name = quarterNames[i];
              individualArea.innerHTML += `<option value="${i}">${name}</option>`;
         });
+        
         // Si el área individual ya estaba seleccionada y sigue siendo válida, mantenla
         if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
             // No hacer nada, se mantiene
