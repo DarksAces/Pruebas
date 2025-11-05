@@ -8,12 +8,5 @@
   "userFileName": "contenido.txt",
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
-  "mobileImgsDirName": "Moviles",
-  "lastConfiguration": {
-    "size": "3",
-    "position": "1",
-    "mediaFiles": [],
-    "distributionScheme": "none",
-    "assignmentMap": {}
-  }
+  "mobileImgsDirName": "Moviles"
 }
