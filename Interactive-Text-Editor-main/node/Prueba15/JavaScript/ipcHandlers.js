@@ -189,12 +189,15 @@ function registerHandlers() {
                             const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
                             mainWin.webContents.send('file-changed', text);
                             
-                            mainWin.webContents.send('load-images', {
-                                bannersTop,
-                                bannersBottom,
-                                mobileImgs,
-                                mediaFiles: []
-                            });
+                                // Al actualizar el archivo, respetamos la misma regla: solo enviar mobileImgs si es Pantalla completa
+                                const mobileImgsToSendOnChange = (String(size) === '3') ? mobileImgs : [];
+                                console.log('[MAIN] Enviando load-images por cambio. size=', size, 'mobileImgsToSendOnChange.length=', mobileImgsToSendOnChange.length);
+                                mainWin.webContents.send('load-images', {
+                                    bannersTop,
+                                    bannersBottom,
+                                    mobileImgs: mobileImgsToSendOnChange,
+                                    mediaFiles: []
+                                });
                         }
                     }
                 });
@@ -220,11 +223,15 @@ function registerHandlers() {
                 }
                 
                 mainWin.webContents.send('window-size-selected', { size: size });
-                
+
+                // Solo enviamos las imágenes "móviles" cuando la configuración es Pantalla completa (size === '3')
+                const mobileImgsToSend = (String(size) === '3') ? mobileImgs : [];
+                console.log('[MAIN] Enviando load-images inicial. size=', size, 'mobileImgsToSend.length=', mobileImgsToSend.length);
+
                 mainWin.webContents.send('load-images', {
                     bannersTop,
                     bannersBottom,
-                    mobileImgs,
+                    mobileImgs: mobileImgsToSend,
                     mediaFiles: [] 
                 });
             });
