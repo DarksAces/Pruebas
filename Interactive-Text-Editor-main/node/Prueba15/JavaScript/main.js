@@ -10,9 +10,9 @@ const { registerHandlers } = require('./ipcHandlers');
 let appIconPath = null;
 
 try {
-    const configPath = path.join(__dirname, '..', 'config', 'config.json');
-    configManager.loadConfig(configPath);
-    console.log('[CONFIG] Archivo de configuración cargado con éxito.');
+    const configPath = path.join(__dirname, '..', 'config', 'config.json');
+    configManager.loadConfig(configPath);
+    console.log('[CONFIG] Archivo de configuración cargado con éxito.');
     
     // Solo para log: windowManager.js se encarga de resolver y aplicar el icono.
     const configData = configManager.getConfig(); 
@@ -24,9 +24,9 @@ try {
     }
 
 } catch (error) {
-    console.error('[CONFIG FATAL ERROR] No se pudo cargar o parsear config.json. ¡La aplicación no puede continuar!', error);
-    app.quit();
-    return; // Salir del script si la config falla
+    console.error('[CONFIG FATAL ERROR] No se pudo cargar o parsear config.json. ¡La aplicación no puede continuar!', error);
+    app.quit();
+    return; // Salir del script si la config falla
 }
 
 // 2. Registrar todos los manejadores IPC
@@ -69,23 +69,23 @@ function registerCloseHandler() {
 
 // 3. Iniciar la aplicación
 app.whenReady().then(() => {
-    const lastConfig = configManager.loadLastConfig();
-    
-    if (lastConfig && lastConfig.size) {
-        console.log('[INIT] Ultima configuración encontrada, recargando...');
-        
-        process.nextTick(() => {
-            ipcMain.emit('selection-made', null, lastConfig); 
+    const lastConfig = configManager.loadLastConfig();
+
+    if (lastConfig && lastConfig.size) {
+        console.log('[INIT] Ultima configuración encontrada, recargando...');
+
+        process.nextTick(() => {
+            ipcMain.emit('selection-made', null, lastConfig); 
             // Registrar el manejador de cierre seguro
             registerCloseHandler();
-        });
-    } else {
-        console.log('[INIT] No se encontró última configuración, abriendo selector.');
-        windowManager.createSelectorWindow();
-    }
+    });
+     } else {
+        console.log('[INIT] No se encontró última configuración, abriendo selector.');
+        windowManager.createSelectorWindow();
+    }
 });
 
 // 4. Manejar cierre
 app.on('window-all-closed', () => { 
-    if (process.platform !== 'darwin') app.quit(); 
+    if (process.platform !== 'darwin') app.quit(); 
 });
