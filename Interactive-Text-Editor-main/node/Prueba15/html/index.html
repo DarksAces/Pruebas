@@ -286,11 +286,7 @@
       console.log('[RENDERER] Window size selected:', currentWindowSize);
       body.classList.toggle('font-small', currentWindowSize === '1');
     });
-
-    /* --- GUARDADO ANTES DEL CIERRE --- */
-   // ... (Toda la lógica de onLoadImages, onWindowSizeSelected, etc.)
-
-    // --- GUARDADO SEGURO DE POSICIÓN AL CERRAR ELECTRON (NUEVO BLOQUE) ---
+    
     if (window.electronAPI && window.electronAPI.onAppAboutToClose) {
         window.electronAPI.onAppAboutToClose(() => {
             console.log('[RENDERER] Recibida señal de cierre. Intentando guardar posiciones...');
@@ -308,6 +304,6 @@
         });
     }
 
-  </script>
+  </script>
 </body>
 </html>
