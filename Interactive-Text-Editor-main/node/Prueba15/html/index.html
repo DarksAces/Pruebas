@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Pantalla de Caja Dinámica</title>
+<title>Pantalla de Caja Dinamica</title>
 <style>
   body { margin:0; padding:0; background-color:transparent; color:#fff; font-family:Consolas, monospace; font-size:28px; height:100vh; overflow:hidden; }
   body.font-small { font-size:150%; }
@@ -28,7 +28,7 @@
   <div id="banner-top"></div>
   <div id="content-wrapper"><div id="content"></div></div>
   <div id="banner-bottom"></div>
-  <div class="keyboard-hint"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> para cambiar configuración</div>
+  <div class="keyboard-hint"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> para cambiar configuracion</div>
 </div>
 
 <script>
@@ -51,7 +51,7 @@ const getSavedPosition = src => {
   catch(e){ console.error(e); return null; }
 };
 
-// Gestión de contenido
+// Gestion de contenido
 window.electronAPI.onFileChange(text => {
   contentDiv.innerHTML = '';
   text.split('\n').forEach(line => {
@@ -82,7 +82,7 @@ window.electronAPI.onNoFile(({ welcomePath }) => {
   contentDiv.appendChild(wrapperDiv);
 });
 
-// Carga de imágenes y videos
+// Carga de imagenes y videos
 window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
   document.getElementById('banner-top').innerHTML = '';
   document.getElementById('banner-bottom').innerHTML = '';
@@ -117,7 +117,7 @@ window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
   });
 });
 
-// Manejo tamaño ventana
+// Manejo tamano ventana
 window.electronAPI.onWindowSizeSelected(({ size }) => {
   currentWindowSize = String(size);
   body.classList.toggle('font-small', currentWindowSize==='1');

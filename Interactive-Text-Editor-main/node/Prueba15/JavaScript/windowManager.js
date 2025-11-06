@@ -10,19 +10,19 @@ const configManager = require('./configManager');
 const configPath = path.join(__dirname, '..', 'config', 'config.json');
 
 /**
- * Resuelve la ruta absoluta del icono de la aplicación.
+ * Resuelve la ruta absoluta del icono de la aplicacion.
  */
 function getIconFullPath() {
     const config = configManager.getConfig();
     if (config.resourcesDir && config.iconPath) {
-        // Aseguramos que usamos la misma lógica para todas las ventanas
+        // Aseguramos que usamos la misma logica para todas las ventanas
         return path.join(config.resourcesDir, config.iconPath);
     }
     return undefined;
 }
 
 /**
- * Guarda los límites de la ventana principal en el archivo config.json real.
+ * Guarda los limites de la ventana principal en el archivo config.json real.
  */
 function saveWindowBounds(window) {
   if (!window || window.isDestroyed()) return;
@@ -30,7 +30,7 @@ function saveWindowBounds(window) {
 const bounds = window.getBounds();
 
     try {
-     // Aseguramos que la carpeta de configuración existe
+     // Aseguramos que la carpeta de configuracion existe
     const configDir = path.dirname(configPath);
     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
 
@@ -46,14 +46,14 @@ const bounds = window.getBounds();
     };
 
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    console.log('[CONFIG] Posición guardada en config.json:', config.lastConfiguration.windowBounds);
+    console.log('[CONFIG] Posicion guardada en config.json:', config.lastConfiguration.windowBounds);
   } catch (err) {
-    console.error('[CONFIG ERROR] No se pudo guardar posición:', err);
+    console.error('[CONFIG ERROR] No se pudo guardar posicion:', err);
  }
 }
 
 /**
- * Activa el seguimiento de movimiento y tamaño de la ventana.
+ * Activa el seguimiento de movimiento y tamano de la ventana.
  */
 function watchWindowPosition(window) {
   const save = () => saveWindowBounds(window);
@@ -63,20 +63,20 @@ function watchWindowPosition(window) {
 }
 
 /**
- * Crea la ventana de selección inicial.
+ * Crea la ventana de seleccion inicial.
  */
 function createSelectorWindow() {
   if (appState.winSelector) return;
 
   const config = configManager.getConfig();
-  const iconFullPath = getIconFullPath(); // Usamos la nueva función
+  const iconFullPath = getIconFullPath(); // Usamos la nueva funcion
 
   const win = new BrowserWindow({
     width: 450,
      height: 650,
     frame: true,
     resizable: false,
-    icon: iconFullPath, // Icono aplicado aquí
+    icon: iconFullPath, // Icono aplicado aqui
     webPreferences: {
      preload: pathManager.preloadScript,
      contextIsolation: true,
@@ -103,13 +103,13 @@ function createWindow(bounds, isMain = false) {
   const lastBounds = config?.lastConfiguration?.windowBounds;
   const iconFullPath = getIconFullPath(); // OBTENEMOS EL ICONO AQUÍ
 
-   // Restaurar posición previa si existe
+   // Restaurar posicion previa si existe
   if (isMain && lastBounds) {
     bounds.x = lastBounds.x ?? bounds.x;
     bounds.y = lastBounds.y ?? lastBounds.y;
     bounds.width = lastBounds.width ?? bounds.width;
     bounds.height = lastBounds.height ?? bounds.height;
-    console.log('[CONFIG] Restaurando posición previa:', lastBounds);
+    console.log('[CONFIG] Restaurando posicion previa:', lastBounds);
  }
 
   console.log(`[VENTANA] Creando ventana ${isMain ? 'PRINCIPAL' : 'FONDO'} en:`, bounds);
@@ -154,7 +154,7 @@ function createWindow(bounds, isMain = false) {
     }
     });
 
-    // Guardar posición automáticamente
+    // Guardar posicion automaticamente
     watchWindowPosition(win);
 
     // Guardado final al salir (Nota: Esto debe ser reemplazado por el guardado seguro IPC)
