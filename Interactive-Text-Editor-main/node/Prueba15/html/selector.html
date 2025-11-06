@@ -265,15 +265,15 @@ button:hover {
         </p>
         <label for="size">Tamaño de la ventana principal:</label>
         <select id="size">
-          <option value="1">1/4 pantalla</option>
-          <option value="2">1/2 pantalla</option>
-          <option value="3">Pantalla completa</option>
+        <option value="1">1/4 pantalla</option>
+        <option value="2">1/2 pantalla</option>
+        <option value="3">Pantalla completa</option>
         </select>
 
         <div id="position-container">
-          <label for="position">Posicion de la ventana principal:</label>
-          <select id="position"></select>
-          <div id="posDebug"></div>
+        <label for="position">Posicion de la ventana principal:</label>
+        <select id="position"></select>
+        <div id="posDebug"></div>
         </div>
     </fieldset>
     
@@ -285,10 +285,10 @@ button:hover {
         </p>
         <label for="distribution-scheme">Distribucion de Fondos:</label>
         <select id="distribution-scheme">
-          <option value="none">0 - Sin Fondos (Solo ventana principal)</option>
-          <option value="three_individual">3 - Fondos Individuales (3 areas de 1/4)</option>
-          <option value="one_big">1 - Fondo Unico (Fusiona las 3 areas restantes)</option>
-          <option value="two_halves">2 - Fondo Dividido (1 area grande + 1 area 1/4)</option>
+        <option value="none">0 - Sin Fondos (Solo ventana principal)</option>
+        <option value="three_individual">3 - Fondos Individuales (3 areas de 1/4)</option>
+        <option value="one_big">1 - Fondo Unico (Fusiona las 3 areas restantes)</option>
+        <option value="two_halves">2 - Fondo Dividido (1 area grande + 1 area 1/4)</option>
         </select>
     </fieldset>
 
@@ -466,8 +466,8 @@ function updateAssignmentArea(size, position) {
         
         individualArea.innerHTML = '';
         availableIndexes.forEach(i => {
-             const name = quarterNames[i];
-             individualArea.innerHTML += `<option value="${i}">${name}</option>`;
+            const name = quarterNames[i];
+            individualArea.innerHTML += `<option value="${i}">${name}</option>`;
         });
         
         // Se mantiene la seleccion o se elige la primera opcion
@@ -482,41 +482,41 @@ function updateAssignmentArea(size, position) {
 // --- Event Handlers ---
 
 function updatePositions() {
-  const size = sizeSelect.value;
-  posSelect.innerHTML = '';
+const size = sizeSelect.value;
+posSelect.innerHTML = '';
 
-  if (size === '1') {
+if (size === '1') {
     posSelect.innerHTML = `
-      <option value="1">Superior Izquierda</option>
-      <option value="2">Superior Derecha</option>
-      <option value="3">Inferior Izquierda</option>
-      <option value="4">Inferior Derecha</option>
+    <option value="1">Superior Izquierda</option>
+    <option value="2">Superior Derecha</option>
+    <option value="3">Inferior Izquierda</option>
+    <option value="4">Inferior Derecha</option>
     `; 
     posContainer.style.display = 'block';
-  } else if (size === '2') {
+} else if (size === '2') {
     posSelect.innerHTML = `
-      <option value="1">Mitad Izquierda</option>
-      <option value="2">Mitad Derecha</option>
-      <option value="3">Mitad Superior</option>
-      <option value="4">Mitad Inferior</option>
+    <option value="1">Mitad Izquierda</option>
+    <option value="2">Mitad Derecha</option>
+    <option value="3">Mitad Superior</option>
+    <option value="4">Mitad Inferior</option>
     `;
     posContainer.style.display = 'block';
-  } else {
+} else {
     posContainer.style.display = 'none';
-  }
-  
-  if (posSelect.options.length > 0) {
-      mainPosition = parseInt(posSelect.options[0].value);
-      posSelect.value = String(mainPosition);
-  } else {
-      mainPosition = 0;
-  }
+}
 
-  distributionScheme.dispatchEvent(new Event('change'));
-  updateAssignmentArea(size, mainPosition);
-  
-  const debug = document.getElementById('posDebug');
-  if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+if (posSelect.options.length > 0) {
+    mainPosition = parseInt(posSelect.options[0].value);
+    posSelect.value = String(mainPosition);
+} else {
+    mainPosition = 0;
+}
+
+distributionScheme.dispatchEvent(new Event('change'));
+updateAssignmentArea(size, mainPosition);
+
+const debug = document.getElementById('posDebug');
+if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
 }
 
 posSelect.addEventListener('change', () => {
@@ -557,8 +557,8 @@ selectFilesBtn.addEventListener('click', async () => {
             const filesNeeded = maxFilesNeeded > 0 ? (maxFilesNeeded - selectedFiles.length) : 100;
             
             if (filesNeeded <= 0) {
-                 alert(`Ya has seleccionado el maximo requerido (${maxFilesNeeded}) o no se requieren archivos.`);
-                 return;
+                alert(`Ya has seleccionado el maximo requerido (${maxFilesNeeded}) o no se requieren archivos.`);
+                return;
             }
             
             // Si solo se necesita 1 archivo, forzar el dialogo a modo de archivo unico
@@ -613,14 +613,14 @@ document.getElementById('openBtn').addEventListener('click', () => {
         };
         
         if (selectedFiles.length >= 2) {
-             const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
-             const individualFile = selectedFiles[assignmentMap.individualFileIndex];
+            const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
+            const individualFile = selectedFiles[assignmentMap.individualFileIndex];
 
-             if (fusedFile === individualFile) {
-                 alert("Error: No puedes asignar el mismo archivo al area fusionada y al area individual. Por favor, selecciona archivos diferentes.");
-                 return;
-             }
-             finalMediaFiles = [fusedFile, individualFile];
+            if (fusedFile === individualFile) {
+                alert("Error: No puedes asignar el mismo archivo al area fusionada y al area individual. Por favor, selecciona archivos diferentes.");
+                return;
+            }
+            finalMediaFiles = [fusedFile, individualFile];
         }
     } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
         finalMediaFiles = selectedFiles.slice(0, 3);

@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onNoFile: (callback) => ipcRenderer.on('no-file', (e, data) => callback(data)),
   onLoadImages: (callback) => ipcRenderer.on('load-images', (e, data) => callback(data)),
   onWindowSizeSelected: (callback) => ipcRenderer.on('window-size-selected', (e, data) => callback(data)),
- 
+
  // Dialogo de seleccion de archivos
   selectMediaDialog: (maxFiles) => ipcRenderer.invoke('open-media-dialog', maxFiles),
 

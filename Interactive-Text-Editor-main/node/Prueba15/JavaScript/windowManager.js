@@ -73,15 +73,15 @@ function createSelectorWindow() {
 
   const win = new BrowserWindow({
     width: 450,
-     height: 650,
+    height: 650,
     frame: true,
     resizable: false,
     icon: iconFullPath, // Icono aplicado aqui
     webPreferences: {
-     preload: pathManager.preloadScript,
-     contextIsolation: true,
-     nodeIntegration: false,
-     },
+    preload: pathManager.preloadScript,
+    contextIsolation: true,
+    nodeIntegration: false,
+  },
   });
 
   win.setMenu(null);
@@ -110,7 +110,7 @@ function createWindow(bounds, isMain = false) {
     bounds.width = lastBounds.width ?? bounds.width;
     bounds.height = lastBounds.height ?? bounds.height;
     console.log('[CONFIG] Restaurando posicion previa:', lastBounds);
- }
+}
 
   console.log(`[VENTANA] Creando ventana ${isMain ? 'PRINCIPAL' : 'FONDO'} en:`, bounds);
 
@@ -135,7 +135,7 @@ function createWindow(bounds, isMain = false) {
       contextIsolation: true,
       webSecurity: false,
     },
- });
+});
 
   win.setAlwaysOnTop(true, 'screen-saver');
 
@@ -145,7 +145,7 @@ function createWindow(bounds, isMain = false) {
 
     // Atajo Ctrl+Shift+R → volver al selector
     win.webContents.on('before-input-event', (event, input) => {
-     if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+    if (input.control && input.shift && input.key.toLowerCase() === 'r') {
         console.log('[ATAJO] Ctrl+Shift+R detectado - Volviendo al selector');
         event.preventDefault();
         closeAllWindows();
@@ -163,7 +163,7 @@ function createWindow(bounds, isMain = false) {
   } else {
     win.loadFile(pathManager.backgroundHtml);
     win.setIgnoreMouseEvents(true);
- }
+}
 
   if (bounds.index !== undefined) win.positionIndex = bounds.index;
 

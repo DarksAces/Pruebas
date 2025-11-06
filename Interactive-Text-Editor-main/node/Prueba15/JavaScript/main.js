@@ -79,7 +79,7 @@ app.whenReady().then(() => {
             // Registrar el manejador de cierre seguro
             registerCloseHandler();
     });
-     } else {
+    } else {
         console.log('[INIT] No se encontro ultima configuracion, abriendo selector.');
         windowManager.createSelectorWindow();
     }
