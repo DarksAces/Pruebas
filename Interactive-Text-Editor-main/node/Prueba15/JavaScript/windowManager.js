@@ -85,7 +85,8 @@ function createSelectorWindow() {
   });
 
   win.setMenu(null);
-  win.loadFile(pathManager.selectorHtml);
+  // CAMBIO CLAVE 1: Aseguramos la ruta URL para el archivo HTML
+  win.loadURL(pathManager.getFileUrl(pathManager.selectorHtml));
 
   win.on('closed', () => {
     appState.winSelector = null;
@@ -140,7 +141,8 @@ function createWindow(bounds, isMain = false) {
   win.setAlwaysOnTop(true, 'screen-saver');
 
   if (isMain) {
-    win.loadFile(pathManager.indexHtml);
+    // CAMBIO CLAVE 2: Aseguramos la ruta URL para el archivo HTML
+    win.loadURL(pathManager.getFileUrl(pathManager.indexHtml));
     win.setIgnoreMouseEvents(false);
 
     // Atajo Ctrl+Shift+R → volver al selector
@@ -157,11 +159,9 @@ function createWindow(bounds, isMain = false) {
     // Guardar posicion automaticamente
     watchWindowPosition(win);
 
-    // Guardado final al salir (Nota: Esto debe ser reemplazado por el guardado seguro IPC)
-    // Este listener app.on('before-quit') debe quitarse si se usa el IPC, pero lo dejo si lo necesitas
-    // app.on('before-quit', () => saveWindowBounds(win)); 
   } else {
-    win.loadFile(pathManager.backgroundHtml);
+    // CAMBIO CLAVE 3: Aseguramos la ruta URL para el archivo HTML
+    win.loadURL(pathManager.getFileUrl(pathManager.backgroundHtml));
     win.setIgnoreMouseEvents(true);
 }
 
