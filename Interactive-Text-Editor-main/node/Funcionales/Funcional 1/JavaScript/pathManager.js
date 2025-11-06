@@ -18,12 +18,12 @@ function getFileUrl(filePath) {
 // EN EL MOMENTO en que se pide la ruta, no al cargar el archivo.
 
 module.exports = {
-    // --- Rutas estáticas ---
+    // --- Rutas estaticas ---
     appRoot,
     preloadScript,
     getFileUrl,
 
-    // --- Rutas dinámicas (dependen de config) ---
+    // --- Rutas dinamicas (dependen de config) ---
     get resourcesDir() {
         const config = getConfig();
         if (!config) throw new Error("Config not loaded before accessing 'resourcesDir'");

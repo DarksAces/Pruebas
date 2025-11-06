@@ -5,7 +5,7 @@ const appState = require('./appState');
 const pathManager = require('./pathManager');
 const { getConfig } = require('./configManager');
 
-// NO definimos INACTIVITY_TIME_MS aquí arriba
+// NO definimos INACTIVITY_TIME_MS aqui arriba
 
 function resetToWelcome(mainWin) {
     if (fs.existsSync(pathManager.userFile)) {
@@ -31,10 +31,10 @@ function resetToWelcome(mainWin) {
 }
 
 function startInactivityTimer(mainWin) {
-    // Obtenemos la configuración AQUÍ, cuando la función es llamada
+    // Obtenemos la configuracion AQUI, cuando la funcion es llamada
     const config = getConfig();
     if (!config) {
-        console.error("[TEMPORIZADOR] Error: Configuración no cargada. No se puede iniciar el temporizador.");
+        console.error("[TEMPORIZADOR] Error: Configuracion no cargada. No se puede iniciar el temporizador.");
         return;
     }
     const INACTIVITY_TIME_MS = config.inactivityTimeMs;

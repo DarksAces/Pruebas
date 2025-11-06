@@ -2,6 +2,7 @@
   "resourcesDir": "C:\\recursos",
   "inactivityTimeMs": 300000,
   "defaultWelcomeImagePath": "Bienvenida/welcome.png",
+  "iconPath": "imagenes/icon/icon.png",
   "htmlDirName": "html",
   "imageDirName": "imagenes",
   "userFileName": "contenido.txt",

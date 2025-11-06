@@ -24,9 +24,9 @@ function saveLastConfig(data) {
         let currentConfig = JSON.parse(currentConfigData);
         currentConfig[LAST_CONFIG_KEY] = data;
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2), 'utf-8');
-        console.log('[CONFIG] Ultima configuración guardada con exito.');
+        console.log('[CONFIG] Ultima configuracion guardada con exito.');
     } catch (error) {
-        console.error('[CONFIG ERROR] No se pudo guardar la ultima configuración:', error);
+        console.error('[CONFIG ERROR] No se pudo guardar la ultima configuracion:', error);
     }
 }
 
