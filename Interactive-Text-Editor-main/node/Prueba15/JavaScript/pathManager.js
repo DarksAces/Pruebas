@@ -1,8 +1,7 @@
-// JavaScript/pathManager.js
-
 const path = require('path');
 const url = require('url');
 const { getConfig, init: initConfig } = require('./configManager'); 
+const { app } = require('electron'); 
 
 // --- CRÍTICO: Forzar la inicialización al cargar el módulo ---
 // Esto asegura que getConfig() devuelva valores por defecto si main.js no ha corrido init() aún.
@@ -35,22 +34,24 @@ module.exports = {
     
     // 2. RUTA IMÁGENES: Depende de resourcesDir y valida el valor de la configuración.
     get imagesDir() {
-        // Llama al getter resourcesDir, forzando su validación y obteniendo la base (ej. C:\recursos)
         const baseDir = this.resourcesDir; 
         const config = getConfig();
         
         if (!config.imageDirName) {
             console.error('[PATH ERROR] imageDirName no está definido. Revisar configManager.js y config.json.');
-            // El error ocurría aquí; ahora lanzamos un error claro en lugar de devolver undefined
             throw new Error('imagesDir: Configuración de ruta de imagen incompleta (imageDirName).');
         }
         
         return path.join(baseDir, config.imageDirName);
     },
 
-    // 3. RUTA HTML (Corrige problemas de ASAR): Construir la ruta HTML directamente.
+    // 3. RUTA HTML (CORRECCIÓN FINAL Y MÁS ROBUSTA para ASAR)
     get htmlDir() {
-        // Asumiendo que pathManager.js está en /JavaScript y html/ está en la raíz del ASAR.
+        // Si está empaquetado, usamos app.getAppPath() que apunta a la raíz del ASAR.
+        if (app.isPackaged) {
+            return path.join(app.getAppPath(), 'html');
+        }
+        // En desarrollo, usamos la ruta relativa tradicional.
         return path.join(__dirname, '..', 'html'); 
     },
 
@@ -58,7 +59,6 @@ module.exports = {
     get userFile() {
         const config = getConfig();
         if (!config) throw new Error("Config not loaded before accessing 'userFile'");
-        // Ya que userFileName es un nombre de archivo, solo depende de resourcesDir
         return path.join(this.resourcesDir, config.userFileName);
     },
     
@@ -71,7 +71,6 @@ module.exports = {
     get bannersTopPath() {
         const config = getConfig();
         if (!config) throw new Error("Config not loaded before accessing 'bannersTopPath'");
-        // Llama a imagesDir, que ya es un path garantizado
         return path.join(this.imagesDir, config.bannersTopDirName);
     },
     

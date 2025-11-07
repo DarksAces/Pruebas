@@ -1,92 +1,236 @@
-const { app, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const appState = require('./appState');
+const pathManager = require('./pathManager');
+const { clearInactivityTimer } = require('./inactivityManager');
 const configManager = require('./configManager');
-const windowManager = require('./windowManager');
-const { registerHandlers } = require('./ipcHandlers');
 
-// 1. Cargar configuracion y obtener ruta del icono (AHORA SIMPLIFICADO)
-let appIconPath = null;
-let appConfig = null;
-
-// La inicialización se realiza aquí, sin pasar rutas.
-appConfig = configManager.init();
-
-if (appConfig) {
-    console.log('[CONFIG] Inicialización de configuración completada.');
-
-    // Usar la configuración cargada para resolver el icono (si es necesario)
-    if (appConfig.resourcesDir && appConfig.iconPath) {
-        // En un entorno empaquetado, las rutas de recursos deben ser absolutas
-        // windowManager.js será el encargado de manejar el path para el ícono.
-        // Aquí solo registramos la configuración.
-        appIconPath = appConfig.iconPath;
-        console.log(`[ICON] Ruta de icono de configuración: ${appIconPath}`);
-    } else {
-        console.warn('[ICON] La ruta del icono no se encontro o es incompleta en la configuracion.');
+/**
+ * Función auxiliar para obtener la ruta de ESCRITURA persistente del config.
+ */
+function getWriteableConfigPath() {
+    if (app.isPackaged) {
+        return path.join(app.getPath('userData'), 'config.json');
     }
-} else {
-    // Si configManager.init() falla fatalmente (lo cual no debería con la nueva lógica),
-    // la configuración será null o DEFAULT_CONFIG. Manejar el caso de fallo aquí si es crítico.
-    console.error('[CONFIG FATAL ERROR] Fallo critico en la inicialización de la configuración.');
-    // Mantenemos la aplicación abierta con la configuración por defecto para diagnóstico,
-    // a menos que sea absolutamente imposible continuar.
+    return path.join(__dirname, '..', 'config', 'config.json');
 }
 
-// 2. Registrar todos los manejadores IPC
-registerHandlers();
 
-// --- FUNCIÓN: Implementacion del cierre seguro ---
-function registerCloseHandler() {
-    const mainWindow = windowManager.getMainWindow(); 
-
-    if (!mainWindow || mainWindow.isDestroyed()) {
-        console.warn('[CLOSE HANDLER] No se pudo obtener la ventana principal para registrar el manejador de cierre.');
-        return;
+/**
+ * Resuelve la ruta absoluta del icono de la aplicacion.
+ */
+function getIconFullPath() {
+    const config = configManager.getConfig();
+    if (config.resourcesDir && config.iconPath) {
+        // Aseguramos que usamos la misma logica para todas las ventanas
+        return path.join(config.resourcesDir, config.iconPath);
     }
+    return undefined;
+}
 
-    mainWindow.on('close', (event) => {
-        event.preventDefault(); 
-        
-        console.log('[MAIN] Ventana a punto de cerrarse, notificando al Renderer para guardar.');
-        
-        mainWindow.webContents.send('app-about-to-close'); 
-    });
+/**
+ * Guarda los limites de la ventana principal en el archivo config.json real.
+ */
+function saveWindowBounds(window) {
+  if (!window || window.isDestroyed()) return;
 
-    ipcMain.once('renderer-save-complete', () => {
-        console.log('[MAIN] Renderer confirmo el guardado. Permitiendo cierre.');
-        const win = windowManager.getMainWindow();
-        
-        if (win && !win.isDestroyed()) {
-            win.removeAllListeners('close');
+  const bounds = window.getBounds();
+  const writePath = getWriteableConfigPath(); // <-- USAR RUTA PERSISTENTE
+
+    try {
+     // Aseguramos que la carpeta de configuracion existe
+    const configDir = path.dirname(writePath);
+    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+
+    // Cargar la config actual del archivo (puede no existir)
+    const raw = fs.existsSync(writePath) ? fs.readFileSync(writePath, 'utf8') : '{}';
+    const config = JSON.parse(raw);
+
+    if (!config.lastConfiguration) config.lastConfiguration = {};
+    config.lastConfiguration.windowBounds = {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+    };
+
+    fs.writeFileSync(writePath, JSON.stringify(config, null, 2));
+    console.log('[CONFIG] Posicion guardada con exito en:', writePath);
+  } catch (err) {
+    // Registrar el error con la ruta para depuración
+    console.error(`[CONFIG ERROR] No se pudo guardar posicion: ${err.message}. Path: ${writePath}`);
+ }
+}
+
+/**
+ * Activa el seguimiento de movimiento y tamano de la ventana.
+ */
+function watchWindowPosition(window) {
+  const save = () => saveWindowBounds(window);
+  window.on('move', save);
+  window.on('resize', save);
+  window.on('close', save);
+}
+
+/**
+ * Crea la ventana de seleccion inicial.
+ */
+function createSelectorWindow() {
+  if (appState.winSelector) return;
+
+  const config = configManager.getConfig();
+  const iconFullPath = getIconFullPath(); // Usamos la nueva funcion
+
+  const win = new BrowserWindow({
+    width: 450,
+    height: 650,
+    frame: true,
+    resizable: false,
+    icon: iconFullPath, // Icono aplicado aqui
+    webPreferences: {
+    preload: pathManager.preloadScript,
+    contextIsolation: true,
+    nodeIntegration: false,
+  },
+  });
+
+  win.setMenu(null);
+  // CORRECCIÓN: Agregamos el manejador de atajos a la ventana del selector
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+        console.log('[ATAJO] Ctrl+Shift+R detectado en selector - Recargando selector');
+        event.preventDefault();
+        // Recargar o simplemente cerrar y reabrir
+        if (!win.isDestroyed()) {
             win.close(); 
-        } else {
-            app.quit();
+            createSelectorWindow();
         }
-    });
-}
-// -----------------------------------------------------------------------------------------
-
-// 3. Iniciar la aplicacion
-app.whenReady().then(() => {
-    // La configuración ya fue inicializada, solo la recuperamos.
-    const finalConfig = configManager.getConfig(); 
-    const lastConfig = configManager.loadLastConfig();
-
-    if (lastConfig && lastConfig.size) {
-        console.log('[INIT] Ultima configuracion encontrada, recargando...');
-
-        process.nextTick(() => {
-            ipcMain.emit('selection-made', null, lastConfig); 
-            // Registrar el manejador de cierre seguro
-            registerCloseHandler();
-        });
-    } else {
-        console.log('[INIT] No se encontro ultima configuracion, abriendo selector.');
-        windowManager.createSelectorWindow();
     }
+  });
+
+  // CAMBIO CLAVE 1: Aseguramos la ruta URL para el archivo HTML
+  win.loadURL(pathManager.getFileUrl(pathManager.selectorHtml));
+
+  win.on('closed', () => {
+    appState.winSelector = null;
+    if (!appState.windows.length) app.quit();
+  });
+
+  appState.winSelector = win;
+}
+
+/**
+ * Crea una ventana (principal o fondo).
+ */
+function createWindow(bounds, isMain = false) {
+  const config = configManager.getConfig();
+  const lastBounds = config?.lastConfiguration?.windowBounds;
+  const iconFullPath = getIconFullPath(); // OBTENEMOS EL ICONO AQUÍ
+
+   // Restaurar posicion previa si existe
+  if (isMain && lastBounds) {
+    bounds.x = lastBounds.x ?? bounds.x;
+    bounds.y = lastBounds.y ?? lastBounds.y;
+    bounds.width = lastBounds.width ?? bounds.width;
+    bounds.height = lastBounds.height ?? bounds.height;
+    console.log('[CONFIG] Restaurando posicion previa:', lastBounds);
+}
+
+  console.log(`[VENTANA] Creando ventana ${isMain ? 'PRINCIPAL' : 'FONDO'} en:`, bounds);
+
+  const isTransparent = !isMain;
+
+  const win = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    frame: false,
+    transparent: isTransparent,
+    resizable: false,
+    alwaysOnTop: true,
+    focusable: isMain,
+    skipTaskbar: !isMain,
+    backgroundColor: '#000000',
+    hasShadow: false,
+    icon: iconFullPath, // ICONO APLICADO A LA VENTANA PRINCIPAL/FONDO
+    webPreferences: {
+      preload: pathManager.preloadScript,
+      contextIsolation: true,
+      webSecurity: false,
+    },
 });
 
-// 4. Manejar cierre
-app.on('window-all-closed', () => { 
-    if (process.platform !== 'darwin') app.quit(); 
-});
+  win.setAlwaysOnTop(true, 'screen-saver');
+
+  if (isMain) {
+    // CORRECCIÓN: Usar try/catch para asegurar que si la URL de index.html es inválida
+    // en el entorno empaquetado, volvemos al selector en lugar de mostrar una pantalla blanca.
+    try {
+        // CAMBIO CLAVE 2: Aseguramos la ruta URL para el archivo HTML
+        win.loadURL(pathManager.getFileUrl(pathManager.indexHtml));
+        win.setIgnoreMouseEvents(false);
+    } catch(loadError) {
+        console.error('[FATAL LOAD ERROR] Falló la carga de index.html:', loadError.message);
+        // Si no se puede cargar el contenido principal, volvemos al selector.
+        closeAllWindows();
+        createSelectorWindow();
+        return win; // Salir de la función después de iniciar el selector
+    }
+
+    // Atajo Ctrl+Shift+R → volver al selector
+    // MOVIDO AQUÍ PARA ASEGURAR QUE SE ADJUNTA INMEDIATAMENTE
+    win.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+        console.log('[ATAJO] Ctrl+Shift+R detectado - Volviendo al selector');
+        event.preventDefault();
+        
+        closeAllWindows();
+        clearInactivityTimer();
+        
+        process.nextTick(() => {
+            createSelectorWindow();
+        });
+    }
+    });
+
+    // Guardar posicion automaticamente
+    watchWindowPosition(win);
+
+  } else {
+    // CAMBIO CLAVE 3: Aseguramos la ruta URL para el archivo HTML
+    win.loadURL(pathManager.getFileUrl(pathManager.backgroundHtml));
+    win.setIgnoreMouseEvents(true);
+}
+
+  if (bounds.index !== undefined) win.positionIndex = bounds.index;
+
+  appState.windows.push(win);
+  return win;
+}
+
+/**
+ * Cierra todas las ventanas abiertas.
+ */
+function closeAllWindows() {
+  appState.windows.forEach((w) => {
+    if (!w.isDestroyed()) w.close();
+  });
+  appState.windows = [];
+}
+
+/**
+ * Exportar para acceder a la ventana principal desde main.js para el manejo de cierre
+ */
+function getMainWindow() {
+    // Asume que la ventana principal es la primera en el array o tiene una referencia
+    return appState.windows.find(w => w.positionIndex === 0) || appState.windows[0]; 
+}
+
+module.exports = {
+  createSelectorWindow,
+  createWindow,
+  closeAllWindows,
+  getMainWindow, // Exportamos para que main.js pueda usarla en registerCloseHandler
+};
