@@ -26,10 +26,10 @@ function calculatePositions(size, selectedPos) {
     
     if (size === "2") {
         const halfPositions = [
-            { x: sx, y: sy, width: sw/2, height: sh, index: 1 },
-            { x: sx + sw/2, y: sy, width: sw/2, height: sh, index: 2 },
-            { x: sx, y: sy, width: sw, height: sh/2, index: 3 },
-            { x: sx, y: sy + sh/2, width: sw, height: sh/2, index: 4 }
+             { x: sx, y: sy, width: sw/2, height: sh, index: 1 },
+             { x: sx + sw/2, y: sy, width: sw/2, height: sh, index: 2 },
+             { x: sx, y: sy, width: sw, height: sh/2, index: 3 },
+             { x: sx, y: sy + sh/2, width: sw, height: sh/2, index: 4 }
         ];
 
         const mainPos = halfPositions[selectedPos - 1];

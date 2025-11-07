@@ -1,61 +1,16 @@
 {
   "name": "prueba15",
   "version": "1.0.0",
-  "description": "Aplicación de contenido dinámico para múltiples pantallas.", 
   "main": "JavaScript/main.js",
-  "author": "Daniel", 
-  "license": "ISC",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "asar": true,
-        "icon": "resources/assets/icon",
-        "extraResource": [
-            "./config",
-            "./resources"
-        ]
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "prueba15"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    "start": "electron ."
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.10.2",
-    "@electron-forge/maker-deb": "^7.10.2",
-    "@electron-forge/maker-rpm": "^7.1.0",
-    "@electron-forge/maker-squirrel": "^7.10.2",
-    "@electron-forge/maker-zip": "^7.10.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
-    "@electron-forge/plugin-fuses": "^7.10.2",
-    "@electron/fuses": "^1.8.0",
     "electron": "^30.5.1"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4"
   }
 }

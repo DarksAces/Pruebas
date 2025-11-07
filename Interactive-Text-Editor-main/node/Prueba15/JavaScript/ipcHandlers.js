@@ -76,12 +76,12 @@ function registerHandlers() {
                 } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
                     finalOtherBounds = remainingBounds;
                     remainingBounds.forEach((bounds, idx) => {
-                        userMediaMap[bounds.index] = mediaFiles[idx];
-                        console.log(`[INDIVIDUAL] Asignado archivo ${idx} (${mediaFiles[idx]}) a index ${bounds.index}`);
+                         userMediaMap[bounds.index] = mediaFiles[idx];
+                         console.log(`[INDIVIDUAL] Asignado archivo ${idx} (${mediaFiles[idx]}) a index ${bounds.index}`);
                     });
 
                 } else if (distributionScheme === 'none') {
-                    finalOtherBounds = [];
+                     finalOtherBounds = [];
                 
                 } else if (distributionScheme === 'two_halves' && mediaFiles.length >= 2) {
                     const individualIndex = parseInt(assignmentMap.individualArea); 

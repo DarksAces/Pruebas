@@ -1,3 +1,4 @@
+// JavaScript/windowManager.js
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -6,8 +7,7 @@ const pathManager = require('./pathManager');
 const { clearInactivityTimer } = require('./inactivityManager');
 const configManager = require('./configManager');
 
-// ELIMINAMOS 'const configPath = path.join(__dirname, '..', 'config', 'config.json');' 
-// Y usamos la ruta de escritura de configManager.
+const configPath = path.join(__dirname, '..', 'config', 'config.json');
 
 /**
  * Resuelve la ruta absoluta del icono de la aplicacion.
@@ -22,33 +22,19 @@ function getIconFullPath() {
 }
 
 /**
- * Función auxiliar para obtener la ruta de ESCRITURA persistente del config.
- * Usamos la misma lógica que getConfigPath en configManager.
- */
-function getWriteableConfigPath() {
-    if (app.isPackaged) {
-        return path.join(app.getPath('userData'), 'config.json');
-    }
-    return path.join(__dirname, '..', 'config', 'config.json');
-}
-
-
-/**
  * Guarda los limites de la ventana principal en el archivo config.json real.
  */
 function saveWindowBounds(window) {
   if (!window || window.isDestroyed()) return;
 
-  const bounds = window.getBounds();
-  const writePath = getWriteableConfigPath(); // <-- USAR RUTA PERSISTENTE
+const bounds = window.getBounds();
 
     try {
      // Aseguramos que la carpeta de configuracion existe
-    const configDir = path.dirname(writePath);
+    const configDir = path.dirname(configPath);
     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
 
-    // Cargar la config actual del archivo (puede no existir)
-    const raw = fs.existsSync(writePath) ? fs.readFileSync(writePath, 'utf8') : '{}';
+    const raw = fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : '{}';
     const config = JSON.parse(raw);
 
     if (!config.lastConfiguration) config.lastConfiguration = {};
@@ -59,11 +45,10 @@ function saveWindowBounds(window) {
       height: bounds.height,
     };
 
-    fs.writeFileSync(writePath, JSON.stringify(config, null, 2));
-    console.log('[CONFIG] Posicion guardada con exito en:', writePath);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log('[CONFIG] Posicion guardada en config.json:', config.lastConfiguration.windowBounds);
   } catch (err) {
-    // Registrar el error con la ruta para depuración
-    console.error(`[CONFIG ERROR] No se pudo guardar posicion: ${err.message}. Path: ${writePath}`);
+    console.error('[CONFIG ERROR] No se pudo guardar posicion:', err);
  }
 }
 
@@ -88,20 +73,19 @@ function createSelectorWindow() {
 
   const win = new BrowserWindow({
     width: 450,
-    height: 650,
+     height: 650,
     frame: true,
     resizable: false,
     icon: iconFullPath, // Icono aplicado aqui
     webPreferences: {
-    preload: pathManager.preloadScript,
-    contextIsolation: true,
-    nodeIntegration: false,
-  },
+     preload: pathManager.preloadScript,
+     contextIsolation: true,
+     nodeIntegration: false,
+     },
   });
 
   win.setMenu(null);
-  // CAMBIO CLAVE 1: Aseguramos la ruta URL para el archivo HTML
-  win.loadURL(pathManager.getFileUrl(pathManager.selectorHtml));
+  win.loadFile(pathManager.selectorHtml);
 
   win.on('closed', () => {
     appState.winSelector = null;
@@ -126,7 +110,7 @@ function createWindow(bounds, isMain = false) {
     bounds.width = lastBounds.width ?? bounds.width;
     bounds.height = lastBounds.height ?? bounds.height;
     console.log('[CONFIG] Restaurando posicion previa:', lastBounds);
-}
+ }
 
   console.log(`[VENTANA] Creando ventana ${isMain ? 'PRINCIPAL' : 'FONDO'} en:`, bounds);
 
@@ -151,39 +135,35 @@ function createWindow(bounds, isMain = false) {
       contextIsolation: true,
       webSecurity: false,
     },
-});
+ });
 
   win.setAlwaysOnTop(true, 'screen-saver');
 
   if (isMain) {
-    // CAMBIO CLAVE 2: Aseguramos la ruta URL para el archivo HTML
-    win.loadURL(pathManager.getFileUrl(pathManager.indexHtml));
+    win.loadFile(pathManager.indexHtml);
     win.setIgnoreMouseEvents(false);
 
     // Atajo Ctrl+Shift+R → volver al selector
     win.webContents.on('before-input-event', (event, input) => {
-    if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+     if (input.control && input.shift && input.key.toLowerCase() === 'r') {
         console.log('[ATAJO] Ctrl+Shift+R detectado - Volviendo al selector');
         event.preventDefault();
-        
         closeAllWindows();
         clearInactivityTimer();
-        
-        // CORRECCIÓN FINAL: Usar process.nextTick para dar tiempo a que las ventanas cierren
-        process.nextTick(() => {
-            createSelectorWindow();
-        });
+        createSelectorWindow();
     }
     });
 
     // Guardar posicion automaticamente
     watchWindowPosition(win);
 
+    // Guardado final al salir (Nota: Esto debe ser reemplazado por el guardado seguro IPC)
+    // Este listener app.on('before-quit') debe quitarse si se usa el IPC, pero lo dejo si lo necesitas
+    // app.on('before-quit', () => saveWindowBounds(win)); 
   } else {
-    // CAMBIO CLAVE 3: Aseguramos la ruta URL para el archivo HTML
-    win.loadURL(pathManager.getFileUrl(pathManager.backgroundHtml));
+    win.loadFile(pathManager.backgroundHtml);
     win.setIgnoreMouseEvents(true);
-}
+ }
 
   if (bounds.index !== undefined) win.positionIndex = bounds.index;
 
@@ -196,7 +176,6 @@ function createWindow(bounds, isMain = false) {
  */
 function closeAllWindows() {
   appState.windows.forEach((w) => {
-    // Al cerrar, se dispara el evento 'close' que llama a saveWindowBounds
     if (!w.isDestroyed()) w.close();
   });
   appState.windows = [];

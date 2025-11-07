@@ -16,9 +16,9 @@ function resetToWelcome(mainWin) {
                 console.log('contenido.txt eliminado por inactividad. Volviendo a bienvenida.');
             }
             if (mainWin && !mainWin.isDestroyed()) {
-                mainWin.webContents.send('no-file', {
-                    welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
-                });
+                 mainWin.webContents.send('no-file', {
+                     welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
+                 });
             }
         });
     } else {
