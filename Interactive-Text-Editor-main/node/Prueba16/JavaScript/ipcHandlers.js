@@ -29,13 +29,15 @@ function handleSelectionMade(data) {
         inactivityManager.clearInactivityTimer();
         
         const { mainBounds } = calculatePositions(size, parseInt(position)); 
+        
+        // Obtenemos los datos de ambos monitores (APP Primary = Secundario Físico; APP Secondary = Principal Físico)
+        const primaryDisplayData = windowManager.getPrimaryDisplay();
         const secondaryDisplayData = windowManager.getSecondaryDisplay();
         
         let bgWindows = []; 
         let userMediaMap = {}; 
         let finalOtherBounds = []; 
 
-        // ... (Lógica de cálculo de finalOtherBounds y userMediaMap omitida) ...
         if (secondaryDisplayData) {
             const { x: sx, y: sy, width: sw, height: sh } = secondaryDisplayData.bounds;
             const quarterPositionsSecondary = [
@@ -222,8 +224,8 @@ function handleSelectionMade(data) {
                     console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
                 }
 
-                // 2. 🎯 CRÍTICO: Sincronización de TEXTO con retraso explícito
-                setTimeout(() => { // <-- USAMOS setTimeout(50) para garantizar que el listener esté listo
+                // 2. Sincronización de TEXTO con retraso explícito
+                setTimeout(() => {
                     if (fileExists) {
                         console.log(`[SINCRONIZACION TIMEOUT] Enviando texto inicial a fondo index ${positionIndex}.`);
                         bgWin.webContents.send('background-text-changed', initialText);
@@ -231,7 +233,7 @@ function handleSelectionMade(data) {
                         console.log(`[SINCRONIZACION TIMEOUT] Enviando no-file a fondo index ${positionIndex}.`);
                         bgWin.webContents.send('background-no-file');
                     }
-                }, 50); // 50ms de retraso
+                }, 50); 
             });
         });
 

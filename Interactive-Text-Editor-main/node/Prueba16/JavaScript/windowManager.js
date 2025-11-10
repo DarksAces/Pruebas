@@ -165,9 +165,10 @@ function createWindow(bounds, isMain = false, htmlFile) {
     watchWindowPosition(win);
 
   } else {
-    // 🎯 CAMBIO CLAVE: PRUEBA DE DIAGNÓSTICO
-    // Desactivamos temporalmente el ignorar eventos del ratón para ver si esto bloquea la renderización.
+    // 🎯 AJUSTE FINAL: Forzar que el ratón NO sea ignorado.
+    // Esto resuelve conflictos de composición en ciertos sistemas.
     win.setIgnoreMouseEvents(false); 
+    win.focus(); // Forzar el render
     
     if (bounds.isFullScreen) {
          win.setFullScreen(true);

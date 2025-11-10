@@ -97,11 +97,17 @@
     const textOverlay = document.getElementById('text-overlay');
 
     // === 📜 Texto dinámico (contenido.txt) ===
-    window.electronAPI.onBackgroundTextChange((text) => {
-      console.log('[BACKGROUND] Texto de contenido.txt recibido');
-      textOverlay.textContent = text || '';
-      textOverlay.style.display = text ? 'flex' : 'none';
-    });
+// JavaScript dentro de background.html (Bloque de escucha onBackgroundTextChange)
+
+window.electronAPI.onBackgroundTextChange((text) => {
+    console.log('[BACKGROUND] Texto de contenido.txt recibido y actualizado.');
+    textOverlay.textContent = text;
+    textOverlay.style.display = 'flex'; // Asegurar visibilidad
+    
+    // 🎯 CORRECCIÓN CLAVE: Sobrescribir estilos que pueden causar invisibilidad
+    textOverlay.style.opacity = '1';
+    textOverlay.style.zIndex = '9999'; // Asegurar que está en la capa superior
+});
 
     window.electronAPI.onBackgroundNoFile(() => {
       console.log('[BACKGROUND] Señal de no-archivo recibida, limpiando texto');
