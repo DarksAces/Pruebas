@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Extra Screen Config</title>
+<style>
+/* --- Estilos Generales --- */
+:root {
+    --color-primario: #ff8800;
+    --color-secundario: #6c757d;
+    --color-exito: #ff8800;
+    --color-fondo: #f4f4f8;
+    --color-tarjeta: #ffffff;
+    --color-texto: #333;
+    --color-borde: #ddd;
+    --radio-borde: 8px;
+    --sombra-tarjeta: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    padding: 20px; 
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 500px;
+    margin: 20px auto;
+    background-color: var(--color-tarjeta);
+    padding: 25px 30px;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-tarjeta);
+}
+
+h1 {
+    text-align: center;
+    color: var(--color-primario);
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* --- Agrupacion con Fieldset --- */
+fieldset {
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    /* Transicion para aparicion suave */
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    max-height: 1000px; /* Alto por defecto */
+    opacity: 1;
+    overflow: hidden;
+}
+
+fieldset.hidden {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border: none;
+}
+
+legend {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--color-primario);
+    padding: 0 10px;
+}
+
+.fieldset-description {
+    font-size: 0.9em;
+    color: var(--color-secundario);
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+/* --- Formularios y Botones --- */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+select, button { 
+    margin-top: 5px; 
+    padding: 12px 15px; 
+    font-size: 16px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    border: 1px solid var(--color-borde);
+    border-radius: 6px;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select:focus, button:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+button {
+    cursor: pointer;
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--color-primario);
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#openBtn {
+    background-color: var(--color-exito);
+}
+#openBtn:hover {
+    background-color: #0056b3;
+}
+#openBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.feedback-text {
+    font-size: 0.9em;
+    color: #dc3545;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 1.2em;
+}
+
+/* --- Areas especificas --- */
+#position-container { 
+    margin-top: 15px; 
+}
+#posDebug { 
+    margin-top: 8px; 
+    font-size: 12px; 
+    color: #666; 
+    background: #f9f9f9;
+    padding: 5px;
+    border-radius: 4px;
+    display: none; /* Oculto por defecto */
+}
+
+/* Lista de archivos */
+#fileList { 
+    max-height: 120px; 
+    overflow-y: auto; 
+    background-color: #f9f9f9; 
+    padding: 10px 15px; 
+    border-radius: 6px;
+    border: 1px solid var(--color-borde);
+    margin-top: 15px;
+    font-size: 14px;
+}
+#fileList .placeholder {
+    color: var(--color-secundario);
+    font-style: italic;
+}
+#fileList ul {
+    margin: 5px 0 0 0;
+    padding-left: 0; /* Ajustado para mejor layout */
+    list-style: none; /* Quitar viñetas */
+}
+#fileList li {
+    margin-bottom: 3px;
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    display: flex; /* Para alinear el boton */
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 10px;
+}
+.file-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 10px;
+}
+.remove-btn {
+    background: none;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 10px;
+    line-height: 1;
+    border-radius: 3px;
+    margin-left: 10px;
+    transition: background-color 0.2s, color 0.2s;
+    width: 25px; /* Ancho fijo para el boton */
+}
+.remove-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Asignacion avanzada */
+#advanced-assignment {
+    /* Oculto por defecto para transicion */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.4s ease, margin-top 0.3s ease;
+    margin-top: 0;
+}
+#advanced-assignment.visible {
+    max-height: 500px; /* Alto suficiente para el contenido */
+    opacity: 1;
+    margin-top: 20px;
+}
+
+#advanced-assignment h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #333;
+}
+#advanced-assignment p {
+    font-size: 0.9em;
+    color: var(--color-secundario);
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.assignment-box { 
+    border: 1px solid var(--color-borde); 
+    padding: 10px 15px; 
+    margin-top: 10px; 
+    background-color: #fcfcfc;
+    border-radius: var(--radio-borde);
+}
+.assignment-box label { 
+    font-weight: 600; 
+    font-size: 0.95em;
+}
+.assignment-box p {
+    font-size: 0.9em;
+    color: var(--color-secundario);
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Configuracion de Pantalla</h1>
+
+    <fieldset>
+        <legend>1. Configuracion Principal</legend>
+        <p class="fieldset-description">
+            Elige el tamaño y la posicion de la ventana que mostrara el contenido principal.
+        </p>
+        <label for="size">Tamaño de la ventana principal:</label>
+        <select id="size">
+          <option value="1">1/4 pantalla</option>
+          <option value="2">1/2 pantalla</option>
+          <option value="3">Pantalla completa</option>
+        </select>
+
+        <div id="position-container">
+          <label for="position">Posicion de la ventana principal:</label>
+          <select id="position"></select>
+          <div id="posDebug"></div>
+        </div>
+    </fieldset>
+    
+    <fieldset id="distribution-container">
+        <legend>2. Configuracion de Fondos</legend>
+        <p class="fieldset-description">
+            Elige como se deben distribuir los fondos en el espacio restante. 
+            (Solo disponible para 1/4 de pantalla).
+        </p>
+        <label for="distribution-scheme">Distribucion de Fondos:</label>
+        <select id="distribution-scheme">
+          <option value="none">0 - Sin Fondos (Solo ventana principal)</option>
+          <option value="three_individual">3 - Fondos Individuales (3 areas de 1/4)</option>
+          <option value="one_big">1 - Fondo Unico (Fusiona las 3 areas restantes)</option>
+          <option value="two_halves">2 - Fondo Dividido (1 area grande + 1 area 1/4)</option>
+        </select>
+    </fieldset>
+
+    <fieldset id="media-selection-area">
+        <legend>3. Archivos Multimedia</legend>
+        <p class="fieldset-description">
+            Selecciona los archivos (imagen o video) que se usaran como fondo, si la distribucion elegida lo requiere.
+        </p>
+        <button id="selectFilesBtn">Seleccionar Archivos de Imagen/Video</button>
+        <div id="fileList" class="file-list-box"></div>
+
+        <div id="advanced-assignment">
+            <h4>Asignacion (Modo Fondo Dividido)</h4>
+            <p>Define que archivo va al area grande (fusionada) y cual al area pequeña (individual).</p>
+            <div class="assignment-box">
+                <label for="fusedMedia">Fondo Fusionado (Area Grande):</label>
+                <select id="fusedMedia"></select>
+            </div>
+            <div class="assignment-box">
+                <label for="individualMedia">Fondo Individual (Area Pequeña):</label>
+                <select id="individualMedia"></select>
+                <p>Elige la posicion del 1/4 individual restante:</p>
+                <select id="individualArea"></select>
+            </div>
+        </div>
+    </fieldset>
+
+    <button id="openBtn" disabled>Abrir ventana</button>
+    <div id="openBtnFeedback" class="feedback-text"></div>
+</div>
+
+<script>
+const sizeSelect = document.getElementById('size');
+const posSelect = document.getElementById('position');
+const posContainer = document.getElementById('position-container');
+const distributionContainer = document.getElementById('distribution-container');
+const distributionScheme = document.getElementById('distribution-scheme');
+const selectFilesBtn = document.getElementById('selectFilesBtn');
+const fileListDiv = document.getElementById('fileList');
+const openBtn = document.getElementById('openBtn');
+const openBtnFeedback = document.getElementById('openBtnFeedback');
+const advancedAssignment = document.getElementById('advanced-assignment');
+const fusedMedia = document.getElementById('fusedMedia');
+const individualMedia = document.getElementById('individualMedia');
+const individualArea = document.getElementById('individualArea');
+
+let selectedFiles = [];
+let maxFilesNeeded = 0; 
+let mainPosition = 1;
+
+// --- Funciones de Utilidad ---
+
+const quarterNames = {
+    1: 'Superior Izquierda', 2: 'Superior Derecha', 3: 'Inferior Izquierda', 4: 'Inferior Derecha'
+};
+
+function updateOpenButtonState() {
+    const isDisabled = selectedFiles.length < maxFilesNeeded;
+    openBtn.disabled = isDisabled;
+    
+    if (isDisabled && maxFilesNeeded > 0) {
+        openBtnFeedback.textContent = `Por favor, selecciona los ${maxFilesNeeded} archivos de fondo requeridos.`;
+    } else {
+        openBtnFeedback.textContent = '';
+    }
+}
+
+// 🎯 FUNCIÓN CLAVE 1: ACTUALIZADA PARA AÑADIR BOTÓN DE ELIMINAR
+function updateFileDisplay() {
+    if (maxFilesNeeded === 0) {
+        fileListDiv.innerHTML = '<span class="placeholder">No se requieren archivos de fondo para esta configuracion.</span>';
+    } else if (selectedFiles.length === 0) {
+        fileListDiv.innerHTML = `<span class="placeholder">Esperando seleccion... (Se necesitan ${maxFilesNeeded} archivos)</span>`;
+    } else {
+        let listHtml = '<strong>Archivos elegidos:</strong><ul>';
+        
+        selectedFiles.forEach((f, index) => {
+            const name = f.split(/[\\\/]/).pop();
+            listHtml += `
+                <li>
+                    <span class="file-name">${name}</span>
+                    <button class="remove-btn" onclick="removeFile(${index})" title="Eliminar archivo">[X]</button>
+                </li>
+            `;
+        });
+        listHtml += '</ul>';
+        fileListDiv.innerHTML = listHtml;
+    }
+    
+    // Actualizar selectores de asignacion para 'two_halves'
+    if (distributionScheme.value === 'two_halves') {
+        fusedMedia.innerHTML = '';
+        individualMedia.innerHTML = '';
+        
+        selectedFiles.forEach((f, i) => {
+            const name = f.split(/[\\\/]/).pop();
+            const option = `<option value="${i}">${name}</option>`;
+            fusedMedia.innerHTML += option;
+            individualMedia.innerHTML += option;
+        });
+        
+        // Asegurarse de que el indice individual no sea el mismo que el fusionado por defecto
+        if (selectedFiles.length >= 2) {
+            // Intenta mantener la seleccion si es posible, sino usa 0 y 1
+            const currentFused = parseInt(fusedMedia.value);
+            const currentIndividual = parseInt(individualMedia.value);
+            
+            if (selectedFiles[currentFused] && selectedFiles[currentIndividual] && currentFused !== currentIndividual) {
+                // Las selecciones actuales son validas, se mantienen
+            } else {
+                fusedMedia.value = 0;
+                individualMedia.value = 1; 
+            }
+        } else if (selectedFiles.length === 1) {
+            fusedMedia.value = 0;
+            individualMedia.value = 0;
+        }
+    }
+}
+
+// 🎯 FUNCIÓN CLAVE 2: NUEVA FUNCIÓN PARA ELIMINAR UN ARCHIVO
+function removeFile(indexToRemove) {
+    if (indexToRemove >= 0 && indexToRemove < selectedFiles.length) {
+        console.log(`[FILES] Eliminando archivo en indice ${indexToRemove}: ${selectedFiles[indexToRemove].split(/[\\\/]/).pop()}`);
+        
+        // Eliminar el archivo del array
+        selectedFiles.splice(indexToRemove, 1);
+        
+        // Actualizar la interfaz y el estado
+        updateFileDisplay();
+        updateOpenButtonState();
+    }
+}
+// Hacer la funcion globalmente accesible (necesario para el onclick en el HTML generado)
+window.removeFile = removeFile; 
+
+
+function updateAssignmentArea(size, position) {
+    // Mostrar/ocultar contenedor de distribucion
+    if (size === '1') {
+        distributionContainer.classList.remove('hidden');
+    } else {
+        distributionContainer.classList.add('hidden');
+    }
+
+    // Mostrar/ocultar asignacion avanzada (con transicion)
+    if (distributionScheme.value === 'two_halves' && size === '1') {
+        advancedAssignment.classList.add('visible');
+    } else {
+        advancedAssignment.classList.remove('visible');
+    }
+
+    // Rellenar las opciones de la posicion individual restante
+    if (size === '1' && distributionScheme.value === 'two_halves') {
+        const principalIndex = parseInt(position);
+        let availableIndexes = [];
+        
+        // REGISTRO DE RESTRICCIÓN (Asegurando fusion contigua/Media Pantalla)
+        switch(principalIndex) {
+            case 1: // Superior Izquierda (1) -> Individuales que dejan fusion en Mitad Inferior (3&4) o Mitad Derecha (2&4)
+                availableIndexes = [2, 3]; 
+                break;
+            case 2: // Superior Derecha (2) -> Individuales que dejan fusion en Mitad Inferior (3&4) o Mitad Izquierda (1&3)
+                availableIndexes = [1, 4];
+                break;
+            case 3: // Inferior Izquierda (3) -> Individuales que dejan fusion en Mitad Superior (1&2) o Mitad Derecha (2&4)
+                availableIndexes = [2, 4];
+                break;
+            case 4: // Inferior Derecha (4) -> Individuales que dejan fusion en Mitad Superior (1&2) o Mitad Izquierda (1&3)
+                availableIndexes = [1, 3]; 
+                break;
+            default:
+                availableIndexes = [];
+        }
+        
+        individualArea.innerHTML = '';
+        availableIndexes.forEach(i => {
+             const name = quarterNames[i];
+             individualArea.innerHTML += `<option value="${i}">${name}</option>`;
+        });
+        
+        // Se mantiene la seleccion o se elige la primera opcion
+        if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
+            // Se mantiene
+        } else if (individualArea.options.length > 0) {
+            individualArea.value = individualArea.options[0].value;
+        }
+    }
+}
+
+// --- Event Handlers ---
+
+function updatePositions() {
+  const size = sizeSelect.value;
+  posSelect.innerHTML = '';
+
+  if (size === '1') {
+    posSelect.innerHTML = `
+      <option value="1">Superior Izquierda</option>
+      <option value="2">Superior Derecha</option>
+      <option value="3">Inferior Izquierda</option>
+      <option value="4">Inferior Derecha</option>
+    `; 
+    posContainer.style.display = 'block';
+  } else if (size === '2') {
+    posSelect.innerHTML = `
+      <option value="1">Mitad Izquierda</option>
+      <option value="2">Mitad Derecha</option>
+      <option value="3">Mitad Superior</option>
+      <option value="4">Mitad Inferior</option>
+    `;
+    posContainer.style.display = 'block';
+  } else {
+    posContainer.style.display = 'none';
+  }
+  
+  if (posSelect.options.length > 0) {
+      mainPosition = parseInt(posSelect.options[0].value);
+      posSelect.value = String(mainPosition);
+  } else {
+      mainPosition = 0;
+  }
+
+  distributionScheme.dispatchEvent(new Event('change'));
+  updateAssignmentArea(size, mainPosition);
+  
+  const debug = document.getElementById('posDebug');
+  if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+}
+
+posSelect.addEventListener('change', () => {
+    mainPosition = parseInt(posSelect.value) || mainPosition;
+    console.log('[DEBUG] posSelect.change -> mainPosition actualizado a:', mainPosition);
+    updateAssignmentArea(sizeSelect.value, mainPosition);
+    const debug = document.getElementById('posDebug');
+    if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+});
+
+distributionScheme.addEventListener('change', () => {
+    const scheme = distributionScheme.value;
+    
+    if (scheme === 'one_big') {
+        maxFilesNeeded = 1;
+    } else if (scheme === 'three_individual') {
+        maxFilesNeeded = 3;
+    } else if (scheme === 'two_halves') {
+        maxFilesNeeded = 2;
+    } else { // 'none'
+        maxFilesNeeded = 0;
+    }
+    
+    if (sizeSelect.value !== '1') {
+        maxFilesNeeded = 0;
+    }
+
+    updateOpenButtonState();
+    updateAssignmentArea(sizeSelect.value, mainPosition);
+    updateFileDisplay();
+});
+
+// 🎯 CAMBIO CLAVE: ADICIÓN DE ARCHIVOS EN LUGAR DE REEMPLAZO
+selectFilesBtn.addEventListener('click', async () => {
+    if (window.electronAPI && window.electronAPI.selectMediaDialog) {
+        try {
+            // El limite real para el dialogo es cuantos archivos faltan por seleccionar
+            const filesNeeded = maxFilesNeeded > 0 ? (maxFilesNeeded - selectedFiles.length) : 100;
+            
+            if (filesNeeded <= 0) {
+                 alert(`Ya has seleccionado el maximo requerido (${maxFilesNeeded}) o no se requieren archivos.`);
+                 return;
+            }
+            
+            // Si solo se necesita 1 archivo, forzar el dialogo a modo de archivo unico
+            const limit = filesNeeded === 1 ? 1 : filesNeeded; 
+            
+            console.log('[DEBUG] Llamando a selectMediaDialog con limite:', limit);
+            const files = await window.electronAPI.selectMediaDialog(limit);
+            console.log('[DEBUG] Resultado de selectMediaDialog:', files);
+
+            if (files && files.length > 0) {
+                // 1. Filtrar duplicados: solo anadir los archivos que no esten ya en la lista
+                const uniqueNewFiles = files.filter(f => !selectedFiles.includes(f));
+                
+                // 2. Anadir los nuevos archivos
+                selectedFiles.push(...uniqueNewFiles);
+
+                // 3. Recortar si se excede el limite (esto solo deberia ocurrir si maxFilesNeeded > 0)
+                if (maxFilesNeeded > 0 && selectedFiles.length > maxFilesNeeded) {
+                    selectedFiles = selectedFiles.slice(0, maxFilesNeeded);
+                }
+            }
+            // Si se cancela o no se elige nada, la lista existente se mantiene
+            
+            updateFileDisplay();
+            updateOpenButtonState();
+        } catch (err) {
+            console.error('[ERROR] selectMediaDialog fallo:', err);
+            alert('Error al abrir el dialogo de seleccion: ' + (err && err.message ? err.message : err));
+        }
+    } else {
+        alert('La API de seleccion de archivos no esta disponible en este contexto (window.electronAPI).');
+    }
+});
+
+
+// Inicializar y manejar cambios de tamano/posicion
+updatePositions();
+sizeSelect.addEventListener('change', updatePositions);
+distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
+
+// Abrir ventana principal
+document.getElementById('openBtn').addEventListener('click', () => {
+    
+    let assignmentMap = {};
+    let finalMediaFiles = [...selectedFiles];
+
+    if (distributionScheme.value === 'two_halves') {
+        assignmentMap = {
+            fusedFileIndex: parseInt(fusedMedia.value),
+            individualFileIndex: parseInt(individualMedia.value),
+            individualArea: parseInt(individualArea.value)
+        };
+        
+        if (selectedFiles.length >= 2) {
+             const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
+             const individualFile = selectedFiles[assignmentMap.individualFileIndex];
+
+             if (fusedFile === individualFile) {
+                 alert("Error: No puedes asignar el mismo archivo al area fusionada y al area individual. Por favor, selecciona archivos diferentes.");
+                 return;
+             }
+             finalMediaFiles = [fusedFile, individualFile];
+        }
+    } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
+        finalMediaFiles = selectedFiles.slice(0, 3);
+    }
+
+// ... dentro del listener de openBtn
+    
+    // ... codigo para determinar finalMediaFiles y assignmentMap
+
+    console.log('[DEBUG] Enviando seleccion. size=', sizeSelect.value, 'position(mainPosition)=', mainPosition, 'posSelect.value=', posSelect.value);
+    window.electronAPI.sendSelection({
+        size: sizeSelect.value,
+        position: String(mainPosition || (posSelect.value || '1')),
+        mediaFiles: finalMediaFiles,
+        distributionScheme: distributionScheme.value,
+        assignmentMap: assignmentMap
+    });
+});
+</script>
+
+</body>
+</html>

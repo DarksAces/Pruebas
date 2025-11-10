@@ -8,5 +8,14 @@
   "userFileName": "contenido.txt",
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
-  "mobileImgsDirName": "Moviles"
+  "mobileImgsDirName": "Moviles",
+  "lastConfiguration": {
+    "size": "2",
+    "position": "1",
+    "mediaFiles": [
+      "C:\\recursos\\14533634_3840_2160_30fps.mp4"
+    ],
+    "distributionScheme": "none",
+    "assignmentMap": {}
+  }
 }

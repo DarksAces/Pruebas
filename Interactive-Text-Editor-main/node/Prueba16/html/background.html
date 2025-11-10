@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Background Display</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+  }
+
+  #media-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  img, video, .gif {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Usa 'cover' si quieres recorte */
+    object-position: center;
+    display: block;
+  }
+
+  .error-message {
+    color: #ff4444;
+    padding: 20px;
+    font-family: monospace;
+    font-size: 14px;
+    word-wrap: break-word;
+    background-color: rgba(0,0,0,0.8);
+  }
+
+  .debug-info {
+    color: #44ff44;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    background-color: rgba(0,0,0,0.8);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    max-width: 90%;
+    word-wrap: break-word;
+  }
+
+  /* --- Contenedor de Texto --- */
+  #text-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 3em;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+    padding: 5%;
+    box-sizing: border-box;
+    text-align: center;
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+  <div id="media-container"></div>
+  <div id="text-overlay"></div> 
+
+  <script>
+    console.log('[BACKGROUND] Ventana de fondo inicializada');
+    const container = document.getElementById('media-container');
+    const textOverlay = document.getElementById('text-overlay');
+
+    // === 📜 Texto dinámico (contenido.txt) ===
+    window.electronAPI.onBackgroundTextChange((text) => {
+      console.log('[BACKGROUND] Texto de contenido.txt recibido');
+      textOverlay.textContent = text || '';
+      textOverlay.style.display = text ? 'flex' : 'none';
+    });
+
+    window.electronAPI.onBackgroundNoFile(() => {
+      console.log('[BACKGROUND] Señal de no-archivo recibida, limpiando texto');
+      textOverlay.textContent = '';
+      textOverlay.style.display = 'none';
+    });
+
+    // === 🎬 Multimedia (fondos de video o imagen) ===
+    window.electronAPI.onLoadImages(({ mediaFiles }) => {
+      console.log('[BACKGROUND] Evento load-images recibido:', mediaFiles);
+      container.innerHTML = '';
+
+      if (!mediaFiles || mediaFiles.length === 0) {
+        container.innerHTML = '<div class="debug-info">Sin archivos multimedia asignados</div>';
+        return;
+      }
+
+      const media = mediaFiles[0];
+      let element;
+
+      if (media.type === 'video') {
+        element = document.createElement('video');
+        Object.assign(element, {
+          autoplay: true,
+          loop: true,
+          muted: true,
+          playsinline: true,
+          preload: 'auto'
+        });
+        element.onloadeddata = () => element.play().catch(err => console.warn('[BACKGROUND] Error al reproducir video:', err));
+      } else {
+        element = document.createElement('img');
+        if (media.type === 'gif') element.classList.add('gif');
+      }
+
+      element.onerror = (e) => {
+        console.error('[BACKGROUND] Error cargando media:', e);
+        container.innerHTML = `<div class="error-message">Error al cargar ${media.name || 'archivo multimedia'}</div>`;
+      };
+
+      element.onload = () => console.log('[BACKGROUND] Media cargada exitosamente.');
+      element.src = media.src;
+      container.appendChild(element);
+      console.log('[BACKGROUND] Elemento multimedia insertado.');
+    });
+
+    console.log('[BACKGROUND] Listeners activos. Esperando eventos...');
+  </script>
+</body>
+</html>
