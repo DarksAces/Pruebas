@@ -29,58 +29,59 @@ try {
 }
 
 // 2. Registrar todos los manejadores IPC
-registerHandlers();
+registerHandlers(); //
 
 // --- FUNCIÓN: Implementacion del cierre seguro ---
 function registerCloseHandler() {
-    const mainWindow = windowManager.getMainWindow(); 
+    const mainWindow = windowManager.getMainWindow(); //
 
-    if (!mainWindow || mainWindow.isDestroyed()) {
-        console.warn('[CLOSE HANDLER] No se pudo obtener la ventana principal para registrar el manejador de cierre.');
-        return;
+    if (!mainWindow || mainWindow.isDestroyed()) { //
+        console.warn('[CLOSE HANDLER] No se pudo obtener la ventana principal para registrar el manejador de cierre.'); //
+        return; //
     }
 
-    mainWindow.on('close', (event) => {
-        event.preventDefault(); 
-        console.log('[MAIN] Ventana a punto de cerrarse, notificando al Renderer para guardar.');
-        mainWindow.webContents.send('app-about-to-close'); 
+    // Este listener de 'close' es el que dispara el cierre seguro (prevDefault)
+    mainWindow.on('close', (event) => { //
+        event.preventDefault(); // <-- ESTO CAUSA EL CONFLICTO CON CTRL+SHIFT+R
+        console.log('[MAIN] Ventana a punto de cerrarse, notificando al Renderer para guardar.'); //
+        mainWindow.webContents.send('app-about-to-close'); //
     });
 
-    ipcMain.once('renderer-save-complete', () => {
-        console.log('[MAIN] Renderer confirmo el guardado. Permitiendo cierre.');
-        const win = windowManager.getMainWindow();
+    ipcMain.once('renderer-save-complete', () => { //
+        console.log('[MAIN] Renderer confirmo el guardado. Permitiendo cierre.'); //
+        const win = windowManager.getMainWindow(); //
         
-        if (win && !win.isDestroyed()) {
-            win.removeAllListeners('close');
-            win.close();
+        if (win && !win.isDestroyed()) { //
+            win.removeAllListeners('close'); //
+            win.close(); //
         } else {
-            app.quit();
+            app.quit(); //
         }
     });
 }
 // -----------------------------------------------------------------------------------------
 
 // 3. Iniciar la aplicacion
-app.whenReady().then(() => {
-    windowManager.initializeDisplays(); 
+app.whenReady().then(() => { //
+    windowManager.initializeDisplays(); //
     
-    const lastConfig = configManager.loadLastConfig();
+    const lastConfig = configManager.loadLastConfig(); //
 
-    if (lastConfig && lastConfig.size) {
-        console.log('[INIT] Ultima configuracion encontrada, recargando...');
+    if (lastConfig && lastConfig.size) { //
+        console.log('[INIT] Ultima configuracion encontrada, recargando...'); //
         
-        handleSelectionMade(lastConfig); 
+        handleSelectionMade(lastConfig); //
 
-        process.nextTick(() => {
-            registerCloseHandler();
+        process.nextTick(() => { //
+            registerCloseHandler(); //
         });
      } else {
-        console.log('[INIT] No se encontro ultima configuracion, abriendo selector.');
-        windowManager.createSelectorWindow();
+        console.log('[INIT] No se encontro ultima configuracion, abriendo selector.'); //
+        windowManager.createSelectorWindow(); //
     }
 });
 
 // 4. Manejar cierre
-app.on('window-all-closed', () => { 
-    if (process.platform !== 'darwin') app.quit(); 
+app.on('window-all-closed', () => { //
+    if (process.platform !== 'darwin') app.quit(); //
 });
