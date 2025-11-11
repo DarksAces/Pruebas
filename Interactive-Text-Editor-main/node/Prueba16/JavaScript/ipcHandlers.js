@@ -6,7 +6,7 @@ const path = require('path');
 
 // Módulos propios
 const appState = require('./appState');
-const pathManager = require('./pathManager'); // pathManager está disponible en todo el archivo
+const pathManager = require('./pathManager'); 
 const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const inactivityManager = require('./inactivityManager');
@@ -31,7 +31,7 @@ function registerHandlers() {
                 { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] }
             ],
             message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
-            defaultPath: pathManager.resourcesDir // <-- Se usa pathManager. directamente
+            defaultPath: pathManager.resourcesDir 
         });
 
         if (result.canceled) {
@@ -70,14 +70,10 @@ function registerHandlers() {
                     finalOtherBounds = [combinedBounds];
                     userMediaMap[99] = mediaFiles[0];
 
-                    console.log('[FUSIONADO] Fundo unico creado:', combinedBounds);
-                    console.log('[FUSIONADO] Archivo asignado:', mediaFiles[0]);
-
                 } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
                     finalOtherBounds = remainingBounds;
                     remainingBounds.forEach((bounds, idx) => {
                          userMediaMap[bounds.index] = mediaFiles[idx];
-                         console.log(`[INDIVIDUAL] Asignado archivo ${idx} (${mediaFiles[idx]}) a index ${bounds.index}`);
                     });
 
                 } else if (distributionScheme === 'none') {
@@ -99,29 +95,18 @@ function registerHandlers() {
                     
                     userMediaMap[98] = mediaFiles[0]; 
                     userMediaMap[individualBound.index] = mediaFiles[1]; 
-                    
-                    console.log('[FUSIONADO AVANZADO] Bounds fusionados:', combinedBounds);
-                    console.log('[FUSIONADO AVANZADO] Archivo fusionado:', mediaFiles[0]);
-                    console.log('[FUSIONADO AVANZADO] Bound individual:', individualBound);
-                    console.log('[FUSIONADO AVANZADO] Archivo individual:', mediaFiles[1]);
                 }
             } else if (size === '2' && mediaFiles.length >= 1) {
                 // LÓGICA PARA 1/2 PANTALLA
                 if (otherBounds.length > 0) {
                     finalOtherBounds = otherBounds;
                     userMediaMap[otherBounds[0].index] = mediaFiles[0];
-                    console.log('[MITAD PANTALLA] Archivo asignado a ventana de fondo:', {
-                        index: otherBounds[0].index,
-                        file: mediaFiles[0]
-                    });
                 }
             } else if (size === '3') {
                 // Pantalla completa no tiene fondos
                 finalOtherBounds = [];
             }
 
-            console.log('[DEBUG] userMediaMap final:', userMediaMap);
-            console.log('[DEBUG] finalOtherBounds:', finalOtherBounds);
 
             // Cerrar selector
             if (appState.winSelector) {
@@ -138,7 +123,7 @@ function registerHandlers() {
             finalOtherBounds.forEach((bounds) => {
                 const bgWin = windowManager.createWindow(bounds, false);
                 appState.windows.push(bgWin);
-                bgWindows.push(bgWin); // Guardar en una lista separada
+                bgWindows.push(bgWin); 
             });
             
             // Guardar configuración
@@ -155,40 +140,36 @@ function registerHandlers() {
             // ----------------------------------------------------
             mainWin.webContents.once('did-finish-load', () => {
                 
-                // --- CAMBIO CLAVE ---
-                // Ya no destructuramos pathManager. Usaremos pathManager.propiedad
-                
                 const config = configManager.getConfig();
                 
-                const bannersTop = fs.existsSync(pathManager.bannersTopPath) 
-                    ? fs.readdirSync(pathManager.bannersTopPath)
-                        .filter(f => /\.\.(png|jpe?g|gif|webp)$/i.test(f) === false && /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersTopPath,f))) // <-- CORREGIDO
-                    : [];
-                const bannersBottom = fs.existsSync(pathManager.bannersBottomPath) 
-                    ? fs.readdirSync(pathManager.bannersBottomPath)
-                        .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersBottomPath,f))) // <-- CORREGIDO
-                    : [];
-                const mobileImgs = fs.existsSync(pathManager.mobileImgsPath) 
-                    ? fs.readdirSync(pathManager.mobileImgsPath)
-                        .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                        .map(f => pathManager.getFileUrl(path.join(pathManager.mobileImgsPath,f))) // <-- CORREGIDO
-                    : [];
+                // Función auxiliar para leer y mapear archivos de imagen/video a URLs
+                const getMediaUrls = (dirPath) => {
+                    if (fs.existsSync(dirPath)) {
+                        return fs.readdirSync(dirPath)
+                            .filter(f => /\.(png|jpe?g|gif|webp|mp4)$/i.test(f))
+                            .map(f => pathManager.getFileUrl(path.join(dirPath, f)));
+                    }
+                    return [];
+                };
 
-                const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { // <-- CORREGIDO
+                const bannersTop = getMediaUrls(pathManager.bannersTopPath);
+                const bannersBottom = getMediaUrls(pathManager.bannersBottomPath);
+                const mobileImgs = getMediaUrls(pathManager.mobileImgsPath);
+
+                const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { 
                     if (filename === config.userFileName) { 
                         
                         inactivityManager.startInactivityTimer(mainWin); 
 
-                        if (!fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
+                        if (!fs.existsSync(pathManager.userFile)) { 
                             mainWin.webContents.send('no-file', { 
-                                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
+                                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) 
                             });
                         } else if (eventType === 'change') {
-                            const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
+                            const text = fs.readFileSync(pathManager.userFile, 'utf-8'); 
                             mainWin.webContents.send('file-changed', text);
                             
+                            // Reenviar banners/móviles para refrescar la carga si es necesario
                             mainWin.webContents.send('load-images', {
                                 bannersTop,
                                 bannersBottom,
@@ -202,20 +183,17 @@ function registerHandlers() {
                 mainWin.on('closed', () => {
                     watcher.close();
                     inactivityManager.clearInactivityTimer();
-                    windowManager.closeAllWindows(); // Cierra todas las demás ventanas (fondo)
+                    windowManager.closeAllWindows(); 
                 });
 
                 // Carga inicial
-                console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${pathManager.userFile}`); // <-- CORREGIDO
-                if (fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
-                    console.log('[DIAGNOSTICO] Archivo encontrado. Cargando contenido.'); 
-                    const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
+                if (fs.existsSync(pathManager.userFile)) { 
+                    const text = fs.readFileSync(pathManager.userFile, 'utf-8'); 
                     mainWin.webContents.send('file-changed', text);
                     inactivityManager.startInactivityTimer(mainWin); 
                 } else {
-                    console.log(`[DIAGNOSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${pathManager.getFileUrl(pathManager.welcomeImage)}`); // <-- CORREGIDO
                     mainWin.webContents.send('no-file', { 
-                        welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
+                        welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) 
                     });
                 }
                 
@@ -231,27 +209,15 @@ function registerHandlers() {
 
 
             // -----------------------------------------------------------
-            // Al cargar las ventanas de fondo (LÓGICA SEPARADA E INMEDIATA)
+            // Al cargar las ventanas de fondo 
             // -----------------------------------------------------------
-            console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
-            
-            bgWindows.forEach((bgWin, winIdx) => {
-                console.log(`[DEBUG] Procesando ventana de fondo ${winIdx + 1}`);
+            bgWindows.forEach((bgWin) => {
                 
-                // Adjuntamos el listener INMEDIATAMENTE
                 bgWin.webContents.once('did-finish-load', () => {
                     const positionIndex = bgWin.positionIndex;
                     const mediaFilePath = userMediaMap[positionIndex];
                     
-                    console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
-                    
-                    if (mediaFilePath) {
-                        if (!fs.existsSync(mediaFilePath)) {
-                            console.error(`[ERROR] El archivo NO existe: ${mediaFilePath}`);
-                            return;
-                        }
-                        
-                        console.log(`[OK] El archivo existe: ${mediaFilePath}`);
+                    if (mediaFilePath && fs.existsSync(mediaFilePath)) {
                         
                         const fileName = path.basename(mediaFilePath);
                         const isVideo = /\.(mp4)$/i.test(fileName);
@@ -259,8 +225,7 @@ function registerHandlers() {
                         
                         const normalizedPath = path.normalize(mediaFilePath);
                         
-                        // --- ESTA ES LA LÍNEA DEL ERROR ---
-                        // Corregida para usar pathManager.getFileUrl()
+                        // CORRECCIÓN CLAVE: Usar pathManager.getFileUrl() para rutas de archivo locales
                         const mediaUrl = pathManager.getFileUrl(normalizedPath);
                         
                         const mediaForWindow = {
@@ -270,13 +235,13 @@ function registerHandlers() {
                             priority: positionIndex
                         };
 
-                        console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
-
                         bgWin.webContents.send('load-images', {
                             mediaFiles: [mediaForWindow]
                         });
                     } else {
-                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
+                         // Manejar caso sin archivo asignado o archivo no encontrado (el background.html ya maneja el error de carga)
+                         console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado o archivo no encontrado.`);
+                         bgWin.webContents.send('load-images', { mediaFiles: [] });
                     }
                 });
             });
