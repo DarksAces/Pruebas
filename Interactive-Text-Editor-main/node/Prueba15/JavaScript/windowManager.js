@@ -15,7 +15,7 @@ function createSelectorWindow() {
         frame: true,
         resizable: false,
         // --- AÑADIDO --- Ruta a tu icono.
-        icon: 'C:\\recursos\\imagenes\\icon\\icon.png',
+        icon: pathManager.iconPath,
         webPreferences: {
             preload: pathManager.preloadScript, // Ruta actualizada
             contextIsolation: true,

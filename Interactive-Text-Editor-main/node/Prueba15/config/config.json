@@ -8,6 +8,7 @@
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
   "mobileImgsDirName": "Moviles",
+  "iconPath": "imagenes/icon/icon.png",
   "lastConfiguration": {
     "size": "1",
     "position": "1",
