@@ -1,22 +1,14 @@
 // JavaScript/positionCalculator.js
 
 const { screen } = require('electron');
-const windowManager = require('./windowManager'); // Para obtener el display primario
 
 function calculatePositions(size, selectedPos) {
-    // Usamos el display PRIMARIO para la ventana principal
-    const targetDisplay = windowManager.getPrimaryDisplay();
-    if (!targetDisplay) {
-        console.error('[CALCULATOR] No se pudo obtener el display principal.');
-        return { mainBounds: { x: 0, y: 0, width: 800, height: 600, index: 0 }, otherBounds: [] };
-    }
+    const displays = screen.getAllDisplays();
+    const targetDisplay = displays.length > 1 ? displays[1] : displays[0];
 
     const { width: sw, height: sh, x: sx, y: sy } = targetDisplay.bounds;
 
-    console.log(`[DIAGNOSTICO] Display Target (MAIN) - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
-
-    // Solo se calcula la posición de la ventana principal (index.html)
-    // Las ventanas de fondo se gestionarán de forma diferente en ipcHandlers.js
+    console.log(`[DIAGNOSTICO] Display Target - X:${sx}, Y:${sy}, W:${sw}, H:${sh}`);
 
     const quarterPositionsBase = [
         { x: sx, y: sy, width: sw/2, height: sh/2, index: 1 },
@@ -28,7 +20,7 @@ function calculatePositions(size, selectedPos) {
     if (size === "3") {
         return {
             mainBounds: { x: sx, y: sy, width: sw, height: sh, index: 0 }, 
-            otherBounds: [] // No hay otros bounds en el display principal
+            otherBounds: []
         };
     }
     
@@ -42,7 +34,15 @@ function calculatePositions(size, selectedPos) {
 
         const mainPos = halfPositions[selectedPos - 1];
         
-        return { mainBounds: mainPos, otherBounds: [] }; // No hay otros bounds en el display principal
+        let otherIndex;
+        if (selectedPos === 1) otherIndex = 2; 
+        else if (selectedPos === 2) otherIndex = 1; 
+        else if (selectedPos === 3) otherIndex = 4; 
+        else if (selectedPos === 4) otherIndex = 3; 
+        
+        const otherPos = halfPositions[otherIndex - 1];
+
+        return { mainBounds: mainPos, otherBounds: [otherPos] };
     }
     
     if (size === "1") {
@@ -51,7 +51,6 @@ function calculatePositions(size, selectedPos) {
 
         let mainBounds = { ...mainPosBase };
         
-        // Ajustes por pixel (se mantienen)
         if (selectedPos === 1 || selectedPos === 3) {
             mainBounds.width += pixelAdj; 
         }
@@ -67,7 +66,11 @@ function calculatePositions(size, selectedPos) {
             mainBounds.height += pixelAdj;
         }
 
-        return { mainBounds: mainBounds, otherBounds: [] }; // No hay otros bounds en el display principal
+        const others = quarterPositionsBase
+            .filter(pos => pos.index !== selectedPos)
+            .map(pos => pos);
+
+        return { mainBounds: mainBounds, otherBounds: others };
     }
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "prueba16",
+  "name": "prueba14",
   "version": "1.0.0",
   "main": "JavaScript/main.js",
   "scripts": {
@@ -7,10 +7,5 @@
   },
   "devDependencies": {
     "electron": "^30.5.1"
-  },
-  "dependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^7.4.4"
   }
 }

@@ -4,268 +4,292 @@ const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
+// Módulos propios
 const appState = require('./appState');
-const pathManager = require('./pathManager');
+const pathManager = require('./pathManager'); // pathManager está disponible en todo el archivo
 const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const inactivityManager = require('./inactivityManager');
 const { calculatePositions } = require('./positionCalculator');
 
-function sendTextToBackgrounds(eventName, data) {
-    appState.backgroundWindows.forEach(bgWin => {
-        if (!bgWin.isDestroyed()) {
-            bgWin.webContents.send(eventName, data);
+function registerHandlers() {
+
+    // ----------------------
+    // Función para abrir el diálogo de selección de archivos
+    // ----------------------
+    ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
+        const window = BrowserWindow.fromWebContents(event.sender);
+        
+        const properties = ['openFile'];
+        if (maxFiles > 1) {
+            properties.push('multiSelections');
         }
+
+        const result = await dialog.showOpenDialog(window, {
+            properties: properties,
+            filters: [
+                { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] }
+            ],
+            message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
+            defaultPath: pathManager.resourcesDir // <-- Se usa pathManager. directamente
+        });
+
+        if (result.canceled) {
+            return null;
+        }
+        return result.filePaths;
     });
-}
 
-function handleSelectionMade(data) {
-    const { size, position, mediaFiles, distributionScheme, assignmentMap } = data;
-    
-    try {
-        console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
+    // ----------------------
+    // Crear todas las ventanas y cargar contenido
+    // ----------------------
+    ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
         
-        windowManager.closeAllWindows(); 
-        inactivityManager.clearInactivityTimer();
-        
-        const { mainBounds } = calculatePositions(size, parseInt(position)); 
-        
-        // Obtenemos los datos de ambos monitores (APP Primary = Secundario Físico; APP Secondary = Principal Físico)
-        const primaryDisplayData = windowManager.getPrimaryDisplay();
-        const secondaryDisplayData = windowManager.getSecondaryDisplay();
-        
-        let bgWindows = []; 
-        let userMediaMap = {}; 
-        let finalOtherBounds = []; 
-
-        if (secondaryDisplayData) {
-            const { x: sx, y: sy, width: sw, height: sh } = secondaryDisplayData.bounds;
-            const quarterPositionsSecondary = [
-                { x: sx, y: sy, width: sw/2, height: sh/2, index: 1 },
-                { x: sx + sw/2, y: sy, width: sw/2, height: sh/2, index: 2 },
-                { x: sx, y: sy + sh/2, width: sw/2, height: sh/2, index: 3 },
-                { x: sx + sw/2, y: sy + sh/2, width: sw/2, height: sh/2, index: 4 }
-            ];
+        try {
+            console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
             
-            if (size === '1') {
-                const mainPositionIndex = parseInt(position);
-                const remainingBounds = quarterPositionsSecondary.filter(b => b.index !== mainPositionIndex); 
+            windowManager.closeAllWindows();
+            inactivityManager.clearInactivityTimer();
 
+            const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
+
+            let finalOtherBounds = otherBounds;
+            let userMediaMap = {};
+            
+            // --- LÓGICA DE DISTRIBUCIÓN AVANZADA ---
+            if (size === '1') {
+                const remainingBounds = otherBounds; 
+                
                 if (distributionScheme === 'one_big' && mediaFiles.length >= 1) {
                     const minX = Math.min(...remainingBounds.map(b => b.x));
                     const minY = Math.min(...remainingBounds.map(b => b.y));
                     const maxX = Math.max(...remainingBounds.map(b => b.x + b.width));
                     const maxY = Math.max(...remainingBounds.map(b => b.y + b.height));
+
                     const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 99 };
                     finalOtherBounds = [combinedBounds];
                     userMediaMap[99] = mediaFiles[0];
+
+                    console.log('[FUSIONADO] Fundo unico creado:', combinedBounds);
+                    console.log('[FUSIONADO] Archivo asignado:', mediaFiles[0]);
+
                 } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
                     finalOtherBounds = remainingBounds;
-                    remainingBounds.forEach((bounds, idx) => { userMediaMap[bounds.index] = mediaFiles[idx]; });
+                    remainingBounds.forEach((bounds, idx) => {
+                         userMediaMap[bounds.index] = mediaFiles[idx];
+                         console.log(`[INDIVIDUAL] Asignado archivo ${idx} (${mediaFiles[idx]}) a index ${bounds.index}`);
+                    });
+
+                } else if (distributionScheme === 'none') {
+                     finalOtherBounds = [];
+                
                 } else if (distributionScheme === 'two_halves' && mediaFiles.length >= 2) {
                     const individualIndex = parseInt(assignmentMap.individualArea); 
                     const boundsToFuse = remainingBounds.filter(b => b.index !== individualIndex);
                     const individualBound = remainingBounds.find(b => b.index === individualIndex);
+                    
                     const minX = Math.min(...boundsToFuse.map(b => b.x));
                     const minY = Math.min(...boundsToFuse.map(b => b.y));
                     const maxX = Math.max(...boundsToFuse.map(b => b.x + b.width));
                     const maxY = Math.max(...boundsToFuse.map(b => b.y + b.height));
+                    
                     const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 98 };
+                    
                     finalOtherBounds = [combinedBounds, individualBound];
-                    userMediaMap[98] = mediaFiles[assignmentMap.fusedFileIndex]; 
-                    userMediaMap[individualBound.index] = mediaFiles[assignmentMap.individualFileIndex]; 
+                    
+                    userMediaMap[98] = mediaFiles[0]; 
+                    userMediaMap[individualBound.index] = mediaFiles[1]; 
+                    
+                    console.log('[FUSIONADO AVANZADO] Bounds fusionados:', combinedBounds);
+                    console.log('[FUSIONADO AVANZADO] Archivo fusionado:', mediaFiles[0]);
+                    console.log('[FUSIONADO AVANZADO] Bound individual:', individualBound);
+                    console.log('[FUSIONADO AVANZADO] Archivo individual:', mediaFiles[1]);
                 }
             } else if (size === '2' && mediaFiles.length >= 1) {
-                const halfPositionsSecondary = [
-                     { x: sx, y: sy, width: sw/2, height: sh, index: 1 },
-                     { x: sx + sw/2, y: sy, width: sw/2, height: sh, index: 2 },
-                     { x: sx, y: sy, width: sw, height: sh/2, index: 3 },
-                     { x: sx, y: sy + sh/2, width: sw, height: sh/2, index: 4 }
-                ];
-                let otherIndex;
-                const mainPositionIndex = parseInt(position);
-                if (mainPositionIndex === 1) otherIndex = 2; 
-                else if (mainPositionIndex === 2) otherIndex = 1; 
-                else if (mainPositionIndex === 3) otherIndex = 4; 
-                else if (mainPositionIndex === 4) otherIndex = 3; 
-                if (otherIndex) {
-                    const otherPos = halfPositionsSecondary[otherIndex - 1];
-                    finalOtherBounds = [otherPos];
-                    userMediaMap[otherPos.index] = mediaFiles[0];
+                // LÓGICA PARA 1/2 PANTALLA
+                if (otherBounds.length > 0) {
+                    finalOtherBounds = otherBounds;
+                    userMediaMap[otherBounds[0].index] = mediaFiles[0];
+                    console.log('[MITAD PANTALLA] Archivo asignado a ventana de fondo:', {
+                        index: otherBounds[0].index,
+                        file: mediaFiles[0]
+                    });
                 }
             } else if (size === '3') {
-                finalOtherBounds = [{ x: sx, y: sy, width: sw, height: sh, index: 100, isFullScreen: true }];
-                if (mediaFiles.length >= 1) {
-                    userMediaMap[100] = mediaFiles[0];
-                }
+                // Pantalla completa no tiene fondos
+                finalOtherBounds = [];
             }
-        }
-        
-        if (appState.winSelector) { appState.winSelector.close(); appState.winSelector = null; }
 
-        const mainWin = windowManager.createWindow(mainBounds, true, pathManager.indexHtml);
-        
-        if (secondaryDisplayData) { 
+            console.log('[DEBUG] userMediaMap final:', userMediaMap);
+            console.log('[DEBUG] finalOtherBounds:', finalOtherBounds);
+
+            // Cerrar selector
+            if (appState.winSelector) {
+                appState.winSelector.close();
+                appState.winSelector = null;
+            }
+
+            // 1. Crear ventana principal
+            const mainWin = windowManager.createWindow(mainBounds, true);
+            appState.windows.push(mainWin);
+            
+            // 2. Crear ventanas de fondo
+            const bgWindows = [];
             finalOtherBounds.forEach((bounds) => {
-                const bgWin = windowManager.createWindow(bounds, false, pathManager.backgroundHtml);
-                bgWindows.push(bgWin); 
+                const bgWin = windowManager.createWindow(bounds, false);
+                appState.windows.push(bgWin);
+                bgWindows.push(bgWin); // Guardar en una lista separada
             });
-        }
-        
-        configManager.saveLastConfig({ size, position, mediaFiles, distributionScheme, assignmentMap });
-
-        let initialText = null;
-        let fileExists = fs.existsSync(pathManager.userFile);
-        if (fileExists) { initialText = fs.readFileSync(pathManager.userFile, 'utf-8'); }
-
-        // ----------------------------------------------------
-        // Al cargar la ventana principal (index.html)
-        // ----------------------------------------------------
-        mainWin.webContents.once('did-finish-load', () => {
             
-            const config = configManager.getConfig();
-            
-            const bannersTop = fs.existsSync(pathManager.bannersTopPath) 
-                ? fs.readdirSync(pathManager.bannersTopPath)
-                    .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                    .map(f => pathManager.getFileUrl(path.join(pathManager.bannersTopPath,f))) : [];
-            const bannersBottom = fs.existsSync(pathManager.bannersBottomPath) 
-                ? fs.readdirSync(pathManager.bannersBottomPath)
-                    .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
-                    .map(f => pathManager.getFileUrl(path.join(pathManager.bannersBottomPath,f))) : [];
-            const mobileImgs = fs.existsSync(pathManager.mobileImgsPath) 
-                ? fs.readdirSync(pathManager.mobileImgsPath)
-                    .filter(f => /\.(png|jpe?g|gif|webp|mp4|webm|ogg|mov|avi)$/i.test(f))
-                    .map(f => pathManager.getFileUrl(path.join(pathManager.mobileImgsPath,f))) : [];
-
-            const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => {
-                if (filename === config.userFileName) { 
-                    
-                    inactivityManager.startInactivityTimer(mainWin); 
-
-                    if (!fs.existsSync(pathManager.userFile)) {
-                        mainWin.webContents.send('no-file', { welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) });
-                        if (appState.backgroundWindows.length > 0) { sendTextToBackgrounds('background-no-file'); }
-                    } else if (eventType === 'change') {
-                        const text = fs.readFileSync(pathManager.userFile, 'utf-8');
-                        
-                        mainWin.webContents.send('file-changed', text);
-                        
-                        if (appState.backgroundWindows.length > 0) { sendTextToBackgrounds('background-text-changed', text); }
-                        
-                        const mobileImgsToSendOnChange = (String(size) === '3') ? mobileImgs : [];
-                        console.log('[MAIN] Enviando load-images por cambio. size=', size, 'mobileImgsToSendOnChange.length=', mobileImgsToSendOnChange.length);
-                        mainWin.webContents.send('load-images', {
-                            bannersTop,
-                            bannersBottom,
-                            mobileImgs: mobileImgsToSendOnChange,
-                            mediaFiles: []
-                        });
-                    }
-                }
+            // Guardar configuración
+            configManager.saveLastConfig({ 
+                size, 
+                position, 
+                mediaFiles, 
+                distributionScheme, 
+                assignmentMap 
             });
 
-            mainWin.on('closed', () => {
-                watcher.close();
-                inactivityManager.clearInactivityTimer();
-                windowManager.closeAllWindows(); 
-            });
-
-            // Carga inicial (PRINCIPAL)
-            if (fileExists) {
-                mainWin.webContents.send('file-changed', initialText);
-                inactivityManager.startInactivityTimer(mainWin); 
-            } else {
-                mainWin.webContents.send('no-file', { welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) });
-            }
-            
-            // Envío de window-size-selected y load-images inicial (PRINCIPAL)
-            mainWin.webContents.send('window-size-selected', { size: size });
-            const mobileImgsToSend = (String(size) === '3') ? mobileImgs : [];
-            console.log('[MAIN] Enviando load-images inicial. size=', size, 'mobileImgsToSend.length=', mobileImgsToSend.length);
-
-            mainWin.webContents.send('load-images', {
-                bannersTop,
-                bannersBottom,
-                mobileImgs: mobileImgsToSend,
-                mediaFiles: []
-            });
-        });
-
-
-        // -----------------------------------------------------------
-        // Al cargar las ventanas de fondo (background.html) - Sincronización robusta
-        // -----------------------------------------------------------
-        console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
-        
-        bgWindows.forEach((bgWin, winIdx) => {
-            bgWin.webContents.once('did-finish-load', () => {
-                const positionIndex = bgWin.positionIndex;
-                const mediaFilePath = userMediaMap[positionIndex];
+            // ----------------------------------------------------
+            // Al cargar la ventana principal (SOLO LÓGICA DE MAINWIN)
+            // ----------------------------------------------------
+            mainWin.webContents.once('did-finish-load', () => {
                 
-                // 1. Envío de MEDIA (inmediato)
-                if (mediaFilePath) {
-                    const fileName = path.basename(mediaFilePath);
-                    const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(fileName); 
-                    const isGif = /\.(gif)$/i.test(fileName);
-                    const normalizedPath = path.normalize(mediaFilePath);
-                    const mediaUrl = pathManager.getFileUrl(normalizedPath);
-                    const mediaForWindow = {
-                        type: isVideo ? 'video' : isGif ? 'gif' : 'image',
-                        src: mediaUrl,
-                        name: fileName,
-                        priority: positionIndex
-                    };
+                // --- CAMBIO CLAVE ---
+                // Ya no destructuramos pathManager. Usaremos pathManager.propiedad
+                
+                const config = configManager.getConfig();
+                
+                const bannersTop = fs.existsSync(pathManager.bannersTopPath) 
+                    ? fs.readdirSync(pathManager.bannersTopPath)
+                        .filter(f => /\.\.(png|jpe?g|gif|webp)$/i.test(f) === false && /\.(png|jpe?g|gif|webp)$/i.test(f))
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersTopPath,f))) // <-- CORREGIDO
+                    : [];
+                const bannersBottom = fs.existsSync(pathManager.bannersBottomPath) 
+                    ? fs.readdirSync(pathManager.bannersBottomPath)
+                        .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.bannersBottomPath,f))) // <-- CORREGIDO
+                    : [];
+                const mobileImgs = fs.existsSync(pathManager.mobileImgsPath) 
+                    ? fs.readdirSync(pathManager.mobileImgsPath)
+                        .filter(f => /\.(png|jpe?g|gif|webp)$/i.test(f))
+                        .map(f => pathManager.getFileUrl(path.join(pathManager.mobileImgsPath,f))) // <-- CORREGIDO
+                    : [];
 
-                    console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
+                const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { // <-- CORREGIDO
+                    if (filename === config.userFileName) { 
+                        
+                        inactivityManager.startInactivityTimer(mainWin); 
 
-                    bgWin.webContents.send('load-images', { mediaFiles: [mediaForWindow] });
-                } else {
-                    console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
-                }
-
-                // 2. Sincronización de TEXTO con retraso explícito
-                setTimeout(() => {
-                    if (fileExists) {
-                        console.log(`[SINCRONIZACION TIMEOUT] Enviando texto inicial a fondo index ${positionIndex}.`);
-                        bgWin.webContents.send('background-text-changed', initialText);
-                    } else {
-                        console.log(`[SINCRONIZACION TIMEOUT] Enviando no-file a fondo index ${positionIndex}.`);
-                        bgWin.webContents.send('background-no-file');
+                        if (!fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
+                            mainWin.webContents.send('no-file', { 
+                                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
+                            });
+                        } else if (eventType === 'change') {
+                            const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
+                            mainWin.webContents.send('file-changed', text);
+                            
+                            mainWin.webContents.send('load-images', {
+                                bannersTop,
+                                bannersBottom,
+                                mobileImgs,
+                                mediaFiles: []
+                            });
+                        }
                     }
-                }, 50); 
+                });
+
+                mainWin.on('closed', () => {
+                    watcher.close();
+                    inactivityManager.clearInactivityTimer();
+                    windowManager.closeAllWindows(); // Cierra todas las demás ventanas (fondo)
+                });
+
+                // Carga inicial
+                console.log(`[DIAGNOSTICO] Verificando archivo de usuario en: ${pathManager.userFile}`); // <-- CORREGIDO
+                if (fs.existsSync(pathManager.userFile)) { // <-- CORREGIDO
+                    console.log('[DIAGNOSTICO] Archivo encontrado. Cargando contenido.'); 
+                    const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
+                    mainWin.webContents.send('file-changed', text);
+                    inactivityManager.startInactivityTimer(mainWin); 
+                } else {
+                    console.log(`[DIAGNOSTICO] Archivo NO encontrado. Cargando Bienvenida desde: ${pathManager.getFileUrl(pathManager.welcomeImage)}`); // <-- CORREGIDO
+                    mainWin.webContents.send('no-file', { 
+                        welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) // <-- CORREGIDO
+                    });
+                }
+                
+                mainWin.webContents.send('window-size-selected', { size: size });
+                
+                mainWin.webContents.send('load-images', {
+                    bannersTop,
+                    bannersBottom,
+                    mobileImgs,
+                    mediaFiles: [] 
+                });
             });
-        });
-
-    } catch (error) {
-        console.error('[FATAL CRASH] Error al procesar la configuracion y crear ventanas.', error.message, error.stack);
-        windowManager.closeAllWindows();
-        windowManager.createSelectorWindow();
-    }
-}
 
 
-function registerHandlers() {
-    ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
-        const window = BrowserWindow.fromWebContents(event.sender);
-        const properties = ['openFile'];
-        if (maxFiles > 1) { properties.push('multiSelections'); }
+            // -----------------------------------------------------------
+            // Al cargar las ventanas de fondo (LÓGICA SEPARADA E INMEDIATA)
+            // -----------------------------------------------------------
+            console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
+            
+            bgWindows.forEach((bgWin, winIdx) => {
+                console.log(`[DEBUG] Procesando ventana de fondo ${winIdx + 1}`);
+                
+                // Adjuntamos el listener INMEDIATAMENTE
+                bgWin.webContents.once('did-finish-load', () => {
+                    const positionIndex = bgWin.positionIndex;
+                    const mediaFilePath = userMediaMap[positionIndex];
+                    
+                    console.log(`[VENTANA FONDO] Index ${positionIndex} - Archivo: ${mediaFilePath}`);
+                    
+                    if (mediaFilePath) {
+                        if (!fs.existsSync(mediaFilePath)) {
+                            console.error(`[ERROR] El archivo NO existe: ${mediaFilePath}`);
+                            return;
+                        }
+                        
+                        console.log(`[OK] El archivo existe: ${mediaFilePath}`);
+                        
+                        const fileName = path.basename(mediaFilePath);
+                        const isVideo = /\.(mp4)$/i.test(fileName);
+                        const isGif = /\.(gif)$/i.test(fileName);
+                        
+                        const normalizedPath = path.normalize(mediaFilePath);
+                        
+                        // --- ESTA ES LA LÍNEA DEL ERROR ---
+                        // Corregida para usar pathManager.getFileUrl()
+                        const mediaUrl = pathManager.getFileUrl(normalizedPath);
+                        
+                        const mediaForWindow = {
+                            type: isVideo ? 'video' : isGif ? 'gif' : 'image',
+                            src: mediaUrl,
+                            name: fileName,
+                            priority: positionIndex
+                        };
 
-        const result = await dialog.showOpenDialog(window, {
-            properties: properties,
-            filters: [ { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] } ],
-            message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
-            defaultPath: pathManager.resourcesDir
-        });
+                        console.log(`[ENVIANDO MEDIA] A ventana index ${positionIndex}:`, mediaForWindow);
 
-        if (result.canceled) { return null; }
-        return result.filePaths;
+                        bgWin.webContents.send('load-images', {
+                            mediaFiles: [mediaForWindow]
+                        });
+                    } else {
+                        console.log(`[VENTANA FONDO] Index ${positionIndex} - Sin archivo asignado.`);
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
+            
+            windowManager.closeAllWindows();
+            windowManager.createSelectorWindow();
+        }
     });
-
-    ipcMain.on('selection-made', (e, data) => handleSelectionMade(data));
 }
 
 module.exports = {
-    registerHandlers,
-    handleSelectionMade 
+    registerHandlers
 };

@@ -1,53 +1,179 @@
-# 📖 ReadMe — Funcional 1 (Mejoras UX y Fondos Avanzados)
+# Prueba 14 - Editor de Texto Interactivo (Versión Modular)
 
-Este documento resume las principales novedades en **Funcional 1** respecto a entregas anteriores, además de incluir instrucciones de ejecución, pruebas y resolución de problemas.
+Esta versión implementa una arquitectura completamente modular del editor de texto interactivo, separando las responsabilidades en módulos especializados y mejorando significativamente la estructura del código.
 
-## 🚀 Resumen Rápido
+## Resumen de Mejoras
 
-**Funcional 1** (renombrado desde Prueba 13) refina la gestión de ventanas, mejora la selección y asignación de medios para ventanas de fondo, y corrige problemas de UX y lógica.
+La versión 14 representa una reescritura completa enfocada en la modularidad y mantenibilidad:
 
-Los **cambios clave** se centran en tres áreas principales:
+### Nueva Estructura de Carpetas
+```
+Prueba14/
+├── config/
+│   └── config.json       # Configuración centralizada
+├── html/                 # Interfaces de usuario
+│   ├── background.html   # Ventana de fondo
+│   ├── index.html       # Ventana principal
+│   └── selector.html    # Selector de configuración
+└── JavaScript/          # Lógica modular
+    ├── appState.js      # Estado global
+    ├── configManager.js  # Gestión de config
+    ├── inactivityManager.js
+    ├── ipcHandlers.js   # Comunicación IPC
+    ├── main.js         # Punto de entrada
+    ├── pathManager.js   # Gestión de rutas
+    ├── positionCalculator.js
+    ├── preload.js      # API segura
+    └── windowManager.js # Gestión ventanas
+```
 
-1.  **UX del Selector de Medios (Nuevo) ✨:** Permite la **selección de múltiples archivos en sucesivas llamadas** al diálogo de archivos y la **eliminación individual** de archivos de la lista.
-2.  **Fondos Avanzados (Refinado) 📐:** La distribución `two_halves` (Fondo Dividido) en modo 1/4 de pantalla ahora **restringe la posición del fondo individual** para garantizar que las dos áreas fusionadas sean **contiguas** (formando media pantalla), resolviendo el "bug visual" de la fusión.
-3.  **Sincronización de Posición (Corregido) ✅:** Asegura que la posición de la ventana principal (`mainPosition`) se mantenga sincronizada con el selector de posición.
+### Módulos Principales
 
-***
+## Módulos JavaScript y sus Responsabilidades
 
-## ⚙️ ¿Qué cambia respecto a versiones anteriores?
+1. **Estado y Configuración**:
+   - `appState.js`: Gestiona el estado global de la aplicación
+   - `configManager.js`: Carga/guarda configuración y última sesión
+   - `pathManager.js`: Resuelve rutas de recursos y archivos
 
-### 1. Gestión de Archivos Multimedia (UX Mejorada)
-* **Adición Acumulativa:** El botón de selección ahora **añade** los nuevos archivos elegidos a la lista existente (`selectedFiles`), permitiendo al usuario seleccionar la cantidad requerida en varias tandas.
-* **Eliminación Individual:** Se ha implementado un botón **`[X]`** junto a cada archivo en la lista, el cual llama a la función `removeFile(index)` para eliminar archivos específicos sin borrar toda la selección.
-* **Límite Dinámico:** El diálogo de selección ahora informa cuántos archivos **faltan** por seleccionar (`maxFilesNeeded - selectedFiles.length`) y limita la selección a ese número.
+2. **Gestión de Ventanas**:
+   - `windowManager.js`: Creación y control de ventanas
+   - `positionCalculator.js`: Cálculo preciso de posiciones
+   - `inactivityManager.js`: Timer de inactividad y reset
 
-### 2. Distribuciones Avanzadas de Fondos (Lógica Corregida)
-* **Validación de Fusión:** En el esquema `Fondo Dividido` (`two_halves`) y tamaño `1/4 de pantalla`, se implementó una estricta validación. El selector de **Posición Individual** ahora solo ofrece las dos posiciones que, al quedar excluidas de la fusión, garantizan que las dos áreas restantes formen una **unidad contigua** de media pantalla (horizontal o vertical). Esto soluciona el problema de la fusión "bugueada".
+3. **Comunicación**:
+   - `ipcHandlers.js`: Gestión centralizada de IPC
+   - `preload.js`: API segura para renderers
 
-### 3. Selector de Posición y Sincronización
-* **Sincronización de Posición:** Se mantiene la corrección para asegurar que la variable interna `mainPosition` y el valor del `select` visual (`posSelect`) estén siempre sincronizados.
-* **Diálogo de Archivos (IPC):** `ipcHandlers.js` activa `multiSelections` cuando el límite de archivos es mayor que 1.
+4. **Punto de Entrada**:
+   - `main.js`: Orquestación y lifecycle de la app
 
-***
+## Mejoras Principales
 
-## 🗄️ Archivos Modificados Relevantes
+1. **Modularización Completa**:
+   - Separación clara de responsabilidades
+   - Mejor testabilidad y mantenimiento
+   - Reducción de acoplamiento
 
-| Archivo | Resumen de la Modificación |
-| :--- | :--- |
-| `html/selector.html` | **Principal cambio:** Implementación de la lógica de **adición/eliminación** de archivos y las **restricciones de posición** para la fusión contigua en `two_halves`. |
-| `ipcHandlers.js` | Maneja la selección múltiple en el diálogo de archivos y la lógica de fusión. |
-| `preload.js` | Exposición de `electronAPI.selectMediaDialog(maxFiles)` y otros canales. |
-| `main.js` | Contiene la lógica principal de manejo de diálogos y creación de ventanas. |
+2. **Gestión de Estado**:
+   - Estado centralizado en `appState`
+   - Configuración unificada
+   - Persistencia mejorada
 
-***
+3. **Cálculo de Posiciones**:
+   - Soporte multi-monitor mejorado
+   - Cálculos precisos para cada modo
+   - Mejor manejo de bordes
 
-## ▶️ Cómo ejecutar (Windows — PowerShell)
+4. **Sistema de Archivos**:
+   - Rutas multiplataforma
+   - Vigilancia eficiente
+   - Mejor gestión de recursos
 
-Desde la carpeta `Funcional 1` (o la carpeta raíz de la aplicación):
+## Instalación y Uso
 
 ```powershell
-# Instalar dependencias (si no están instaladas)
+# Instalar dependencias
 npm install
 
-# Ejecutar la app (arranca Electron)
+# Ejecutar en modo desarrollo
+npm run dev
+
+# Ejecutar en modo producción
 npm start
+```
+
+Para desarrollo, usa las DevTools (Ctrl+Shift+I) para ver logs detallados.
+
+## Funcionalidades Principales
+
+1. **Gestión de Ventanas**
+   - Pantalla completa
+   - Mitades (horizontal/vertical)
+   - Cuartos de pantalla
+   - Soporte multi-monitor
+   - Posicionamiento preciso
+
+2. **Gestión de Medios**
+   - Selección múltiple
+   - Vista previa
+   - Distribución automática
+   - Sincronización de fondos
+
+3. **Sistema de Archivos**
+   - Vigilancia de cambios
+   - Auto-reset por inactividad
+   - Persistencia de config
+   - Logs detallados
+
+## Pruebas y Verificación
+
+1. **Selector de Ventanas**:
+   - Elige tamaño (1/4, 1/2, completa)
+   - Prueba cada posición
+   - Verifica cálculos en DevTools
+
+2. **Gestión de Archivos**:
+   - Selección múltiple
+   - Límites según modo
+   - Asignación a áreas
+
+3. **Ventanas**:
+   - Posicionamiento correcto
+   - Fondos sincronizados
+   - Reset automático
+
+## Solución de Problemas
+
+1. **Selector no Responde**:
+   - Verificar `ipcHandlers.js`
+   - Comprobar logs en DevTools
+   - Validar config.json
+
+2. **Ventanas Mal Posicionadas**:
+   - Revisar `positionCalculator.js`
+   - Verificar monitor activo
+   - Comprobar bounds calculados
+
+3. **Archivos No Cargan**:
+   - Validar rutas en `pathManager.js`
+   - Comprobar permisos
+   - Verificar formatos soportados
+
+## Desarrollo
+
+1. **Convenciones**:
+   - ES6+ modern JavaScript
+   - Modularización estricta
+   - Logging consistente
+
+2. **Testing**:
+   ```powershell
+   # Tests unitarios
+   npm test
+
+   # Lint
+   npm run lint
+   
+   # Dev con hot-reload
+   npm run dev
+   ```
+
+3. **Mantenimiento**:
+   - Seguir estructura modular
+   - Documentar cambios
+   - Actualizar tests
+
+## Siguientes Pasos
+
+1. **Mejoras Planificadas**:
+   - Tests E2E
+   - Sistema de plugins
+   - UI/UX mejorada
+   - Más configuraciones
+
+2. **Bugs Conocidos**:
+   - Reporte y tracking en GitHub
+   - Priorización de fixes
+   - Updates regulares
+

@@ -2,8 +2,6 @@
 
 module.exports = {
     winSelector: null,  // La ventana del selector
-    windows: [],        // Array de ventanas de contenido principal (solo index.html)
-    // 🎯 CORRECCIÓN: Agregar el array para las ventanas de fondo
-    backgroundWindows: [], 
+    windows: [],        // Array de todas las ventanas de contenido (main y background)
     inactivityTimer: null // Referencia al temporizador de inactividad
 };

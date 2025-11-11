@@ -4,9 +4,9 @@ const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-// Modulos propios
+// Módulos propios
 const appState = require('./appState');
-const pathManager = require('./pathManager'); // pathManager esta disponible en todo el archivo
+const pathManager = require('./pathManager'); // pathManager está disponible en todo el archivo
 const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const inactivityManager = require('./inactivityManager');
@@ -15,7 +15,7 @@ const { calculatePositions } = require('./positionCalculator');
 function registerHandlers() {
 
     // ----------------------
-    // Funcion para abrir el dialogo de seleccion de archivos
+    // Función para abrir el diálogo de selección de archivos
     // ----------------------
     ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
         const window = BrowserWindow.fromWebContents(event.sender);
@@ -56,7 +56,7 @@ function registerHandlers() {
             let finalOtherBounds = otherBounds;
             let userMediaMap = {};
             
-            // --- LOGICA DE DISTRIBUCION AVANZADA ---
+            // --- LÓGICA DE DISTRIBUCIÓN AVANZADA ---
             if (size === '1') {
                 const remainingBounds = otherBounds; 
                 
@@ -106,7 +106,7 @@ function registerHandlers() {
                     console.log('[FUSIONADO AVANZADO] Archivo individual:', mediaFiles[1]);
                 }
             } else if (size === '2' && mediaFiles.length >= 1) {
-                // LOGICA PARA 1/2 PANTALLA
+                // LÓGICA PARA 1/2 PANTALLA
                 if (otherBounds.length > 0) {
                     finalOtherBounds = otherBounds;
                     userMediaMap[otherBounds[0].index] = mediaFiles[0];
@@ -141,7 +141,7 @@ function registerHandlers() {
                 bgWindows.push(bgWin); // Guardar en una lista separada
             });
             
-            // Guardar configuracion
+            // Guardar configuración
             configManager.saveLastConfig({ 
                 size, 
                 position, 
@@ -151,7 +151,7 @@ function registerHandlers() {
             });
 
             // ----------------------------------------------------
-            // Al cargar la ventana principal (SOLO LOGICA DE MAINWIN)
+            // Al cargar la ventana principal (SOLO LÓGICA DE MAINWIN)
             // ----------------------------------------------------
             mainWin.webContents.once('did-finish-load', () => {
                 
@@ -189,15 +189,12 @@ function registerHandlers() {
                             const text = fs.readFileSync(pathManager.userFile, 'utf-8'); // <-- CORREGIDO
                             mainWin.webContents.send('file-changed', text);
                             
-                                // Al actualizar el archivo, respetamos la misma regla: solo enviar mobileImgs si es Pantalla completa
-                                const mobileImgsToSendOnChange = (String(size) === '3') ? mobileImgs : [];
-                                console.log('[MAIN] Enviando load-images por cambio. size=', size, 'mobileImgsToSendOnChange.length=', mobileImgsToSendOnChange.length);
-                                mainWin.webContents.send('load-images', {
-                                    bannersTop,
-                                    bannersBottom,
-                                    mobileImgs: mobileImgsToSendOnChange,
-                                    mediaFiles: []
-                                });
+                            mainWin.webContents.send('load-images', {
+                                bannersTop,
+                                bannersBottom,
+                                mobileImgs,
+                                mediaFiles: []
+                            });
                         }
                     }
                 });
@@ -205,7 +202,7 @@ function registerHandlers() {
                 mainWin.on('closed', () => {
                     watcher.close();
                     inactivityManager.clearInactivityTimer();
-                    windowManager.closeAllWindows(); // Cierra todas las demas ventanas (fondo)
+                    windowManager.closeAllWindows(); // Cierra todas las demás ventanas (fondo)
                 });
 
                 // Carga inicial
@@ -223,22 +220,18 @@ function registerHandlers() {
                 }
                 
                 mainWin.webContents.send('window-size-selected', { size: size });
-
-                // Solo enviamos las imagenes "moviles" cuando la configuracion es Pantalla completa (size === '3')
-                const mobileImgsToSend = (String(size) === '3') ? mobileImgs : [];
-                console.log('[MAIN] Enviando load-images inicial. size=', size, 'mobileImgsToSend.length=', mobileImgsToSend.length);
-
+                
                 mainWin.webContents.send('load-images', {
                     bannersTop,
                     bannersBottom,
-                    mobileImgs: mobileImgsToSend,
+                    mobileImgs,
                     mediaFiles: [] 
                 });
             });
 
 
             // -----------------------------------------------------------
-            // Al cargar las ventanas de fondo (LOGICA SEPARADA E INMEDIATA)
+            // Al cargar las ventanas de fondo (LÓGICA SEPARADA E INMEDIATA)
             // -----------------------------------------------------------
             console.log(`[DEBUG] Total de ventanas de fondo: ${bgWindows.length}`);
             
@@ -289,7 +282,7 @@ function registerHandlers() {
             });
 
         } catch (error) {
-            console.error('[FATAL CRASH] Error al procesar la configuracion y crear ventanas.', error.message, error.stack);
+            console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
             
             windowManager.closeAllWindows();
             windowManager.createSelectorWindow();
