@@ -17,7 +17,7 @@ function resetToWelcome(mainWin) {
             }
             if (mainWin && !mainWin.isDestroyed()) {
                  mainWin.webContents.send('no-file', {
-                     welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
+                 welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
                  });
             }
         });
