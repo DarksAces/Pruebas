@@ -65,82 +65,92 @@
 <body>
     <div id="media-container"></div>
     <script>
-        console.log('[BACKGROUND] Ventana de fondo inicializada');
+        // Función auxiliar para logging al proceso main
+        function logToMain(level, context, message) {
+            const msg = (message instanceof Error) ? message.stack : String(message);
+            if (window.electronAPI && window.electronAPI.sendRenderLog) {
+                window.electronAPI.sendRenderLog(level, context, msg);
+            } else {
+                console.warn(`[RENDER LOG FALLBACK] [${level}] [${context}] ${msg}`);
+            }
+        }
+        
+        logToMain('INFO', 'BG_INIT', 'Ventana de fondo inicializada.');
         
         window.electronAPI.onLoadImages(({ mediaFiles }) => {
-            console.log('[BACKGROUND] Recibido evento load-images:', mediaFiles);
             
-            const container = document.getElementById('media-container');
-            container.innerHTML = '';
-            
-            if (!mediaFiles || mediaFiles.length === 0) {
-                console.log('[BACKGROUND] No hay archivos de media para esta ventana de fondo.');
-                container.innerHTML = '<div class="debug-info">Sin archivos multimedia asignados a esta ventana</div>';
-                return;
-            }
-
-            const media = mediaFiles[0];
-            console.log('[BACKGROUND] Procesando media:', {
-                type: media.type,
-                src: media.src,
-                name: media.name,
-                priority: media.priority
-            });
-            
-            // Crear elemento según el tipo
-            let element;
-            if (media.type === 'video') {
-                element = document.createElement('video');
-                element.autoplay = true;
-                element.loop = true;
-                element.muted = true;
-                element.playsinline = true;
+            try {
+                const container = document.getElementById('media-container');
+                container.innerHTML = '';
                 
-                element.onloadeddata = () => {
-                    console.log('[BACKGROUND] Video cargado, intentando reproducir...');
-                    element.play().then(() => {
-                        console.log('[BACKGROUND] Video reproduciendo correctamente');
-                    }).catch(e => {
-                        console.error('[BACKGROUND] Error al reproducir video:', e);
-                        container.innerHTML += '<div class="error-message">Error al reproducir: ' + e.message + '</div>';
-                    });
-                };
-            } else {
-                element = document.createElement('img');
-                if (media.type === 'gif') {
-                    element.classList.add('gif');
+                if (!mediaFiles || mediaFiles.length === 0) {
+                    logToMain('INFO', 'BG_NO_MEDIA', 'No hay archivos de media asignados a esta ventana.');
+                    container.innerHTML = '<div class="debug-info">Sin archivos multimedia asignados a esta ventana</div>';
+                    return;
                 }
+
+                const media = mediaFiles[0];
+                logToMain('INFO', 'BG_MEDIA_PROCESS', `Procesando medio: ${media.name} (${media.type})`);
+                
+                // Crear elemento según el tipo
+                let element;
+                if (media.type === 'video') {
+                    element = document.createElement('video');
+                    element.autoplay = true;
+                    element.loop = true;
+                    element.muted = true;
+                    element.playsinline = true;
+                    
+                    element.onloadeddata = () => {
+                        element.play().then(() => {
+                            logToMain('INFO', 'BG_VIDEO_PLAY_OK', `Video '${media.name}' reproduciendo correctamente.`);
+                        }).catch(e => {
+                            // Este error ocurre si la reproducción automática es bloqueada
+                            logToMain('ERROR', 'BG_VIDEO_PLAY_FAIL', `Error al intentar reproducir video: ${e.message}.`);
+                            container.innerHTML += '<div class="error-message">Error al reproducir: ' + e.message + '</div>';
+                        });
+                    };
+                } else {
+                    element = document.createElement('img');
+                    if (media.type === 'gif') {
+                        element.classList.add('gif');
+                    }
+                }
+                
+                // Manejo de errores mejorado
+                element.onerror = (e) => {
+                    logToMain('ERROR', 'BG_LOAD_MEDIA_FAIL', `Fallo al cargar el medio '${media.name}' desde '${media.src}'.`);
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <strong>ERROR: No se pudo cargar el archivo</strong><br><br>
+                            Tipo: ${media.type}<br>
+                            Nombre: ${media.name}<br>
+                            Ruta: ${media.src}<br><br>
+                            Verifica que:<br>
+                            1. El archivo existe en la ubicación<br>
+                            2. El formato es compatible (png, jpg, gif, mp4)<br>
+                            3. No hay espacios o caracteres especiales en la ruta
+                        </div>
+                    `;
+                };
+                
+                element.onload = () => {
+                    logToMain('INFO', 'BG_IMAGE_LOAD_OK', `Imagen/GIF '${media.name}' cargada exitosamente.`);
+                };
+                
+                // Agregar al contenedor y establecer src
+                container.appendChild(element);
+                element.src = media.src;
+                
+                logToMain('INFO', 'BG_ELEMENT_SET', `Elemento ${media.type} creado y fuente establecida.`);
+
+            } catch (e) {
+                // Captura cualquier error inesperado en el flujo de lógica de carga
+                logToMain('FATAL', 'BG_RENDER_CRASH', e);
             }
-            
-            // Manejo de errores mejorado
-            element.onerror = (e) => {
-                console.error('[BACKGROUND] Error al cargar el medio:', media.src, e);
-                container.innerHTML = `
-                    <div class="error-message">
-                        <strong>ERROR: No se pudo cargar el archivo</strong><br><br>
-                        Tipo: ${media.type}<br>
-                        Nombre: ${media.name}<br>
-                        Ruta: ${media.src}<br><br>
-                        Verifica que:<br>
-                        1. El archivo existe en la ubicación<br>
-                        2. El formato es compatible (png, jpg, gif, mp4)<br>
-                        3. No hay espacios o caracteres especiales en la ruta
-                    </div>
-                `;
-            };
-            
-            element.onload = () => {
-                console.log('[BACKGROUND] Imagen cargada exitosamente:', media.src);
-            };
-            
-            // Agregar al contenedor y establecer src
-            container.appendChild(element);
-            element.src = media.src;
-            
-            console.log('[BACKGROUND] Elemento creado y src establecido');
         });
         
-        console.log('[BACKGROUND] Listeners registrados, esperando evento load-images...');
+        logToMain('INFO', 'BG_LISTENERS_READY', 'Listeners registrados, esperando evento load-images...');
     </script>
 </body>
 </html>

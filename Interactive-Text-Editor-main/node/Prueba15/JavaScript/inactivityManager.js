@@ -1,9 +1,10 @@
-// JavaScript/inactivityManager.js
+// JavaScript/inactivityManager.js (CORREGIDO + LOGGING)
 
 const fs = require('fs');
 const appState = require('./appState');
 const pathManager = require('./pathManager');
 const { getConfig } = require('./configManager');
+const logManager = require('./logManager'); // <-- ¡IMPORTADO!
 
 // NO definimos INACTIVITY_TIME_MS aquí arriba
 
@@ -12,20 +13,23 @@ function resetToWelcome(mainWin) {
         fs.unlink(pathManager.userFile, (err) => { 
             if (err) {
                 console.error('Error al eliminar contenido.txt por inactividad:', err);
+                logManager.logError('INACTIVITY_RESET_UNLINK', err); // <-- ¡LOGGING AÑADIDO!
             } else {
                 console.log('contenido.txt eliminado por inactividad. Volviendo a bienvenida.');
             }
             if (mainWin && !mainWin.isDestroyed()) {
-                 mainWin.webContents.send('no-file', {
-                 welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
-                 });
+                 // ******************************************************
+                 // CORRECCIÓN: Se envía un objeto vacío, eliminando welcomePath
+                 mainWin.webContents.send('no-file', {});
+                 // ******************************************************
             }
         });
     } else {
         if (mainWin && !mainWin.isDestroyed()) {
-            mainWin.webContents.send('no-file', {
-                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage)
-            });
+            // ******************************************************
+            // CORRECCIÓN: Se envía un objeto vacío, eliminando welcomePath
+            mainWin.webContents.send('no-file', {});
+            // ******************************************************
         }
     }
 }
@@ -35,6 +39,7 @@ function startInactivityTimer(mainWin) {
     const config = getConfig();
     if (!config) {
         console.error("[TEMPORIZADOR] Error: Configuración no cargada. No se puede iniciar el temporizador.");
+        logManager.logError('INACTIVITY_START_CONFIG_FAIL', "Configuración no cargada."); // <-- ¡LOGGING AÑADIDO!
         return;
     }
     const INACTIVITY_TIME_MS = config.inactivityTimeMs;

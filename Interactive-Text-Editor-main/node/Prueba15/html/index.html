@@ -78,7 +78,7 @@
   }
 
   .welcome { display: block; margin: 50px auto 20px; max-width: 300px; height: auto; }
-  .welcome-text { text-align: center; font-size: 22px; color: #555; }
+  .welcome-text { text-align: center; font-size: 22px; color: #ffffff; }
 
   .content-container {
     background-color: #1e1e1e; 
@@ -130,119 +130,151 @@
   </div>
 
   <script>
+    // Función auxiliar para logging al proceso main
+    function logToMain(level, context, message) {
+        const msg = (message instanceof Error) ? message.stack : String(message);
+        if (window.electronAPI && window.electronAPI.sendRenderLog) {
+            window.electronAPI.sendRenderLog(level, context, msg);
+        } else {
+            console.warn(`[RENDER LOG FALLBACK] [${level}] [${context}] ${msg}`);
+        }
+    }
+    
+    // Log informativo de inicio
+    logToMain('INFO', 'INDEX_INIT', 'Ventana principal (index.html) cargada.');
+
+
     const contentDiv = document.getElementById('content');
     const wrapper = document.getElementById('content-wrapper');
     const body = document.body;
 
     window.electronAPI.onFileChange((text) => {
-      contentDiv.innerHTML = '';
-      const lines = text.split('\n');
-      
-      lines.forEach(line => {
-        const div = document.createElement('div');
-        div.textContent = line;
-        contentDiv.appendChild(div);
-      });
-      
-      wrapper.scrollTop = wrapper.scrollHeight;
+        try {
+            contentDiv.innerHTML = '';
+            const lines = text.split('\n');
+            
+            lines.forEach(line => {
+                const div = document.createElement('div');
+                div.textContent = line;
+                contentDiv.appendChild(div);
+            });
+            
+            wrapper.scrollTop = wrapper.scrollHeight;
+            logToMain('INFO', 'INDEX_FILE_CHANGE', 'Contenido de archivo actualizado.');
+        } catch (e) {
+            logToMain('ERROR', 'INDEX_FILE_PROCESS_FAIL', e);
+        }
     });
 
-    window.electronAPI.onNoFile(({ welcomePath }) => {
-      contentDiv.innerHTML = '';
-      const welcomeImg = document.createElement('img');
-      welcomeImg.src = welcomePath;
-      welcomeImg.alt = 'Bienvenido';
-      welcomeImg.classList.add('welcome');
+    window.electronAPI.onNoFile((data) => {
+        try {
+            contentDiv.innerHTML = '';
+            
+            const msg = document.createElement('div');
+            msg.textContent = '¡Bienvenido! En breve comenzaremos a atenderle.';
+            msg.classList.add('welcome-text');
 
-      const msg = document.createElement('div');
-      msg.textContent = '¡Bienvenido! En breve comenzaremos a atenderle.';
-      msg.classList.add('welcome-text');
-
-      const wrapperDiv = document.createElement('div');
-      wrapperDiv.classList.add('fade-in');
-      wrapperDiv.appendChild(welcomeImg);
-      wrapperDiv.appendChild(msg);
-      contentDiv.appendChild(wrapperDiv);
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.classList.add('fade-in');
+            
+            wrapperDiv.appendChild(msg);
+            contentDiv.appendChild(wrapperDiv);
+            logToMain('INFO', 'INDEX_WELCOME_SCREEN', 'Mostrando pantalla de bienvenida.');
+        } catch (e) {
+            logToMain('ERROR', 'INDEX_WELCOME_FAIL', e);
+        }
     });
 
     // SCRIPT DE CARGA DE BANNERS Y IMÁGENES MÓVILES (SOLO EN PANTALLA COMPLETA)
     window.electronAPI.onLoadImages(({ bannersTop, mobileImgs, bannersBottom }) => {
-      const topDiv = document.getElementById('banner-top');
-      const bottomDiv = document.getElementById('banner-bottom');
-      topDiv.innerHTML = '';
-      bottomDiv.innerHTML = '';
+        try {
+            const topDiv = document.getElementById('banner-top');
+            const bottomDiv = document.getElementById('banner-bottom');
+            topDiv.innerHTML = '';
+            bottomDiv.innerHTML = '';
 
-      // Load banners
-      bannersTop.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        topDiv.appendChild(img);
-      });
-
-      bannersBottom.forEach(src => {
-        const img = document.createElement('img');
-        img.src = src;
-        bottomDiv.appendChild(img);
-      });
-
-      // Remove existing mobile images
-      document.querySelectorAll('.mobile').forEach(el => el.remove());
-
-      // LÓGICA CORREGIDA: Mostrar imágenes móviles SOLO si la clase 'full-screen' está presente.
-      const isFullScreen = document.body.classList.contains('full-screen');
-      
-      if (isFullScreen) {
-          // Add mobile images
-          mobileImgs.forEach(src => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.classList.add('mobile');
-            img.style.left = Math.random() * (window.innerWidth - 150) + 'px';
-            img.style.top = Math.random() * (window.innerHeight - 150) + 'px';
-
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
-
-            img.addEventListener('mousedown', e => {
-              isDragging = true;
-              startX = e.clientX - img.offsetLeft;
-              startY = e.clientY - img.offsetTop;
-              img.style.cursor = 'grabbing';
+            // Load banners
+            bannersTop.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                topDiv.appendChild(img);
             });
 
-            document.addEventListener('mousemove', e => {
-              if (!isDragging) return;
-              e.preventDefault();
-              const x = e.clientX - startX;
-              const y = e.clientY - startY;
-              img.style.left = `${x}px`;
-              img.style.top = `${y}px`;
+            bannersBottom.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                bottomDiv.appendChild(img);
             });
 
-            document.addEventListener('mouseup', () => {
-              isDragging = false;
-              img.style.cursor = 'grab';
-            });
+            // Remove existing mobile images
+            document.querySelectorAll('.mobile').forEach(el => el.remove());
 
-            document.body.appendChild(img);
-          });
-      }
+            const isFullScreen = document.body.classList.contains('full-screen');
+            
+            if (isFullScreen) {
+                logToMain('INFO', 'INDEX_LOAD_MOBILES', `Cargando ${mobileImgs.length} imágenes móviles.`);
+                // Add mobile images
+                mobileImgs.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.classList.add('mobile');
+                    // ... (Lógica de posicionamiento y arrastre)
+                    img.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+                    img.style.top = Math.random() * (window.innerHeight - 150) + 'px';
+
+                    let isDragging = false;
+                    let startX, startY;
+
+                    img.addEventListener('mousedown', e => {
+                      isDragging = true;
+                      startX = e.clientX - img.offsetLeft;
+                      startY = e.clientY - img.offsetTop;
+                      img.style.cursor = 'grabbing';
+                    });
+
+                    document.addEventListener('mousemove', e => {
+                      if (!isDragging) return;
+                      e.preventDefault();
+                      const x = e.clientX - startX;
+                      const y = e.clientY - startY;
+                      img.style.left = `${x}px`;
+                      img.style.top = `${y}px`;
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                      isDragging = false;
+                      img.style.cursor = 'grab';
+                    });
+
+                    document.body.appendChild(img);
+                });
+            } else {
+                 logToMain('INFO', 'INDEX_MOBILES_SKIP', 'Imágenes móviles omitidas (no es pantalla completa).');
+            }
+        } catch (e) {
+            logToMain('ERROR', 'INDEX_LOAD_ASSETS_FAIL', e);
+        }
     });
 
     // --- MANEJO DEL TAMAÑO DE VENTANA ---
     window.electronAPI.onWindowSizeSelected(({ size }) => {
-        // Clase para 1/4 pantalla
-        if (size === '1') {
-            body.classList.add('font-small'); 
-        } else {
-            body.classList.remove('font-small'); 
-        }
-        
-        // **CLASE CLAVE:** Clase específica para Pantalla Completa ('3')
-        if (size === '3') {
-            body.classList.add('full-screen');
-        } else {
-            body.classList.remove('full-screen');
+        try {
+            // Clase para 1/4 pantalla
+            if (size === '1') {
+                body.classList.add('font-small'); 
+            } else {
+                body.classList.remove('font-small'); 
+            }
+            
+            // **CLASE CLAVE:** Clase específica para Pantalla Completa ('3')
+            if (size === '3') {
+                body.classList.add('full-screen');
+            } else {
+                body.classList.remove('full-screen');
+            }
+             logToMain('INFO', 'INDEX_SIZE_SET', `Tamaño de ventana aplicado: ${size}.`);
+        } catch (e) {
+            logToMain('ERROR', 'INDEX_SIZE_SET_FAIL', e);
         }
     });
 

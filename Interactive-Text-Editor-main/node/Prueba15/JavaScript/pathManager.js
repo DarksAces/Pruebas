@@ -3,6 +3,8 @@
 const path = require('path');
 const url = require('url');
 const { getConfig } = require('./configManager');
+// Importación añadida para logging
+const logManager = require('./logManager'); 
 
 // --- Rutas que NO dependen de config ---
 const appRoot = path.join(__dirname, '..'); // Sube un nivel desde /JavaScript
@@ -14,9 +16,6 @@ function getFileUrl(filePath) {
 }
 
 // --- Exportamos las rutas ---
-// Usamos "getters" para que el valor de 'config' se obtenga
-// EN EL MOMENTO en que se pide la ruta, no al cargar el archivo.
-
 module.exports = {
     // --- Rutas estáticas ---
     appRoot,
@@ -25,63 +24,121 @@ module.exports = {
 
     // --- Rutas dinámicas (dependen de config) ---
     get resourcesDir() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'resourcesDir'");
-        return path.resolve(config.resourcesDir);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'resourcesDir'");
+            return path.resolve(config.resourcesDir);
+        } catch (error) {
+            logManager.logFatal('PATH_RESOURCES_DIR', error);
+            throw error;
+        }
     },
     
     get htmlDir() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'htmlDir'");
-        return path.join(appRoot, config.htmlDirName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'htmlDir'");
+            return path.join(appRoot, config.htmlDirName);
+        } catch (error) {
+            logManager.logFatal('PATH_HTML_DIR', error);
+            throw error;
+        }
     },
 
     get imagesDir() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'imagesDir'");
-        return path.join(this.resourcesDir, config.imageDirName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'imagesDir'");
+            return path.join(this.resourcesDir, config.imageDirName);
+        } catch (error) {
+            logManager.logFatal('PATH_IMAGES_DIR', error);
+            throw error;
+        }
     },
 
     get userFile() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'userFile'");
-        return path.join(this.resourcesDir, config.userFileName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'userFile'");
+            return path.join(this.resourcesDir, config.userFileName);
+        } catch (error) {
+            logManager.logFatal('PATH_USER_FILE', error);
+            throw error;
+        }
     },
     
-    get welcomeImage() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'welcomeImage'");
-        return path.join(this.imagesDir, config.defaultWelcomeImagePath);
-    },
 
     get bannersTopPath() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'bannersTopPath'");
-        return path.join(this.imagesDir, config.bannersTopDirName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'bannersTopPath'");
+            return path.join(this.imagesDir, config.bannersTopDirName);
+        } catch (error) {
+            logManager.logFatal('PATH_BANNERS_TOP', error);
+            throw error;
+        }
     },
     
     get bannersBottomPath() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'bannersBottomPath'");
-        return path.join(this.imagesDir, config.bannersBottomDirName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'bannersBottomPath'");
+            return path.join(this.imagesDir, config.bannersBottomDirName);
+        } catch (error) {
+            logManager.logFatal('PATH_BANNERS_BOTTOM', error);
+            throw error;
+        }
     },
 
     get mobileImgsPath() {
-        const config = getConfig();
-        if (!config) throw new Error("Config not loaded before accessing 'mobileImgsPath'");
-        return path.join(this.imagesDir, config.mobileImgsDirName);
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'mobileImgsPath'");
+            return path.join(this.imagesDir, config.mobileImgsDirName);
+        } catch (error) {
+            logManager.logFatal('PATH_MOBILE_IMGS', error);
+            throw error;
+        }
+    },
+    
+    get logFilePath() {
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'logFilePath'");
+            return config.logFilePath; 
+        } catch (error) {
+            // Este log podría fallar si la config aún no está cargada, 
+            // pero lo dejamos para capturar fallos post-carga.
+            console.error("[FATAL] Fallo al obtener logFilePath:", error);
+            throw error;
+        }
     },
 
     // --- Rutas HTML (dependen de htmlDir) ---
     get selectorHtml() {
-        return path.join(this.htmlDir, 'selector.html');
+        try {
+            return path.join(this.htmlDir, 'selector.html');
+        } catch (error) {
+            logManager.logFatal('PATH_SELECTOR_HTML', error);
+            throw error;
+        }
     },
     
     get indexHtml() {
-        return path.join(this.htmlDir, 'index.html');
+        try {
+            return path.join(this.htmlDir, 'index.html');
+        } catch (error) {
+            logManager.logFatal('PATH_INDEX_HTML', error);
+            throw error;
+        }
     },
 
     get backgroundHtml() {
-        return path.join(this.htmlDir, 'background.html');
+        try {
+            return path.join(this.htmlDir, 'background.html');
+        } catch (error) {
+            logManager.logFatal('PATH_BACKGROUND_HTML', error);
+            throw error;
+        }
     }
 };

@@ -13,5 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onWindowSizeSelected: (callback) => ipcRenderer.on('window-size-selected', (e, data) => callback(data)),
   
   // Diálogo de selección de archivos
-  selectMediaDialog: (maxFiles) => ipcRenderer.invoke('open-media-dialog', maxFiles) 
+  selectMediaDialog: (maxFiles) => ipcRenderer.invoke('open-media-dialog', maxFiles),
+  
+  // **NUEVO:** Canal para enviar logs desde el Renderizador al Main
+  sendRenderLog: (level, context, message) => ipcRenderer.send('render-log', { level, context, message })
 });

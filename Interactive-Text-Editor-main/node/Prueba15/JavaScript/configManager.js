@@ -3,10 +3,16 @@
 const fs = require('fs');
 const LAST_CONFIG_KEY = 'lastConfiguration';
 
+// La importación de logManager ha sido ELIMINADA de aquí
+// para evitar dependencias circulares.
+
 let config;
 let configPath;
 
 function loadConfig(filePath) {
+    // Importación movida AQUI
+    const logManager = require('./logManager'); 
+    
     configPath = filePath;
     try {
         const configData = fs.readFileSync(configPath, 'utf-8');
@@ -14,11 +20,15 @@ function loadConfig(filePath) {
         return config;
     } catch (error) {
         console.error('[CONFIG FATAL ERROR] Error en loadConfig:', error);
+        logManager.logError('CONFIG_LOAD', error); 
         throw error; // Relanzar para que main.js lo atrape
     }
 }
 
 function saveLastConfig(data) {
+    // Importación movida AQUI
+    const logManager = require('./logManager');
+    
     try {
         const currentConfigData = fs.readFileSync(configPath, 'utf-8');
         let currentConfig = JSON.parse(currentConfigData);
@@ -27,6 +37,7 @@ function saveLastConfig(data) {
         console.log('[CONFIG] Ultima configuración guardada con exito.');
     } catch (error) {
         console.error('[CONFIG ERROR] No se pudo guardar la ultima configuración:', error);
+        logManager.logError('CONFIG_SAVE', error); 
     }
 }
 

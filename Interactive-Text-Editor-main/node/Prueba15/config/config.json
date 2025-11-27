@@ -1,19 +1,12 @@
 {
+  "logFilePath": "C:\\recursos\\log\\app.log",
   "resourcesDir": "C:\\recursos",
-  "inactivityTimeMs": 300000,
-  "defaultWelcomeImagePath": "Bienvenida/welcome.png",
+  "inactivityTimeMs": 300,
   "htmlDirName": "html",
   "imageDirName": "imagenes",
   "userFileName": "contenido.txt",
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
   "mobileImgsDirName": "Moviles",
-  "iconPath": "imagenes/icon/icon.png",
-  "lastConfiguration": {
-    "size": "1",
-    "position": "1",
-    "mediaFiles": [],
-    "distributionScheme": "none",
-    "assignmentMap": {}
-  }
+  "iconPath": "imagenes/icon/icon.png"
 }

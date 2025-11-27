@@ -321,6 +321,20 @@ button:hover {
 </div>
 
 <script>
+// Función auxiliar para logging al proceso main
+function logToMain(level, context, message) {
+    const msg = (message instanceof Error) ? message.stack : String(message);
+    if (window.electronAPI && window.electronAPI.sendRenderLog) {
+        window.electronAPI.sendRenderLog(level, context, msg);
+    } else {
+        console.warn(`[RENDER LOG FALLBACK] [${level}] [${context}] ${msg}`);
+    }
+}
+
+// Log informativo de inicio
+logToMain('INFO', 'SELECTOR_INIT', 'Selector de configuración cargado.');
+
+
 const sizeSelect = document.getElementById('size');
 const posSelect = document.getElementById('position');
 const posContainer = document.getElementById('position-container');
@@ -346,80 +360,89 @@ const quarterNames = {
 };
 
 function updateOpenButtonState() {
-    const isDisabled = selectedFiles.length < maxFilesNeeded;
-    openBtn.disabled = isDisabled;
-    
-    if (isDisabled && maxFilesNeeded > 0) {
-        openBtnFeedback.textContent = `Por favor, selecciona los ${maxFilesNeeded} archivos de fondo requeridos.`;
-    } else {
-        openBtnFeedback.textContent = '';
+    try {
+        const isDisabled = selectedFiles.length < maxFilesNeeded;
+        openBtn.disabled = isDisabled;
+        
+        if (isDisabled && maxFilesNeeded > 0) {
+            openBtnFeedback.textContent = `Por favor, selecciona los ${maxFilesNeeded} archivos de fondo requeridos.`;
+        } else {
+            openBtnFeedback.textContent = '';
+        }
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_UPDATE_BUTTON', e);
     }
 }
 
 // 🎯 FUNCIÓN CLAVE 1: ACTUALIZADA PARA AÑADIR BOTÓN DE ELIMINAR
 function updateFileDisplay() {
-    if (maxFilesNeeded === 0) {
-        fileListDiv.innerHTML = '<span class="placeholder">No se requieren archivos de fondo para esta configuración.</span>';
-    } else if (selectedFiles.length === 0) {
-        fileListDiv.innerHTML = `<span class="placeholder">Esperando selección... (Se necesitan ${maxFilesNeeded} archivos)</span>`;
-    } else {
-        let listHtml = '<strong>Archivos elegidos:</strong><ul>';
-        
-        selectedFiles.forEach((f, index) => {
-            const name = f.split(/[\\\/]/).pop();
-            listHtml += `
-                <li>
-                    <span class="file-name">${name}</span>
-                    <button class="remove-btn" onclick="removeFile(${index})" title="Eliminar archivo">[X]</button>
-                </li>
-            `;
-        });
-        listHtml += '</ul>';
-        fileListDiv.innerHTML = listHtml;
-    }
-    
-    // Actualizar selectores de asignación para 'two_halves'
-    if (distributionScheme.value === 'two_halves') {
-        fusedMedia.innerHTML = '';
-        individualMedia.innerHTML = '';
-        
-        selectedFiles.forEach((f, i) => {
-            const name = f.split(/[\\\/]/).pop();
-            const option = `<option value="${i}">${name}</option>`;
-            fusedMedia.innerHTML += option;
-            individualMedia.innerHTML += option;
-        });
-        
-        // Asegurarse de que el índice individual no sea el mismo que el fusionado por defecto
-        if (selectedFiles.length >= 2) {
-            // Intenta mantener la selección si es posible, sino usa 0 y 1
-            const currentFused = parseInt(fusedMedia.value);
-            const currentIndividual = parseInt(individualMedia.value);
+    try {
+        if (maxFilesNeeded === 0) {
+            fileListDiv.innerHTML = '<span class="placeholder">No se requieren archivos de fondo para esta configuración.</span>';
+        } else if (selectedFiles.length === 0) {
+            fileListDiv.innerHTML = `<span class="placeholder">Esperando selección... (Se necesitan ${maxFilesNeeded} archivos)</span>`;
+        } else {
+            let listHtml = '<strong>Archivos elegidos:</strong><ul>';
             
-            if (selectedFiles[currentFused] && selectedFiles[currentIndividual] && currentFused !== currentIndividual) {
-                // Las selecciones actuales son válidas, se mantienen
-            } else {
-                fusedMedia.value = 0;
-                individualMedia.value = 1; 
-            }
-        } else if (selectedFiles.length === 1) {
-            fusedMedia.value = 0;
-            individualMedia.value = 0;
+            selectedFiles.forEach((f, index) => {
+                const name = f.split(/[\\\/]/).pop();
+                listHtml += `
+                    <li>
+                        <span class="file-name">${name}</span>
+                        <button class="remove-btn" onclick="removeFile(${index})" title="Eliminar archivo">[X]</button>
+                    </li>
+                `;
+            });
+            listHtml += '</ul>';
+            fileListDiv.innerHTML = listHtml;
         }
+        
+        // Actualizar selectores de asignación para 'two_halves'
+        if (distributionScheme.value === 'two_halves') {
+            fusedMedia.innerHTML = '';
+            individualMedia.innerHTML = '';
+            
+            selectedFiles.forEach((f, i) => {
+                const name = f.split(/[\\\/]/).pop();
+                const option = `<option value="${i}">${name}</option>`;
+                fusedMedia.innerHTML += option;
+                individualMedia.innerHTML += option;
+            });
+            
+            if (selectedFiles.length >= 2) {
+                const currentFused = parseInt(fusedMedia.value);
+                const currentIndividual = parseInt(individualMedia.value);
+                
+                if (selectedFiles[currentFused] && selectedFiles[currentIndividual] && currentFused !== currentIndividual) {
+                    // Mantener selecciones válidas
+                } else {
+                    fusedMedia.value = 0;
+                    individualMedia.value = 1; 
+                }
+            } else if (selectedFiles.length === 1) {
+                fusedMedia.value = 0;
+                individualMedia.value = 0;
+            }
+        }
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_UPDATE_DISPLAY', e);
+        fileListDiv.innerHTML = '<span class="placeholder" style="color:red;">Error al renderizar la lista de archivos.</span>';
     }
 }
 
 // 🎯 FUNCIÓN CLAVE 2: NUEVA FUNCIÓN PARA ELIMINAR UN ARCHIVO
 function removeFile(indexToRemove) {
-    if (indexToRemove >= 0 && indexToRemove < selectedFiles.length) {
-        console.log(`[FILES] Eliminando archivo en índice ${indexToRemove}: ${selectedFiles[indexToRemove].split(/[\\\/]/).pop()}`);
-        
-        // Eliminar el archivo del array
-        selectedFiles.splice(indexToRemove, 1);
-        
-        // Actualizar la interfaz y el estado
-        updateFileDisplay();
-        updateOpenButtonState();
+    try {
+        if (indexToRemove >= 0 && indexToRemove < selectedFiles.length) {
+            logToMain('INFO', 'SELECTOR_FILE_REMOVE', `Eliminando archivo en índice ${indexToRemove}: ${selectedFiles[indexToRemove].split(/[\\\/]/).pop()}`);
+            
+            selectedFiles.splice(indexToRemove, 1);
+            
+            updateFileDisplay();
+            updateOpenButtonState();
+        }
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_FILE_REMOVE_FAIL', e);
     }
 }
 // Hacer la función globalmente accesible (necesario para el onclick en el HTML generado)
@@ -427,213 +450,226 @@ window.removeFile = removeFile;
 
 
 function updateAssignmentArea(size, position) {
-    // Mostrar/ocultar contenedor de distribución
-    if (size === '1') {
-        distributionContainer.classList.remove('hidden');
-    } else {
-        distributionContainer.classList.add('hidden');
-    }
-
-    // Mostrar/ocultar asignación avanzada (con transición)
-    if (distributionScheme.value === 'two_halves' && size === '1') {
-        advancedAssignment.classList.add('visible');
-    } else {
-        advancedAssignment.classList.remove('visible');
-    }
-
-    // Rellenar las opciones de la posición individual restante
-    if (size === '1' && distributionScheme.value === 'two_halves') {
-        const principalIndex = parseInt(position);
-        let availableIndexes = [];
-        
-        // REGISTRO DE RESTRICCIÓN (Asegurando fusión contigua/Media Pantalla)
-        switch(principalIndex) {
-            case 1: // Superior Izquierda (1) -> Individuales que dejan fusión en Mitad Inferior (3&4) o Mitad Derecha (2&4)
-                availableIndexes = [2, 3]; 
-                break;
-            case 2: // Superior Derecha (2) -> Individuales que dejan fusión en Mitad Inferior (3&4) o Mitad Izquierda (1&3)
-                availableIndexes = [1, 4];
-                break;
-            case 3: // Inferior Izquierda (3) -> Individuales que dejan fusión en Mitad Superior (1&2) o Mitad Derecha (2&4)
-                availableIndexes = [2, 4];
-                break;
-            case 4: // Inferior Derecha (4) -> Individuales que dejan fusión en Mitad Superior (1&2) o Mitad Izquierda (1&3)
-                availableIndexes = [1, 3]; 
-                break;
-            default:
-                availableIndexes = [];
+    try {
+        // Mostrar/ocultar contenedor de distribución
+        if (size === '1') {
+            distributionContainer.classList.remove('hidden');
+        } else {
+            distributionContainer.classList.add('hidden');
         }
-        
-        individualArea.innerHTML = '';
-        availableIndexes.forEach(i => {
-             const name = quarterNames[i];
-             individualArea.innerHTML += `<option value="${i}">${name}</option>`;
-        });
-        
-        // Se mantiene la selección o se elige la primera opción
-        if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
-            // Se mantiene
-        } else if (individualArea.options.length > 0) {
-            individualArea.value = individualArea.options[0].value;
+
+        // Mostrar/ocultar asignación avanzada (con transición)
+        if (distributionScheme.value === 'two_halves' && size === '1') {
+            advancedAssignment.classList.add('visible');
+        } else {
+            advancedAssignment.classList.remove('visible');
         }
+
+        // Rellenar las opciones de la posición individual restante
+        if (size === '1' && distributionScheme.value === 'two_halves') {
+            const principalIndex = parseInt(position);
+            let availableIndexes = [];
+            
+            switch(principalIndex) {
+                case 1: availableIndexes = [2, 3]; break;
+                case 2: availableIndexes = [1, 4]; break;
+                case 3: availableIndexes = [2, 4]; break;
+                case 4: availableIndexes = [1, 3]; break;
+                default: availableIndexes = [];
+            }
+            
+            individualArea.innerHTML = '';
+            availableIndexes.forEach(i => {
+                 const name = quarterNames[i];
+                 individualArea.innerHTML += `<option value="${i}">${name}</option>`;
+            });
+            
+            // Mantener selección si es posible
+            if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
+                // Se mantiene
+            } else if (individualArea.options.length > 0) {
+                individualArea.value = individualArea.options[0].value;
+            }
+        }
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_UPDATE_ASSIGNMENT', e);
     }
 }
 
 // --- Event Handlers ---
 
 function updatePositions() {
-  const size = sizeSelect.value;
-  posSelect.innerHTML = '';
+    try {
+        const size = sizeSelect.value;
+        posSelect.innerHTML = '';
 
-  if (size === '1') {
-    posSelect.innerHTML = `
-      <option value="1">Superior Izquierda</option>
-      <option value="2">Superior Derecha</option>
-      <option value="3">Inferior Izquierda</option>
-      <option value="4">Inferior Derecha</option>
-    `; 
-    posContainer.style.display = 'block';
-  } else if (size === '2') {
-    posSelect.innerHTML = `
-      <option value="1">Mitad Izquierda</option>
-      <option value="2">Mitad Derecha</option>
-      <option value="3">Mitad Superior</option>
-      <option value="4">Mitad Inferior</option>
-    `;
-    posContainer.style.display = 'block';
-  } else {
-    posContainer.style.display = 'none';
-  }
-  
-  if (posSelect.options.length > 0) {
-      mainPosition = parseInt(posSelect.options[0].value);
-      posSelect.value = String(mainPosition);
-  } else {
-      mainPosition = 0;
-  }
+        if (size === '1') {
+            posSelect.innerHTML = `
+            <option value="1">Superior Izquierda</option>
+            <option value="2">Superior Derecha</option>
+            <option value="3">Inferior Izquierda</option>
+            <option value="4">Inferior Derecha</option>
+            `; 
+            posContainer.style.display = 'block';
+        } else if (size === '2') {
+            posSelect.innerHTML = `
+            <option value="1">Mitad Izquierda</option>
+            <option value="2">Mitad Derecha</option>
+            <option value="3">Mitad Superior</option>
+            <option value="4">Mitad Inferior</option>
+            `;
+            posContainer.style.display = 'block';
+        } else {
+            posContainer.style.display = 'none';
+        }
+        
+        if (posSelect.options.length > 0) {
+            mainPosition = parseInt(posSelect.options[0].value);
+            posSelect.value = String(mainPosition);
+        } else {
+            mainPosition = 0;
+        }
 
-  distributionScheme.dispatchEvent(new Event('change'));
-  updateAssignmentArea(size, mainPosition);
-  
-  const debug = document.getElementById('posDebug');
-  if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+        distributionScheme.dispatchEvent(new Event('change'));
+        updateAssignmentArea(size, mainPosition);
+        
+        const debug = document.getElementById('posDebug');
+        if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_UPDATE_POSITIONS', e);
+    }
 }
 
 posSelect.addEventListener('change', () => {
-    mainPosition = parseInt(posSelect.value) || mainPosition;
-    console.log('[DEBUG] posSelect.change -> mainPosition actualizado a:', mainPosition);
-    updateAssignmentArea(sizeSelect.value, mainPosition);
-    const debug = document.getElementById('posDebug');
-    if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+    try {
+        mainPosition = parseInt(posSelect.value) || mainPosition;
+        updateAssignmentArea(sizeSelect.value, mainPosition);
+        const debug = document.getElementById('posDebug');
+        if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_POS_CHANGE', e);
+    }
 });
 
 distributionScheme.addEventListener('change', () => {
-    const scheme = distributionScheme.value;
-    
-    if (scheme === 'one_big') {
-        maxFilesNeeded = 1;
-    } else if (scheme === 'three_individual') {
-        maxFilesNeeded = 3;
-    } else if (scheme === 'two_halves') {
-        maxFilesNeeded = 2;
-    } else { // 'none'
-        maxFilesNeeded = 0;
-    }
-    
-    if (sizeSelect.value !== '1') {
-        maxFilesNeeded = 0;
-    }
+    try {
+        const scheme = distributionScheme.value;
+        
+        if (scheme === 'one_big') {
+            maxFilesNeeded = 1;
+        } else if (scheme === 'three_individual') {
+            maxFilesNeeded = 3;
+        } else if (scheme === 'two_halves') {
+            maxFilesNeeded = 2;
+        } else { // 'none'
+            maxFilesNeeded = 0;
+        }
+        
+        if (sizeSelect.value !== '1') {
+            maxFilesNeeded = 0;
+        }
 
-    updateOpenButtonState();
-    updateAssignmentArea(sizeSelect.value, mainPosition);
-    updateFileDisplay();
+        updateOpenButtonState();
+        updateAssignmentArea(sizeSelect.value, mainPosition);
+        updateFileDisplay();
+    } catch (e) {
+        logToMain('ERROR', 'SELECTOR_DIST_CHANGE', e);
+    }
 });
 
 // 🎯 CAMBIO CLAVE: ADICIÓN DE ARCHIVOS EN LUGAR DE REEMPLAZO
 selectFilesBtn.addEventListener('click', async () => {
-    if (window.electronAPI && window.electronAPI.selectMediaDialog) {
-        try {
-            // El límite real para el diálogo es cuántos archivos faltan por seleccionar
+    try {
+        if (window.electronAPI && window.electronAPI.selectMediaDialog) {
             const filesNeeded = maxFilesNeeded > 0 ? (maxFilesNeeded - selectedFiles.length) : 100;
             
             if (filesNeeded <= 0) {
                  alert(`Ya has seleccionado el máximo requerido (${maxFilesNeeded}) o no se requieren archivos.`);
+                 logToMain('INFO', 'SELECTOR_DIALOG_SKIP', 'Diálogo de selección evitado: Archivos ya completos.');
                  return;
             }
             
-            // Si solo se necesita 1 archivo, forzar el diálogo a modo de archivo único
             const limit = filesNeeded === 1 ? 1 : filesNeeded; 
             
-            console.log('[DEBUG] Llamando a selectMediaDialog con límite:', limit);
+            logToMain('INFO', 'SELECTOR_DIALOG_OPEN', `Abriendo diálogo con límite de ${limit} archivos.`);
             const files = await window.electronAPI.selectMediaDialog(limit);
-            console.log('[DEBUG] Resultado de selectMediaDialog:', files);
 
             if (files && files.length > 0) {
-                // 1. Filtrar duplicados: solo añadir los archivos que no estén ya en la lista
                 const uniqueNewFiles = files.filter(f => !selectedFiles.includes(f));
                 
-                // 2. Añadir los nuevos archivos
                 selectedFiles.push(...uniqueNewFiles);
 
-                // 3. Recortar si se excede el límite (esto solo debería ocurrir si maxFilesNeeded > 0)
                 if (maxFilesNeeded > 0 && selectedFiles.length > maxFilesNeeded) {
+                    const removed = selectedFiles.length - maxFilesNeeded;
                     selectedFiles = selectedFiles.slice(0, maxFilesNeeded);
+                    logToMain('WARNING', 'SELECTOR_FILE_TRIMMED', `Se han recortado ${removed} archivos por exceder el límite.`);
                 }
+                logToMain('INFO', 'SELECTOR_FILES_ADDED', `${uniqueNewFiles.length} archivos añadidos. Total: ${selectedFiles.length}.`);
+            } else {
+                logToMain('INFO', 'SELECTOR_DIALOG_CANCEL', 'Diálogo de selección cancelado.');
             }
-            // Si se cancela o no se elige nada, la lista existente se mantiene
             
             updateFileDisplay();
             updateOpenButtonState();
-        } catch (err) {
-            console.error('[ERROR] selectMediaDialog falló:', err);
-            alert('Error al abrir el diálogo de selección: ' + (err && err.message ? err.message : err));
+        } else {
+            alert('La API de selección de archivos no está disponible en este contexto (window.electronAPI).');
         }
-    } else {
-        alert('La API de selección de archivos no está disponible en este contexto (window.electronAPI).');
+    } catch (err) {
+        logToMain('ERROR', 'SELECTOR_DIALOG_FAIL', err);
+        alert('Error al abrir el diálogo de selección: ' + (err && err.message ? err.message : err));
     }
 });
 
 
 // Inicializar y manejar cambios de tamaño/posición
-updatePositions();
-sizeSelect.addEventListener('change', updatePositions);
-distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
+try {
+    updatePositions();
+    sizeSelect.addEventListener('change', updatePositions);
+    distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
+} catch (e) {
+    logToMain('FATAL', 'SELECTOR_INIT_FAIL', 'Fallo en la inicialización de listeners y posiciones.');
+}
 
 // Abrir ventana principal
 document.getElementById('openBtn').addEventListener('click', () => {
-    
-    let assignmentMap = {};
-    let finalMediaFiles = [...selectedFiles];
+    try {
+        let assignmentMap = {};
+        let finalMediaFiles = [...selectedFiles];
 
-    if (distributionScheme.value === 'two_halves') {
-        assignmentMap = {
-            fusedFileIndex: parseInt(fusedMedia.value),
-            individualFileIndex: parseInt(individualMedia.value),
-            individualArea: parseInt(individualArea.value)
-        };
-        
-        if (selectedFiles.length >= 2) {
-             const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
-             const individualFile = selectedFiles[assignmentMap.individualFileIndex];
+        if (distributionScheme.value === 'two_halves') {
+            assignmentMap = {
+                fusedFileIndex: parseInt(fusedMedia.value),
+                individualFileIndex: parseInt(individualMedia.value),
+                individualArea: parseInt(individualArea.value)
+            };
+            
+            if (selectedFiles.length >= 2) {
+                 const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
+                 const individualFile = selectedFiles[assignmentMap.individualFileIndex];
 
-             if (fusedFile === individualFile) {
-                 alert("Error: No puedes asignar el mismo archivo al area fusionada y al área individual. Por favor, selecciona archivos diferentes.");
-                 return;
-             }
-             finalMediaFiles = [fusedFile, individualFile];
+                 if (fusedFile === individualFile) {
+                     alert("Error: No puedes asignar el mismo archivo al area fusionada y al área individual. Por favor, selecciona archivos diferentes.");
+                     logToMain('ERROR', 'SELECTOR_ASSIGN_DUP', 'Intento de asignar el mismo archivo al área fusionada e individual.');
+                     return;
+                 }
+                 finalMediaFiles = [fusedFile, individualFile];
+            }
+        } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
+            finalMediaFiles = selectedFiles.slice(0, 3);
         }
-    } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
-        finalMediaFiles = selectedFiles.slice(0, 3);
-    }
 
-    console.log('[DEBUG] Enviando selección. size=', sizeSelect.value, 'position(mainPosition)=', mainPosition, 'posSelect.value=', posSelect.value);
-    window.electronAPI.sendSelection({
-        size: sizeSelect.value,
-        position: String(mainPosition || (posSelect.value || '1')),
-        mediaFiles: finalMediaFiles,
-        distributionScheme: distributionScheme.value,
-        assignmentMap: assignmentMap
-    });
+        logToMain('INFO', 'SELECTOR_SEND', `Enviando selección: ${sizeSelect.value}/${mainPosition}`);
+        window.electronAPI.sendSelection({
+            size: sizeSelect.value,
+            position: String(mainPosition || (posSelect.value || '1')),
+            mediaFiles: finalMediaFiles,
+            distributionScheme: distributionScheme.value,
+            assignmentMap: assignmentMap
+        });
+    } catch (e) {
+        logToMain('FATAL', 'SELECTOR_OPEN_FAIL', e);
+        alert('Error crítico al enviar la configuración.');
+    }
 });
 </script>
 

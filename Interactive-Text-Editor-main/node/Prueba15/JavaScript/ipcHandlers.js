@@ -1,4 +1,4 @@
-// JavaScript/ipcHandlers.js
+// JavaScript/ipcHandlers.js (CORREGIDO + LOGGING)
 
 const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
@@ -11,6 +11,7 @@ const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const inactivityManager = require('./inactivityManager');
 const { calculatePositions } = require('./positionCalculator');
+const logManager = require('./logManager'); // <-- ¡IMPORTADO!
 
 function registerHandlers() {
 
@@ -46,6 +47,7 @@ function registerHandlers() {
     ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
         
         try {
+            logManager.log('INFO', 'SELECTION_RECEIVED', `Nueva selección: Tamaño=${size}, Posición=${position}, Archivos=${mediaFiles.length}`); 
             console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
             
             windowManager.closeAllWindows();
@@ -135,6 +137,9 @@ function registerHandlers() {
                 assignmentMap 
             });
 
+            // LOG INFORMATIVO DE CREACIÓN DE VENTANAS (DESPUÉS DE LA CREACIÓN)
+            logManager.log('INFO', 'WINDOWS_CREATED', `Ventanas principal y ${finalOtherBounds.length} de fondo creadas con éxito.`); 
+            
             // ----------------------------------------------------
             // Al cargar la ventana principal (SOLO LÓGICA DE MAINWIN)
             // ----------------------------------------------------
@@ -162,9 +167,10 @@ function registerHandlers() {
                         inactivityManager.startInactivityTimer(mainWin); 
 
                         if (!fs.existsSync(pathManager.userFile)) { 
-                            mainWin.webContents.send('no-file', { 
-                                welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) 
-                            });
+                            // ******************************************************
+                            // CORRECCIÓN: Se envía un objeto vacío, eliminando welcomePath
+                            mainWin.webContents.send('no-file', {});
+                            // ******************************************************
                         } else if (eventType === 'change') {
                             const text = fs.readFileSync(pathManager.userFile, 'utf-8'); 
                             mainWin.webContents.send('file-changed', text);
@@ -192,9 +198,10 @@ function registerHandlers() {
                     mainWin.webContents.send('file-changed', text);
                     inactivityManager.startInactivityTimer(mainWin); 
                 } else {
-                    mainWin.webContents.send('no-file', { 
-                        welcomePath: pathManager.getFileUrl(pathManager.welcomeImage) 
-                    });
+                    // ******************************************************
+                    // CORRECCIÓN: Se envía un objeto vacío, eliminando welcomePath
+                    mainWin.webContents.send('no-file', {}); 
+                    // ******************************************************
                 }
                 
                 mainWin.webContents.send('window-size-selected', { size: size });
@@ -248,6 +255,7 @@ function registerHandlers() {
 
         } catch (error) {
             console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
+            logManager.logFatal('SELECTION_MADE_HANDLER', error); // <-- ¡LOGGING AÑADIDO!
             
             windowManager.closeAllWindows();
             windowManager.createSelectorWindow();
