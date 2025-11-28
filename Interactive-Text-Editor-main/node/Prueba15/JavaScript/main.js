@@ -1,7 +1,8 @@
-// JavaScript/main.js (Versión CORREGIDA)
+// JavaScript/main.js (Versión CORREGIDA para ASAR)
 
 const { app, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs'); // <--- ¡AÑADIDO!
 const configManager = require('./configManager');
 const windowManager = require('./windowManager');
 const { registerHandlers } = require('./ipcHandlers');
@@ -9,9 +10,33 @@ const logManager = require('./logManager');
 
 // 1. Cargar configuración
 try {
-    const configPath = path.join(__dirname, '..', 'config', 'config.json');
-    configManager.loadConfig(configPath); 
+    // --- PASOS CLAVE PARA RESOLVER EL ERROR DE PATH EN ASAR ---
+    
+    // 1. Obtener el directorio de datos del usuario (ruta persistente y escribible)
+    const userDataPath = app.getPath('userData');
+    const persistentConfigPath = path.join(userDataPath, 'config.json');
+    
+    // 2. Definir la ruta de la configuración base (dentro de .asar o bundle)
+    const baseConfigPath = path.join(__dirname, '..', 'config', 'config.json');
+    
+    // 3. Si el archivo persistente no existe, lo copiamos desde la base.
+    if (!fs.existsSync(persistentConfigPath)) {
+        console.log('[CONFIG] No se encontró config.json persistente. Copiando desde base...');
+        
+        // Asegurar que el directorio de datos exista (aunque Electron ya lo hace)
+        if (!fs.existsSync(userDataPath)) {
+            fs.mkdirSync(userDataPath, { recursive: true });
+        }
+        
+        // Copiar el archivo base a la ruta persistente
+        fs.copyFileSync(baseConfigPath, persistentConfigPath);
+        console.log(`[CONFIG] Copia exitosa a: ${persistentConfigPath}`);
+    }
+    
+    // 4. Cargar configuración SIEMPRE desde la ruta persistente y escribible.
+    configManager.loadConfig(persistentConfigPath); 
     console.log('[CONFIG] Archivo de configuración cargado con éxito.');
+    // -------------------------------------------------------------------
     
     // Obtener la ruta del DIRECTORIO de log (C:\recursos\log)
     const config = configManager.getConfig(); 

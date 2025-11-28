@@ -13,7 +13,7 @@ function loadConfig(filePath) {
     // Importación movida AQUI
     const logManager = require('./logManager'); 
     
-    configPath = filePath;
+    configPath = filePath; 
     try {
         const configData = fs.readFileSync(configPath, 'utf-8');
         config = JSON.parse(configData);
@@ -30,6 +30,7 @@ function saveLastConfig(data) {
     const logManager = require('./logManager');
     
     try {
+        // Usa configPath (la ruta persistente) para escribir
         const currentConfigData = fs.readFileSync(configPath, 'utf-8');
         let currentConfig = JSON.parse(currentConfigData);
         currentConfig[LAST_CONFIG_KEY] = data;
