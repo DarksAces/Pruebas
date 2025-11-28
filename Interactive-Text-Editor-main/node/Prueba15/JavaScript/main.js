@@ -8,25 +8,20 @@ const { registerHandlers } = require('./ipcHandlers');
 const logManager = require('./logManager'); 
 
 // 1. Cargar configuración
-// JavaScript/main.js (Versión FINAL con initializeLog(ruta))
-
-// ... (imports)
-
-// 1. Cargar configuración
 try {
     const configPath = path.join(__dirname, '..', 'config', 'config.json');
     configManager.loadConfig(configPath); 
     console.log('[CONFIG] Archivo de configuración cargado con éxito.');
     
-    // Obtener la ruta del log directamente de la configuración cargada
+    // Obtener la ruta del DIRECTORIO de log (C:\recursos\log)
     const config = configManager.getConfig(); 
-    const logFilePath = config.logFilePath; 
+    const logDirPath = config.logFilePath; 
     
     // --- PASOS CLAVE PARA RESOLVER EL ERROR DE PATH ---
-    // 1. Inicializar log, pasándole la ruta de forma explícita
-    logManager.initializeLog(logFilePath); 
+    // 1. Inicializar log, pasándole la RUTA DEL DIRECTORIO para que genere el nombre de archivo diario.
+    logManager.initializeLog(logDirPath); 
     
-    // 2. Ahora que el log está inicializado y rotado, registramos el inicio de forma segura.
+    // 2. Ahora que el log está inicializado y limpiado, registramos el inicio de forma segura.
     logManager.log('INFO', 'APP_START', 'Aplicación iniciada. Flujo de logs asegurado.');
     // ---------------------------------------------------
 

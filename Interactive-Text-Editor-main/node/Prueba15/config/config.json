@@ -1,12 +1,19 @@
 {
-  "logFilePath": "C:\\recursos\\log\\app.log",
+  "logFilePath": "C:\\recursos\\log",
   "resourcesDir": "C:\\recursos",
-  "inactivityTimeMs": 300,
+  "inactivityTimeMs": 3000,
   "htmlDirName": "html",
   "imageDirName": "imagenes",
   "userFileName": "contenido.txt",
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
   "mobileImgsDirName": "Moviles",
-  "iconPath": "imagenes/icon/icon.png"
+  "iconPath": "imagenes/icon/icon.png",
+  "lastConfiguration": {
+    "size": "1",
+    "position": "1",
+    "mediaFiles": [],
+    "distributionScheme": "none",
+    "assignmentMap": {}
+  }
 }
