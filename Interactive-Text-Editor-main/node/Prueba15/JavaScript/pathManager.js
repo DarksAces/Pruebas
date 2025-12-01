@@ -3,26 +3,25 @@
 const path = require('path');
 const url = require('url');
 const { getConfig } = require('./configManager');
-// Importación añadida para logging
 const logManager = require('./logManager'); 
 
-// --- Rutas que NO dependen de config ---
-const appRoot = path.join(__dirname, '..'); // Sube un nivel desde /JavaScript
+// --- Rutas estáticas (relativas a la estructura del proyecto) ---
+const appRoot = path.join(__dirname, '..'); 
 const preloadScript = path.join(__dirname, 'preload.js'); 
 
-// Helper para URLs
+// Helper: Convierte ruta de archivo (C:\...) a URL (file://...) para Electron
 function getFileUrl(filePath) {
     return url.pathToFileURL(path.normalize(filePath)).href;
 }
 
 // --- Exportamos las rutas ---
+// Usamos 'get' para evaluar la ruta en el momento del acceso, no al inicio.
 module.exports = {
-    // --- Rutas estáticas ---
     appRoot,
     preloadScript,
     getFileUrl,
 
-    // --- Rutas dinámicas (dependen de config) ---
+    // --- Rutas dinámicas (Leen desde configManager) ---
     get resourcesDir() {
         try {
             const config = getConfig();
@@ -67,7 +66,7 @@ module.exports = {
         }
     },
     
-
+    // Directorios de imágenes específicas
     get bannersTopPath() {
         try {
             const config = getConfig();
@@ -107,14 +106,12 @@ module.exports = {
             if (!config) throw new Error("Config not loaded before accessing 'logFilePath'");
             return config.logFilePath; 
         } catch (error) {
-            // Este log podría fallar si la config aún no está cargada, 
-            // pero lo dejamos para capturar fallos post-carga.
             console.error("[FATAL] Fallo al obtener logFilePath:", error);
             throw error;
         }
     },
 
-    // --- Rutas HTML (dependen de htmlDir) ---
+    // --- Rutas HTML ---
     get selectorHtml() {
         try {
             return path.join(this.htmlDir, 'selector.html');

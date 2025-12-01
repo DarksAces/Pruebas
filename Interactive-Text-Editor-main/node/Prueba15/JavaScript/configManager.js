@@ -3,14 +3,14 @@
 const fs = require('fs');
 const LAST_CONFIG_KEY = 'lastConfiguration';
 
-// La importación de logManager ha sido ELIMINADA de aquí
-// para evitar dependencias circulares.
+// NOTA: logManager se importa DENTRO de las funciones para evitar dependencias circulares,
+// ya que logManager podría necesitar configManager en algún punto futuro.
 
 let config;
 let configPath;
 
+// Carga la configuración inicial desde el disco
 function loadConfig(filePath) {
-    // Importación movida AQUI
     const logManager = require('./logManager'); 
     
     configPath = filePath; 
@@ -20,20 +20,25 @@ function loadConfig(filePath) {
         return config;
     } catch (error) {
         console.error('[CONFIG FATAL ERROR] Error en loadConfig:', error);
-        logManager.logError('CONFIG_LOAD', error); 
-        throw error; // Relanzar para que main.js lo atrape
+        // Si falla aquí, logManager puede no estar inicializado, pero intentamos
+        if (logManager && logManager.logError) logManager.logError('CONFIG_LOAD', error); 
+        throw error; // El error debe subir a main.js para detener la app
     }
 }
 
+// Guarda la última selección del usuario (tamaño, archivos) en el JSON
 function saveLastConfig(data) {
-    // Importación movida AQUI
     const logManager = require('./logManager');
     
     try {
-        // Usa configPath (la ruta persistente) para escribir
+        // Leemos de nuevo para asegurar que tenemos la versión más reciente
         const currentConfigData = fs.readFileSync(configPath, 'utf-8');
         let currentConfig = JSON.parse(currentConfigData);
+        
+        // Actualizamos solo la llave de lastConfig
         currentConfig[LAST_CONFIG_KEY] = data;
+        
+        // Escribimos al disco
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2), 'utf-8');
         console.log('[CONFIG] Ultima configuración guardada con exito.');
     } catch (error) {
@@ -42,6 +47,7 @@ function saveLastConfig(data) {
     }
 }
 
+// Recupera la configuración guardada anteriormente (si existe)
 function loadLastConfig() {
     if (config && config[LAST_CONFIG_KEY]) {
         return config[LAST_CONFIG_KEY];

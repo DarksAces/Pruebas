@@ -4,29 +4,29 @@ const fs = require('fs');
 const path = require('path');
 const pathManager = require('./pathManager'); // Se mantiene
 
-let _logFilePath = null; // <-- Ahora almacena la RUTA COMPLETA del archivo de log del día
+let _logFilePath = null; // <-- Almacena la RUTA COMPLETA del archivo de log específico para HOY.
 
-// Definiciones de constantes (7 días)
+// Definiciones de constantes (7 días en milisegundos)
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; 
-// Expresión regular para logs rotados o diarios antiguos (ej: 2025-11-28.log)
+// Expresión regular para identificar archivos de log válidos (formato AAAA-MM-DD.log)
 const LOG_FILE_PATTERN = /^\d{4}-\d{2}-\d{2}\.log$/; 
 
 /**
- * Genera la ruta completa del archivo de log para el día actual.
- * El formato del nombre será AAAA-MM-DD.log (ej: 2025-11-28.log)
- * @param {string} logDir La ruta base del directorio de logs (C:\recursos\log)
- * @returns {string} La ruta completa del archivo de log diario.
+ * Genera la ruta del archivo basado en la fecha actual.
+ * @param {string} logDir La ruta base del directorio de logs.
+ * @returns {string} Ruta completa ej: C:\recursos\log\2025-11-28.log
  */
 function getDailyLogFilePath(logDir) {
     const now = new Date();
-    const datePart = now.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const datePart = now.toISOString().split('T')[0]; // Extrae solo YYYY-MM-DD
     const fileName = `${datePart}.log`;
     return path.join(logDir, fileName);
 }
 
 
 /**
- * Limpia archivos de log más antiguos que MAX_AGE_MS (7 días).
+ * Limpieza automática: Elimina logs que tengan más de 7 días de antigüedad.
+ * Se ejecuta al iniciar la aplicación.
  */
 function cleanOldLogs(logDir) {
     if (!fs.existsSync(logDir)) return;
@@ -41,7 +41,7 @@ function cleanOldLogs(logDir) {
                 const filePath = path.join(logDir, file);
                 const stats = fs.statSync(filePath);
                 
-                // Usamos mtime (tiempo de modificación) para determinar la edad
+                // Compara la fecha de modificación del archivo con la fecha de corte
                 if (stats.mtimeMs < cutoff) {
                     fs.unlinkSync(filePath);
                     console.log(`[LOG CLEANUP] Eliminado log antiguo: ${file}`);
@@ -53,24 +53,23 @@ function cleanOldLogs(logDir) {
     }
 }
 
-// NOTE: rotateLogFile() se elimina porque la funcionalidad de log diario la reemplaza.
-
-// --- FUNCIÓN DE LOG PRINCIPAL (log) ---
+// --- FUNCIÓN DE LOG PRINCIPAL ---
+// Escribe el mensaje tanto en la consola (para debug en vivo) como en el archivo físico.
 function log(level, context, message) {
     const timestamp = new Date().toISOString();
     
     let logMessage;
+    // Si es un error real, extraemos el stack trace para mejor diagnóstico
     if (level === 'ERROR' || level === 'FATAL') {
-        // Para errores, aseguramos que el mensaje sea la pila o el mensaje de error
         logMessage = (message instanceof Error) ? (message.stack || message.message) : String(message);
     } else {
         logMessage = String(message);
     }
 
-    // *** DECLARACIÓN FUERA DEL TRY PARA EVITAR EL ERROR "logEntry is not defined" ***
+    // Formato del log: [FECHA] [NIVEL] [CONTEXTO] Mensaje
     const logEntry = `[${timestamp}] [${level}] [${context}] ${logMessage}\n`;
     
-    // 1. Mostrar en consola
+    // 1. Mostrar en consola del sistema
     if (level === 'ERROR' || level === 'FATAL') {
         console.error(logEntry.trim());
     } else {
@@ -78,43 +77,43 @@ function log(level, context, message) {
     }
     
     try {
-        // 2. **VERIFICACIÓN CRÍTICA**
-        // Ahora usamos _logFilePath que YA contiene el nombre del archivo diario
+        // 2. **VERIFICACIÓN DE SEGURIDAD**
         if (!_logFilePath) {
              console.error(`[LOG MANAGER FATAL] Fallo en la escritura: logFilePath no está definido. Contexto: ${context}`);
              return; 
         }
 
-        // 3. Asegurarse de que el directorio exista
+        // 3. Crear directorio si no existe
         const logDir = path.dirname(_logFilePath);
         if (!fs.existsSync(logDir)) {
             fs.mkdirSync(logDir, { recursive: true });
         }
 
-        // 4. Escribir al archivo
+        // 4. Escribir al archivo (append para no borrar lo anterior)
         fs.appendFileSync(_logFilePath, logEntry, 'utf-8');
         
     } catch (logErr) {
-        // Si la escritura falla por permisos, reportamos el error de I/O
+        // Capturamos errores de I/O (disco lleno, permisos) para que la app no crashee por culpa del log
         console.error(`[LOG MANAGER FATAL] No se pudo escribir en el log. Error interno: ${logErr.message}. Mensaje que se perdió: ${logEntry.trim()}`);
     }
 }
 
-// --- FUNCIÓN DE INICIALIZACIÓN PÚBLICA (Recibe la ruta del Directorio) ---
+// --- INICIALIZACIÓN ---
+// Debe llamarse desde main.js una vez cargada la configuración.
 function initializeLog(logDir) {
     if (!logDir || typeof logDir !== 'string') {
         console.error("[LOG MANAGER FATAL] Initialize Log requiere una ruta de directorio válida.");
         return;
     }
     
-    // 1. Genera la ruta completa del archivo de log diario y la almacena.
+    // 1. Establece dónde se escribirá hoy
     _logFilePath = getDailyLogFilePath(logDir); 
     
-    // 2. Limpia los logs antiguos
+    // 2. Ejecuta la limpieza de archivos viejos
     cleanOldLogs(logDir);
 }
 
-// ----------------------------------------------------
+// Exportación de métodos
 module.exports = {
     log,
     logError: (context, error) => log('ERROR', context, error),

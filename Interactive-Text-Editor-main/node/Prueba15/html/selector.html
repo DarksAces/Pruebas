@@ -4,16 +4,20 @@
 <meta charset="UTF-8">
 <title>Extra Screen Config</title>
 <style>
-/* --- Estilos Generales --- */
+/* -----------------------------------------------------------
+   ESTILOS CSS (Diseño Visual)
+   ----------------------------------------------------------- */
+
+/* Variables CSS: Facilitan cambiar el tema de color en un solo lugar */
 :root {
-    --color-primario: #ff8800;
+    --color-primario: #ff8800; /* Naranja corporativo */
     --color-secundario: #6c757d;
     --color-exito: #ff8800;
     --color-fondo: #f4f4f8;
     --color-tarjeta: #ffffff;
     --color-texto: #333;
     --color-borde: #ddd;
-    --radio-borde: 8px;
+    --radio-borde: 8px; /* Bordes redondeados suaves */
     --sombra-tarjeta: 0 4px 12px rgba(0,0,0,0.05);
 }
 
@@ -25,6 +29,7 @@ body {
     line-height: 1.6;
 }
 
+/* Contenedor principal centrado estilo "Tarjeta" */
 .container {
     max-width: 500px;
     margin: 20px auto;
@@ -42,19 +47,21 @@ h1 {
     font-weight: 600;
 }
 
-/* --- Agrupación con Fieldset --- */
+/* --- Agrupación con Fieldset (Cajas de secciones) --- */
 fieldset {
     border: 1px solid var(--color-borde);
     border-radius: var(--radio-borde);
     padding: 15px 20px;
     margin-bottom: 20px;
-    /* Transición para aparición suave */
+    
+    /* Animación suave para cuando aparecen/desaparecen secciones */
     transition: opacity 0.3s ease, max-height 0.3s ease;
-    max-height: 1000px; /* Alto por defecto */
+    max-height: 1000px; /* Altura máxima arbitraria para permitir la animación */
     opacity: 1;
     overflow: hidden;
 }
 
+/* Clase utilitaria para ocultar secciones dinámicamente */
 fieldset.hidden {
     max-height: 0;
     opacity: 0;
@@ -100,7 +107,7 @@ select, button {
 select:focus, button:focus {
     outline: none;
     border-color: var(--color-primario);
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25); /* Resplandor azul al seleccionar */
 }
 
 button {
@@ -116,6 +123,7 @@ button:hover {
     background-color: #0056b3;
 }
 
+/* Botón principal de acción ("Abrir Ventana") */
 #openBtn {
     background-color: var(--color-exito);
 }
@@ -130,7 +138,7 @@ button:hover {
 
 .feedback-text {
     font-size: 0.9em;
-    color: #dc3545;
+    color: #dc3545; /* Rojo error */
     text-align: center;
     margin-top: 10px;
     min-height: 1.2em;
@@ -141,19 +149,20 @@ button:hover {
     margin-top: 15px; 
 }
 #posDebug { 
+    /* Estilo para depuración, normalmente oculto */
     margin-top: 8px; 
     font-size: 12px; 
     color: #666; 
     background: #f9f9f9;
     padding: 5px;
     border-radius: 4px;
-    display: none; /* Oculto por defecto */
+    display: none; 
 }
 
-/* Lista de archivos */
+/* --- Lista de archivos seleccionados --- */
 #fileList { 
     max-height: 120px; 
-    overflow-y: auto; 
+    overflow-y: auto; /* Scroll si hay muchos archivos */
     background-color: #f9f9f9; 
     padding: 10px 15px; 
     border-radius: 6px;
@@ -167,15 +176,15 @@ button:hover {
 }
 #fileList ul {
     margin: 5px 0 0 0;
-    padding-left: 0; /* Ajustado para mejor layout */
-    list-style: none; /* Quitar viñetas */
+    padding-left: 0; 
+    list-style: none; /* Quitar puntos de lista */
 }
 #fileList li {
     margin-bottom: 3px;
     overflow: hidden; 
     text-overflow: ellipsis; 
     white-space: nowrap;
-    display: flex; /* Para alinear el botón */
+    display: flex; 
     justify-content: space-between;
     align-items: center;
     padding-left: 10px;
@@ -187,6 +196,7 @@ button:hover {
     white-space: nowrap;
     padding-right: 10px;
 }
+/* Estilo del botón "X" para eliminar archivos individualmente */
 .remove-btn {
     background: none;
     border: 1px solid #dc3545;
@@ -199,24 +209,24 @@ button:hover {
     border-radius: 3px;
     margin-left: 10px;
     transition: background-color 0.2s, color 0.2s;
-    width: 25px; /* Ancho fijo para el botón */
+    width: 25px; 
 }
 .remove-btn:hover {
     background-color: #dc3545;
     color: white;
 }
 
-/* Asignación avanzada */
+/* --- Panel de Asignación Avanzada (oculto por defecto) --- */
 #advanced-assignment {
-    /* Oculto por defecto para transición */
     max-height: 0;
     opacity: 0;
     overflow: hidden;
     transition: opacity 0.3s ease, max-height 0.4s ease, margin-top 0.3s ease;
     margin-top: 0;
 }
+/* Clase para mostrar el panel avanzado */
 #advanced-assignment.visible {
-    max-height: 500px; /* Alto suficiente para el contenido */
+    max-height: 500px;
     opacity: 1;
     margin-top: 20px;
 }
@@ -244,12 +254,6 @@ button:hover {
     font-weight: 600; 
     font-size: 0.95em;
 }
-.assignment-box p {
-    font-size: 0.9em;
-    color: var(--color-secundario);
-    margin-top: 10px;
-    margin-bottom: 5px;
-}
 
 </style>
 </head>
@@ -263,6 +267,7 @@ button:hover {
         <p class="fieldset-description">
             Elige el tamaño y la posición de la ventana que mostrará el contenido principal.
         </p>
+        
         <label for="size">Tamaño de la ventana principal:</label>
         <select id="size">
           <option value="1">1/4 pantalla</option>
@@ -297,7 +302,9 @@ button:hover {
         <p class="fieldset-description">
             Selecciona los archivos (imagen o video) que se usarán como fondo, si la distribución elegida lo requiere.
         </p>
+        
         <button id="selectFilesBtn">Seleccionar Archivos de Imagen/Video</button>
+        
         <div id="fileList" class="file-list-box"></div>
 
         <div id="advanced-assignment">
@@ -321,9 +328,16 @@ button:hover {
 </div>
 
 <script>
-// Función auxiliar para logging al proceso main
+// ----------------------------------------------------------------------
+// LÓGICA DE JAVASCRIPT
+// ----------------------------------------------------------------------
+
+// 1. LOGGING HACIA EL PROCESO PRINCIPAL
+// Como estamos en una ventana renderizada, 'console.log' solo se ve en las DevTools del navegador.
+// Esta función envía los logs al proceso principal de Node.js para guardarlos en el archivo de texto.
 function logToMain(level, context, message) {
     const msg = (message instanceof Error) ? message.stack : String(message);
+    // Verificamos que el puente seguro (preload.js) esté disponible
     if (window.electronAPI && window.electronAPI.sendRenderLog) {
         window.electronAPI.sendRenderLog(level, context, msg);
     } else {
@@ -331,10 +345,10 @@ function logToMain(level, context, message) {
     }
 }
 
-// Log informativo de inicio
+// Log inicial
 logToMain('INFO', 'SELECTOR_INIT', 'Selector de configuración cargado.');
 
-
+// 2. REFERENCIAS AL DOM (Elementos HTML)
 const sizeSelect = document.getElementById('size');
 const posSelect = document.getElementById('position');
 const posContainer = document.getElementById('position-container');
@@ -349,18 +363,22 @@ const fusedMedia = document.getElementById('fusedMedia');
 const individualMedia = document.getElementById('individualMedia');
 const individualArea = document.getElementById('individualArea');
 
-let selectedFiles = [];
-let maxFilesNeeded = 0; 
-let mainPosition = 1;
+// 3. ESTADO DE LA APLICACIÓN
+let selectedFiles = []; // Array con las rutas de los archivos seleccionados
+let maxFilesNeeded = 0; // Número de archivos necesarios según la configuración actual
+let mainPosition = 1;   // Posición elegida para la ventana principal (1, 2, 3 o 4)
 
 // --- Funciones de Utilidad ---
 
+// Mapa para convertir números de cuadrante a texto legible
 const quarterNames = {
     1: 'Superior Izquierda', 2: 'Superior Derecha', 3: 'Inferior Izquierda', 4: 'Inferior Derecha'
 };
 
+// Función para habilitar o deshabilitar el botón "Abrir Ventana"
 function updateOpenButtonState() {
     try {
+        // Solo habilitar si tenemos los archivos necesarios
         const isDisabled = selectedFiles.length < maxFilesNeeded;
         openBtn.disabled = isDisabled;
         
@@ -374,7 +392,7 @@ function updateOpenButtonState() {
     }
 }
 
-// 🎯 FUNCIÓN CLAVE 1: ACTUALIZADA PARA AÑADIR BOTÓN DE ELIMINAR
+// 🎯 FUNCIÓN VISUAL: Actualiza la lista de archivos en pantalla
 function updateFileDisplay() {
     try {
         if (maxFilesNeeded === 0) {
@@ -384,8 +402,9 @@ function updateFileDisplay() {
         } else {
             let listHtml = '<strong>Archivos elegidos:</strong><ul>';
             
+            // Generamos la lista con nombres de archivo y botones de eliminar
             selectedFiles.forEach((f, index) => {
-                const name = f.split(/[\\\/]/).pop();
+                const name = f.split(/[\\\/]/).pop(); // Extrae solo el nombre del archivo de la ruta completa
                 listHtml += `
                     <li>
                         <span class="file-name">${name}</span>
@@ -397,7 +416,8 @@ function updateFileDisplay() {
             fileListDiv.innerHTML = listHtml;
         }
         
-        // Actualizar selectores de asignación para 'two_halves'
+        // Lógica específica para el modo "Fondo Dividido" (2 archivos)
+        // Actualiza los desplegables de asignación avanzada con los archivos recién cargados
         if (distributionScheme.value === 'two_halves') {
             fusedMedia.innerHTML = '';
             individualMedia.innerHTML = '';
@@ -409,13 +429,16 @@ function updateFileDisplay() {
                 individualMedia.innerHTML += option;
             });
             
+            // Lógica inteligente para preseleccionar opciones diferentes
             if (selectedFiles.length >= 2) {
                 const currentFused = parseInt(fusedMedia.value);
                 const currentIndividual = parseInt(individualMedia.value);
                 
+                // Si la selección actual es válida (diferente), la mantenemos
                 if (selectedFiles[currentFused] && selectedFiles[currentIndividual] && currentFused !== currentIndividual) {
-                    // Mantener selecciones válidas
+                    // ok
                 } else {
+                    // Si no, forzamos índices 0 y 1 por defecto
                     fusedMedia.value = 0;
                     individualMedia.value = 1; 
                 }
@@ -430,61 +453,64 @@ function updateFileDisplay() {
     }
 }
 
-// 🎯 FUNCIÓN CLAVE 2: NUEVA FUNCIÓN PARA ELIMINAR UN ARCHIVO
+// 🎯 FUNCIÓN DE ELIMINACIÓN: Quita un archivo del array
 function removeFile(indexToRemove) {
     try {
         if (indexToRemove >= 0 && indexToRemove < selectedFiles.length) {
             logToMain('INFO', 'SELECTOR_FILE_REMOVE', `Eliminando archivo en índice ${indexToRemove}: ${selectedFiles[indexToRemove].split(/[\\\/]/).pop()}`);
             
-            selectedFiles.splice(indexToRemove, 1);
+            selectedFiles.splice(indexToRemove, 1); // Elimina 1 elemento en la posición dada
             
-            updateFileDisplay();
-            updateOpenButtonState();
+            updateFileDisplay();     // Refresca la lista visual
+            updateOpenButtonState(); // Verifica si aún podemos abrir la ventana
         }
     } catch (e) {
         logToMain('ERROR', 'SELECTOR_FILE_REMOVE_FAIL', e);
     }
 }
-// Hacer la función globalmente accesible (necesario para el onclick en el HTML generado)
+// Hacer la función globalmente accesible (necesario para que funcione el 'onclick' en el HTML generado dinámicamente)
 window.removeFile = removeFile; 
 
 
+// Función para mostrar/ocultar paneles según configuración
 function updateAssignmentArea(size, position) {
     try {
-        // Mostrar/ocultar contenedor de distribución
+        // Mostrar panel de distribución SOLO si es 1/4 pantalla
         if (size === '1') {
             distributionContainer.classList.remove('hidden');
         } else {
             distributionContainer.classList.add('hidden');
         }
 
-        // Mostrar/ocultar asignación avanzada (con transición)
+        // Mostrar panel avanzado SOLO si es "Fondo Dividido"
         if (distributionScheme.value === 'two_halves' && size === '1') {
             advancedAssignment.classList.add('visible');
         } else {
             advancedAssignment.classList.remove('visible');
         }
 
-        // Rellenar las opciones de la posición individual restante
+        // Calcular qué cuadrante queda libre para la asignación avanzada
         if (size === '1' && distributionScheme.value === 'two_halves') {
             const principalIndex = parseInt(position);
             let availableIndexes = [];
             
+            // Lógica para determinar los espacios vacíos
             switch(principalIndex) {
-                case 1: availableIndexes = [2, 3]; break;
+                case 1: availableIndexes = [2, 3]; break; // Si principal es Arriba-Izq, quedan libres Arriba-Der y Abajo-Izq
                 case 2: availableIndexes = [1, 4]; break;
                 case 3: availableIndexes = [2, 4]; break;
                 case 4: availableIndexes = [1, 3]; break;
                 default: availableIndexes = [];
             }
             
+            // Rellenar el select "individualArea"
             individualArea.innerHTML = '';
             availableIndexes.forEach(i => {
                  const name = quarterNames[i];
                  individualArea.innerHTML += `<option value="${i}">${name}</option>`;
             });
             
-            // Mantener selección si es posible
+            // Mantener la selección si es posible, si no, seleccionar el primero
             if (individualArea.options.length > 0 && availableIndexes.includes(parseInt(individualArea.value))) {
                 // Se mantiene
             } else if (individualArea.options.length > 0) {
@@ -496,8 +522,9 @@ function updateAssignmentArea(size, position) {
     }
 }
 
-// --- Event Handlers ---
+// --- MANEJADORES DE EVENTOS (Listeners) ---
 
+// Actualiza las opciones del desplegable "Posición" según el Tamaño elegido
 function updatePositions() {
     try {
         const size = sizeSelect.value;
@@ -520,9 +547,10 @@ function updatePositions() {
             `;
             posContainer.style.display = 'block';
         } else {
-            posContainer.style.display = 'none';
+            posContainer.style.display = 'none'; // Pantalla completa no tiene posición
         }
         
+        // Seleccionar la primera opción por defecto
         if (posSelect.options.length > 0) {
             mainPosition = parseInt(posSelect.options[0].value);
             posSelect.value = String(mainPosition);
@@ -530,9 +558,11 @@ function updatePositions() {
             mainPosition = 0;
         }
 
+        // Forzar actualización de distribución y asignación
         distributionScheme.dispatchEvent(new Event('change'));
         updateAssignmentArea(size, mainPosition);
         
+        // Debug (oculto)
         const debug = document.getElementById('posDebug');
         if (debug) debug.textContent = `Selector value: ${posSelect.value || 'n/a'} — mainPosition: ${mainPosition}`;
     } catch (e) {
@@ -540,6 +570,7 @@ function updatePositions() {
     }
 }
 
+// Evento: Cambio en el selector de posición
 posSelect.addEventListener('change', () => {
     try {
         mainPosition = parseInt(posSelect.value) || mainPosition;
@@ -551,6 +582,7 @@ posSelect.addEventListener('change', () => {
     }
 });
 
+// Evento: Cambio en el esquema de distribución (Determina cuántos archivos necesitamos)
 distributionScheme.addEventListener('change', () => {
     try {
         const scheme = distributionScheme.value;
@@ -565,6 +597,7 @@ distributionScheme.addEventListener('change', () => {
             maxFilesNeeded = 0;
         }
         
+        // Si no es tamaño 1/4, anulamos la necesidad de archivos
         if (sizeSelect.value !== '1') {
             maxFilesNeeded = 0;
         }
@@ -577,10 +610,12 @@ distributionScheme.addEventListener('change', () => {
     }
 });
 
-// 🎯 CAMBIO CLAVE: ADICIÓN DE ARCHIVOS EN LUGAR DE REEMPLAZO
+// Evento: Botón "Seleccionar Archivos"
 selectFilesBtn.addEventListener('click', async () => {
     try {
+        // Usamos el puente 'window.electronAPI' definido en preload.js
         if (window.electronAPI && window.electronAPI.selectMediaDialog) {
+            // Calculamos cuántos archivos nos faltan
             const filesNeeded = maxFilesNeeded > 0 ? (maxFilesNeeded - selectedFiles.length) : 100;
             
             if (filesNeeded <= 0) {
@@ -589,16 +624,21 @@ selectFilesBtn.addEventListener('click', async () => {
                  return;
             }
             
+            // Limitamos la selección nativa a la cantidad necesaria
             const limit = filesNeeded === 1 ? 1 : filesNeeded; 
             
             logToMain('INFO', 'SELECTOR_DIALOG_OPEN', `Abriendo diálogo con límite de ${limit} archivos.`);
+            
+            // Llamada ASÍNCRONA al proceso principal (abre ventana de Windows/Mac)
             const files = await window.electronAPI.selectMediaDialog(limit);
 
             if (files && files.length > 0) {
+                // Filtramos para evitar duplicados exactos si el usuario selecciona lo mismo
                 const uniqueNewFiles = files.filter(f => !selectedFiles.includes(f));
                 
                 selectedFiles.push(...uniqueNewFiles);
 
+                // Recorte de seguridad por si seleccionaron de más
                 if (maxFilesNeeded > 0 && selectedFiles.length > maxFilesNeeded) {
                     const removed = selectedFiles.length - maxFilesNeeded;
                     selectedFiles = selectedFiles.slice(0, maxFilesNeeded);
@@ -621,21 +661,22 @@ selectFilesBtn.addEventListener('click', async () => {
 });
 
 
-// Inicializar y manejar cambios de tamaño/posición
+// Inicialización al cargar la página
 try {
     updatePositions();
     sizeSelect.addEventListener('change', updatePositions);
-    distributionScheme.dispatchEvent(new Event('change')); // Ejecutar al inicio
+    distributionScheme.dispatchEvent(new Event('change')); // Ejecutar manualmente para configurar estado inicial
 } catch (e) {
     logToMain('FATAL', 'SELECTOR_INIT_FAIL', 'Fallo en la inicialización de listeners y posiciones.');
 }
 
-// Abrir ventana principal
+// Evento: Botón FINAL "Abrir Ventana"
 document.getElementById('openBtn').addEventListener('click', () => {
     try {
         let assignmentMap = {};
         let finalMediaFiles = [...selectedFiles];
 
+        // Lógica de empaquetado si estamos en modo complejo
         if (distributionScheme.value === 'two_halves') {
             assignmentMap = {
                 fusedFileIndex: parseInt(fusedMedia.value),
@@ -647,11 +688,13 @@ document.getElementById('openBtn').addEventListener('click', () => {
                  const fusedFile = selectedFiles[assignmentMap.fusedFileIndex];
                  const individualFile = selectedFiles[assignmentMap.individualFileIndex];
 
+                 // Validación final: no permitir el mismo archivo en ambos lugares
                  if (fusedFile === individualFile) {
                      alert("Error: No puedes asignar el mismo archivo al area fusionada y al área individual. Por favor, selecciona archivos diferentes.");
                      logToMain('ERROR', 'SELECTOR_ASSIGN_DUP', 'Intento de asignar el mismo archivo al área fusionada e individual.');
                      return;
                  }
+                 // Reordenamos el array para enviar primero el fusionado, luego el individual
                  finalMediaFiles = [fusedFile, individualFile];
             }
         } else if (distributionScheme.value === 'three_individual' && selectedFiles.length >= 3) {
@@ -659,6 +702,8 @@ document.getElementById('openBtn').addEventListener('click', () => {
         }
 
         logToMain('INFO', 'SELECTOR_SEND', `Enviando selección: ${sizeSelect.value}/${mainPosition}`);
+        
+        // ENVÍO DE DATOS A ELECTRON (ipcHandlers.js)
         window.electronAPI.sendSelection({
             size: sizeSelect.value,
             position: String(mainPosition || (posSelect.value || '1')),

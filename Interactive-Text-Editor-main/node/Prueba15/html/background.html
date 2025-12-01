@@ -12,7 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000;
+            background-color: #000; /* Fondo negro por defecto */
         }
         
         #media-container {
@@ -28,17 +28,21 @@
             overflow: hidden;
         }
         
+        /* La clase clave para ajustar el contenido */
         img, video, .gif {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain; /*Cambiar a 'cover' si se prefiere recortar*/   /*Cambiar a 'contain' si se prefiere ajustar sin recortar*/
+            /* 'contain' = Muestra toda la imagen sin recortar (puede dejar bandas negras)
+               'cover' = Llena todo el espacio recortando lo que sobre (zoom) */
+            object-fit: contain; 
             object-position: center; 
             display: block;
         }
 
+        /* Estilo para mensajes de error visibles (útil para debug in-situ) */
         .error-message {
             color: #ff4444;
             padding: 20px;
@@ -65,7 +69,7 @@
 <body>
     <div id="media-container"></div>
     <script>
-        // Función auxiliar para logging al proceso main
+        // Logging hacia el proceso principal
         function logToMain(level, context, message) {
             const msg = (message instanceof Error) ? message.stack : String(message);
             if (window.electronAPI && window.electronAPI.sendRenderLog) {
@@ -77,80 +81,77 @@
         
         logToMain('INFO', 'BG_INIT', 'Ventana de fondo inicializada.');
         
+        // EVENTO: El proceso principal (ipcHandlers.js) envía qué imagen/video cargar
         window.electronAPI.onLoadImages(({ mediaFiles }) => {
             
             try {
                 const container = document.getElementById('media-container');
                 container.innerHTML = '';
                 
+                // Si la configuración no asignó archivo a este cuadrante
                 if (!mediaFiles || mediaFiles.length === 0) {
                     logToMain('INFO', 'BG_NO_MEDIA', 'No hay archivos de media asignados a esta ventana.');
                     container.innerHTML = '<div class="debug-info">Sin archivos multimedia asignados a esta ventana</div>';
                     return;
                 }
 
-                const media = mediaFiles[0];
+                const media = mediaFiles[0]; // Solo tomamos el primero (las ventanas de fondo solo muestran 1 cosa)
                 logToMain('INFO', 'BG_MEDIA_PROCESS', `Procesando medio: ${media.name} (${media.type})`);
                 
-                // Crear elemento según el tipo
+                // Crear elemento DOM dinámicamente según el tipo
                 let element;
                 if (media.type === 'video') {
                     element = document.createElement('video');
+                    // Atributos obligatorios para autoplay sin interacción del usuario
                     element.autoplay = true;
                     element.loop = true;
-                    element.muted = true;
+                    element.muted = true; // Chrome bloquea autoplay si tiene sonido
                     element.playsinline = true;
                     
                     element.onloadeddata = () => {
                         element.play().then(() => {
-                            logToMain('INFO', 'BG_VIDEO_PLAY_OK', `Video '${media.name}' reproduciendo correctamente.`);
+                            logToMain('INFO', 'BG_VIDEO_PLAY_OK', `Video '${media.name}' reproduciendo.`);
                         }).catch(e => {
-                            // Este error ocurre si la reproducción automática es bloqueada
-                            logToMain('ERROR', 'BG_VIDEO_PLAY_FAIL', `Error al intentar reproducir video: ${e.message}.`);
-                            container.innerHTML += '<div class="error-message">Error al reproducir: ' + e.message + '</div>';
+                            logToMain('ERROR', 'BG_VIDEO_PLAY_FAIL', `Error autoplay: ${e.message}.`);
+                            container.innerHTML += '<div class="error-message">Error autoplay: ' + e.message + '</div>';
                         });
                     };
                 } else {
+                    // Imágenes estáticas o GIFs
                     element = document.createElement('img');
                     if (media.type === 'gif') {
                         element.classList.add('gif');
                     }
                 }
                 
-                // Manejo de errores mejorado
+                // Manejo de error si el archivo no se encuentra (ruta rota)
                 element.onerror = (e) => {
-                    logToMain('ERROR', 'BG_LOAD_MEDIA_FAIL', `Fallo al cargar el medio '${media.name}' desde '${media.src}'.`);
+                    logToMain('ERROR', 'BG_LOAD_MEDIA_FAIL', `Fallo al cargar: ${media.src}`);
                     container.innerHTML = `
                         <div class="error-message">
                             <strong>ERROR: No se pudo cargar el archivo</strong><br><br>
-                            Tipo: ${media.type}<br>
                             Nombre: ${media.name}<br>
-                            Ruta: ${media.src}<br><br>
-                            Verifica que:<br>
-                            1. El archivo existe en la ubicación<br>
-                            2. El formato es compatible (png, jpg, gif, mp4)<br>
-                            3. No hay espacios o caracteres especiales en la ruta
+                            Ruta: ${media.src}
                         </div>
                     `;
                 };
                 
                 element.onload = () => {
-                    logToMain('INFO', 'BG_IMAGE_LOAD_OK', `Imagen/GIF '${media.name}' cargada exitosamente.`);
+                    logToMain('INFO', 'BG_IMAGE_LOAD_OK', `Carga OK: '${media.name}'`);
                 };
                 
-                // Agregar al contenedor y establecer src
+                // Inserción en el DOM
                 container.appendChild(element);
                 element.src = media.src;
                 
-                logToMain('INFO', 'BG_ELEMENT_SET', `Elemento ${media.type} creado y fuente establecida.`);
+                logToMain('INFO', 'BG_ELEMENT_SET', `Elemento ${media.type} creado.`);
 
             } catch (e) {
-                // Captura cualquier error inesperado en el flujo de lógica de carga
                 logToMain('FATAL', 'BG_RENDER_CRASH', e);
             }
         });
         
-        logToMain('INFO', 'BG_LISTENERS_READY', 'Listeners registrados, esperando evento load-images...');
+        logToMain('INFO', 'BG_LISTENERS_READY', 'Esperando evento load-images...');
     </script>
 </body>
 </html>
