@@ -1,0 +1,161 @@
+[2025-12-01T07:57:16.389Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T07:57:16.389Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T07:57:16.437Z] [INFO] [INIT] No se encontró última configuración. Abriendo selector.
+[2025-12-01T07:57:24.706Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T07:57:24.731Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T07:57:35.896Z] [INFO] [APP_QUIT] Aplicación terminada (window-all-closed).
+[2025-12-01T07:57:38.421Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T07:57:38.421Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T07:57:38.440Z] [INFO] [INIT] Última configuración encontrada. Recargando modo: 1/1
+[2025-12-01T07:57:38.440Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T07:57:38.507Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T07:57:49.518Z] [INFO] [APP_QUIT] Aplicación terminada (window-all-closed).
+[2025-12-01T08:13:01.474Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:13:01.475Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:13:01.528Z] [INFO] [INIT] Última configuración encontrada. Recargando modo: 1/1
+[2025-12-01T08:13:01.529Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:13:01.643Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:15:26.553Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:15:26.554Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:15:26.597Z] [INFO] [INIT] No se encontró última configuración. Abriendo selector.
+[2025-12-01T08:15:29.757Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:21:53.466Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:21:53.466Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:21:53.485Z] [INFO] [INIT] No se encontró última configuración. Abriendo selector.
+[2025-12-01T08:21:58.499Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:21:58.515Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 0 de fondo creadas con éxito.
+[2025-12-01T08:22:03.984Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:22:16.138Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:22:16.163Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:22:35.676Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:22:41.707Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T08:22:41.736Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:22:51.098Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:22:52.802Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:26:41.318Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:26:41.318Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:26:41.337Z] [INFO] [INIT] Última configuración encontrada. Recargando modo: 2/1
+[2025-12-01T08:26:41.338Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T08:26:41.404Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:26:44.556Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:27:06.315Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:27:13.372Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:27:13.373Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:27:13.392Z] [INFO] [INIT] Última configuración encontrada. Recargando modo: 2/1
+[2025-12-01T08:27:13.392Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T08:27:13.459Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:27:23.975Z] [INFO] [APP_QUIT] Aplicación terminada (window-all-closed).
+[2025-12-01T08:27:51.482Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:27:51.482Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:27:51.501Z] [INFO] [INIT] No se encontró última configuración. Abriendo selector.
+[2025-12-01T08:28:00.134Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T08:28:00.158Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:28:10.104Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:28:18.845Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T08:28:18.871Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:28:30.617Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:29:55.391Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:42:09.733Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:42:09.734Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:42:09.753Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T08:42:14.762Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:42:14.776Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 0 de fondo creadas con éxito.
+[2025-12-01T08:42:19.761Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:42:26.386Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:42:26.415Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:42:30.075Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:42:31.926Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:45:23.703Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:45:23.704Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:45:23.722Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:45:23.722Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:45:23.795Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:45:34.915Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:45:34.916Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:45:34.934Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:45:34.935Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:45:35.005Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:48:06.791Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:48:06.792Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:48:06.810Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:48:06.810Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:48:06.882Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:48:12.659Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T08:48:14.493Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:49:04.889Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:49:04.889Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:49:04.908Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:49:04.909Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:49:04.977Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:52:01.103Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:52:01.104Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:52:01.122Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:52:01.123Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:52:01.285Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:54:38.611Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:54:38.612Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:54:38.649Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:54:38.650Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:54:38.799Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:54:46.029Z] [INFO] [APP_QUIT] Aplicación terminada.
+[2025-12-01T08:55:06.711Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:55:06.711Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:55:06.731Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T08:55:06.731Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T08:55:06.894Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T08:55:25.211Z] [INFO] [APP_QUIT] Aplicación terminada.
+[2025-12-01T08:55:55.353Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:55:55.354Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:55:55.379Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T08:56:00.636Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T08:56:03.103Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T08:56:03.104Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T08:56:03.122Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T08:56:20.253Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T09:38:27.247Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T09:38:27.247Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T09:38:27.265Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T09:38:28.938Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=0
+[2025-12-01T09:38:28.991Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 0 de fondo creadas con éxito.
+[2025-12-01T09:39:27.521Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T09:39:27.521Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T09:39:27.563Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T09:39:27.564Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=0
+[2025-12-01T09:39:27.691Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 0 de fondo creadas con éxito.
+[2025-12-01T09:39:33.596Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:39:44.792Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T09:39:44.890Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:39:51.126Z] [INFO] [APP_QUIT] Aplicación terminada.
+[2025-12-01T09:53:04.123Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T09:53:04.123Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T09:53:04.142Z] [INFO] [INIT] Restaurando sesión: 1/1
+[2025-12-01T09:53:04.143Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=1, Posición=1, Archivos=1
+[2025-12-01T09:53:04.289Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:53:07.123Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:53:18.898Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=3, Archivos=1
+[2025-12-01T09:53:18.993Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:53:33.782Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:53:40.850Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T09:53:40.947Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:54:18.943Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:54:34.975Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=3, Archivos=1
+[2025-12-01T09:54:35.079Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:54:43.220Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:54:48.311Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T09:54:48.419Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:57:40.065Z] [INFO] [SHORTCUT_RESET] Usuario reseteado por Ctrl+Shift+R.
+[2025-12-01T09:57:41.860Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T09:58:01.813Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T09:58:01.813Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T09:58:01.832Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T09:58:07.923Z] [INFO] [SELECTION_RECEIVED] Nueva selección: Tamaño=2, Posición=1, Archivos=1
+[2025-12-01T09:58:08.033Z] [INFO] [WINDOWS_CREATED] Ventanas principal y 1 de fondo creadas con éxito.
+[2025-12-01T09:59:43.545Z] [INFO] [APP_QUIT] Aplicación terminada.
+[2025-12-01T10:00:11.760Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T10:00:11.761Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T10:00:11.865Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T10:00:13.707Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.
+[2025-12-01T10:00:26.613Z] [INFO] [APP_START] Aplicación iniciada. Flujo de logs asegurado.
+[2025-12-01T10:00:26.613Z] [INFO] [CONFIG_LOADED] Configuración cargada. Tiempo de inactividad: 3000ms
+[2025-12-01T10:00:26.632Z] [INFO] [INIT] Sin configuración previa. Abriendo Selector.
+[2025-12-01T10:00:28.756Z] [INFO] [SELECTOR_CLOSED] Selector cerrado. Saliendo de la aplicación.

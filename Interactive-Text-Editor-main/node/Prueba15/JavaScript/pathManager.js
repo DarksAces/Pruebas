@@ -3,41 +3,48 @@
 const path = require('path');
 const url = require('url');
 const { getConfig } = require('./configManager');
-// Importación añadida para logging
 const logManager = require('./logManager'); 
 
-// --- Rutas que NO dependen de config ---
-const appRoot = path.join(__dirname, '..'); // Sube un nivel desde /JavaScript
+// --- FUNCIÓN CLAVE ---
+// Recupera la ruta base que calculamos en main.js
+const getBasePath = () => {
+    // Si existe la global (producción/ejecución normal), úsala.
+    // Si no (tests unitarios aislados), usa fallback relativo.
+    return global.APP_BASE_PATH || path.join(__dirname, '..');
+};
+
+const appRoot = path.join(__dirname, '..'); 
 const preloadScript = path.join(__dirname, 'preload.js'); 
 
-// Helper para URLs
 function getFileUrl(filePath) {
     return url.pathToFileURL(path.normalize(filePath)).href;
 }
 
-// --- Exportamos las rutas ---
 module.exports = {
-    // --- Rutas estáticas ---
     appRoot,
     preloadScript,
     getFileUrl,
 
-    // --- Rutas dinámicas (dependen de config) ---
+    // --- Rutas dinámicas (Leen desde config y son relativas al EXE) ---
     get resourcesDir() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'resourcesDir'");
-            return path.resolve(config.resourcesDir);
+            if (!config) throw new Error("Config not loaded");
+            
+            // AQUÍ ESTÁ EL CAMBIO: 
+            // Une la carpeta del .exe con el nombre de la carpeta de recursos (ej: "media_content")
+            return path.join(getBasePath(), config.resourcesDir);
         } catch (error) {
             logManager.logFatal('PATH_RESOURCES_DIR', error);
             throw error;
         }
     },
     
+    // --- El resto de getters usan 'this.resourcesDir', así que funcionarán automáticamente ---
+
     get htmlDir() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'htmlDir'");
             return path.join(appRoot, config.htmlDirName);
         } catch (error) {
             logManager.logFatal('PATH_HTML_DIR', error);
@@ -48,7 +55,6 @@ module.exports = {
     get imagesDir() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'imagesDir'");
             return path.join(this.resourcesDir, config.imageDirName);
         } catch (error) {
             logManager.logFatal('PATH_IMAGES_DIR', error);
@@ -59,7 +65,6 @@ module.exports = {
     get userFile() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'userFile'");
             return path.join(this.resourcesDir, config.userFileName);
         } catch (error) {
             logManager.logFatal('PATH_USER_FILE', error);
@@ -67,11 +72,9 @@ module.exports = {
         }
     },
     
-
     get bannersTopPath() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'bannersTopPath'");
             return path.join(this.imagesDir, config.bannersTopDirName);
         } catch (error) {
             logManager.logFatal('PATH_BANNERS_TOP', error);
@@ -82,7 +85,6 @@ module.exports = {
     get bannersBottomPath() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'bannersBottomPath'");
             return path.join(this.imagesDir, config.bannersBottomDirName);
         } catch (error) {
             logManager.logFatal('PATH_BANNERS_BOTTOM', error);
@@ -93,7 +95,6 @@ module.exports = {
     get mobileImgsPath() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'mobileImgsPath'");
             return path.join(this.imagesDir, config.mobileImgsDirName);
         } catch (error) {
             logManager.logFatal('PATH_MOBILE_IMGS', error);
@@ -104,7 +105,6 @@ module.exports = {
     get logFilePath() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'logFilePath'");
             return config.logFilePath; 
         } catch (error) {
             console.error("[FATAL] Fallo al obtener logFilePath:", error);
@@ -112,44 +112,18 @@ module.exports = {
         }
     },
 
-    // --- Rutas HTML (dependen de htmlDir) ---
-    get selectorHtml() {
-        try {
-            return path.join(this.htmlDir, 'selector.html');
-        } catch (error) {
-            logManager.logFatal('PATH_SELECTOR_HTML', error);
-            throw error;
-        }
-    },
-    
-    get indexHtml() {
-        try {
-            return path.join(this.htmlDir, 'index.html');
-        } catch (error) {
-            logManager.logFatal('PATH_INDEX_HTML', error);
-            throw error;
-        }
-    },
+    // --- Rutas HTML ---
+    get selectorHtml() { return path.join(this.htmlDir, 'selector.html'); },
+    get indexHtml() { return path.join(this.htmlDir, 'index.html'); },
+    get backgroundHtml() { return path.join(this.htmlDir, 'background.html'); },
 
-    get backgroundHtml() {
-        try {
-            return path.join(this.htmlDir, 'background.html');
-        } catch (error) {
-            logManager.logFatal('PATH_BACKGROUND_HTML', error);
-            throw error;
-        }
-    },
-
-    // --- NUEVO: RUTA AL ICONO ---
+    // --- Icono ---
     get iconPath() {
         try {
             const config = getConfig();
-            if (!config) throw new Error("Config not loaded before accessing 'iconPath'");
-            // Une 'C:\recursos' con 'imagenes/icon/icon.png'
             return path.join(this.resourcesDir, config.iconPath); 
         } catch (error) {
-            // Usamos console error directo por si el logManager falla, pero intentamos loguear
-            console.error("[FATAL] Fallo al obtener iconPath:", error);
+            console.error(error);
             logManager.logFatal('PATH_ICON', error);
             throw error;
         }

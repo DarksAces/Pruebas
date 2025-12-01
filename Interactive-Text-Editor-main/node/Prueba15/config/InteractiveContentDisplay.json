@@ -1,10 +1,10 @@
 {
-  "logFilePath": "C:\\recursos\\log",
-  "resourcesDir": "C:\\recursos",
+  "logFilePath": "logs", 
+  "resourcesDir": "media_content", 
   "inactivityTimeMs": 3000,
   "htmlDirName": "html",
   "imageDirName": "imagenes",
-  "userFileName": "contenido.txt",
+  "userFileName": "display.txt", 
   "bannersTopDirName": "BannersTop",
   "bannersBottomDirName": "BannersBottom",
   "mobileImgsDirName": "Moviles",

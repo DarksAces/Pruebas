@@ -1,9 +1,9 @@
 {
-  "name": "interactive-text-editor",
+  "name": "interactive-content-display",
   "version": "1.0.0",
   "description": "Aplicación Electron para gestión de contenido interactivo.",
   "main": "JavaScript/main.js",
-  "author": "Tu Nombre",
+  "author": "Daniel",
   "license": "ISC",
   
   "scripts": {
@@ -22,8 +22,8 @@
   },
 
   "build": {
-    "appId": "com.tuempresa.interactiveeditor",
-    "productName": "Interactive Content Editor",
+    "appId": "com.tuempresa.interactivecontentdisplay",
+    "productName": "Interactive Content Display",
     "directories": {
       "output": "dist"
     },
@@ -31,18 +31,30 @@
     "files": [
       "JavaScript/**/*",
       "html/**/*",
-      "config/**/*",
       "package.json",
       "node_modules/**/*"
+      ],
+    
+    "extraFiles": [
+      {
+        "from": "config/InteractiveContentDisplay.json",
+        "to": "."
+      },
+
+
+      {
+        "from": "demo_content/", 
+        "to": "media_content"
+      }
     ],
     
-    "extraResources": [
-        {
-            "from": "recursos", 
-            "to": "recursos",
-            "filter": ["**/*"]
-        }
-    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "Interactive Content Display"
+    },
     
     "win": {
       "target": "nsis",
