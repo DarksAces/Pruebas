@@ -3,25 +3,26 @@
 const path = require('path');
 const url = require('url');
 const { getConfig } = require('./configManager');
+// Importación añadida para logging
 const logManager = require('./logManager'); 
 
-// --- Rutas estáticas (relativas a la estructura del proyecto) ---
-const appRoot = path.join(__dirname, '..'); 
+// --- Rutas que NO dependen de config ---
+const appRoot = path.join(__dirname, '..'); // Sube un nivel desde /JavaScript
 const preloadScript = path.join(__dirname, 'preload.js'); 
 
-// Helper: Convierte ruta de archivo (C:\...) a URL (file://...) para Electron
+// Helper para URLs
 function getFileUrl(filePath) {
     return url.pathToFileURL(path.normalize(filePath)).href;
 }
 
 // --- Exportamos las rutas ---
-// Usamos 'get' para evaluar la ruta en el momento del acceso, no al inicio.
 module.exports = {
+    // --- Rutas estáticas ---
     appRoot,
     preloadScript,
     getFileUrl,
 
-    // --- Rutas dinámicas (Leen desde configManager) ---
+    // --- Rutas dinámicas (dependen de config) ---
     get resourcesDir() {
         try {
             const config = getConfig();
@@ -66,7 +67,7 @@ module.exports = {
         }
     },
     
-    // Directorios de imágenes específicas
+
     get bannersTopPath() {
         try {
             const config = getConfig();
@@ -111,7 +112,7 @@ module.exports = {
         }
     },
 
-    // --- Rutas HTML ---
+    // --- Rutas HTML (dependen de htmlDir) ---
     get selectorHtml() {
         try {
             return path.join(this.htmlDir, 'selector.html');
@@ -135,6 +136,21 @@ module.exports = {
             return path.join(this.htmlDir, 'background.html');
         } catch (error) {
             logManager.logFatal('PATH_BACKGROUND_HTML', error);
+            throw error;
+        }
+    },
+
+    // --- NUEVO: RUTA AL ICONO ---
+    get iconPath() {
+        try {
+            const config = getConfig();
+            if (!config) throw new Error("Config not loaded before accessing 'iconPath'");
+            // Une 'C:\recursos' con 'imagenes/icon/icon.png'
+            return path.join(this.resourcesDir, config.iconPath); 
+        } catch (error) {
+            // Usamos console error directo por si el logManager falla, pero intentamos loguear
+            console.error("[FATAL] Fallo al obtener iconPath:", error);
+            logManager.logFatal('PATH_ICON', error);
             throw error;
         }
     }

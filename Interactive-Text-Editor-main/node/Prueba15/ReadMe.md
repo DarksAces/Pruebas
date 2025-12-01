@@ -4,6 +4,157 @@ Aplicación Electron completamente modular para gestión de contenido interactiv
 
 ---
 
+## 🚀 Inicio Rápido
+
+### ⚙️ 1. Instalar Node.js y npm
+
+#### **Windows**
+
+1. **Descargar Node.js**:
+   - Ir a: https://nodejs.org/
+   - Descargar versión **LTS** (Long Term Support)
+   - Ejecutar instalador `.msi`
+
+2. **Instalar Node.js**:
+   - Seguir pasos del instalador
+   - Seleccionar "Add to PATH" (importante)
+   - Reiniciar la computadora
+
+3. **Verificar instalación**:
+   ```powershell
+   node --version     # Debe mostrar v14.0.0 o superior
+   npm --version      # Debe mostrar v6.0.0 o superior
+   ```
+
+#### **macOS**
+
+```bash
+# Usar Homebrew (recomendado)
+brew install node
+
+# Verificar
+node --version
+npm --version
+```
+
+#### **Linux (Ubuntu/Debian)**
+
+```bash
+# Actualizar paquetes
+sudo apt update
+
+# Instalar Node.js y npm
+sudo apt install nodejs npm
+
+# Verificar
+node --version
+npm --version
+```
+
+---
+
+### 📦 2. Instalar Dependencias del Proyecto
+
+```powershell
+# Navegar a la carpeta del proyecto
+cd "C:\Users\Daniel\Documents\GitHub\Scripts-Prueba\Interactive-Text-Editor-main\node\Prueba15"
+
+# Instalar dependencias (electron, electron-builder, etc.)
+npm install
+
+# Verificar que se instalaron correctamente
+npm list
+# Debe mostrar:
+# ├── electron@28.2.1
+# └── electron-builder@24.9.1
+```
+
+**¿Qué se instala?**
+- `electron` - Framework para apps de escritorio
+- `electron-builder` - Herramienta para compilar ejecutables
+- Otras dependencias necesarias
+
+**Tiempo estimado**: 2-5 minutos (depende de conexión)
+
+---
+
+### ▶️ 3. Comandos Principales
+
+#### **Ejecutar en Desarrollo**
+
+```powershell
+npm start
+```
+
+**Qué pasa:**
+- ✅ Abre la aplicación en modo desarrollo
+- ✅ DevTools disponibles (Ctrl+Shift+I)
+- ✅ Ver logs en consola
+- ✅ Cambios en código se reflejan al recargar (F5)
+
+#### **Compilar Ejecutable (Windows)**
+
+```powershell
+npm run dist
+```
+
+**O también:**
+
+```powershell
+npm run build:win
+```
+
+**Qué pasa:**
+- ✅ Compila la aplicación
+- ✅ Genera instalador `.nsis` en carpeta `dist/`
+- ✅ Genera archivo `.exe` ejecutable directo
+- ✅ Archivo listo para distribuir a usuarios
+
+**Ubicación del .exe:**
+```
+Prueba15/dist/
+├── Interactive Content Editor Setup 1.0.0.exe   # Instalador
+└── Interactive Content Editor 1.0.0.exe         # Ejecutable directo
+```
+
+**Tiempo estimado**: 3-5 minutos
+
+#### **Compilar para macOS**
+
+```powershell
+npm run build:mac
+```
+
+Genera archivo `.dmg` para instalar en Mac.
+
+#### **Compilar para Linux**
+
+```powershell
+npm run dist
+```
+
+Genera `.AppImage`, `.deb`, etc.
+
+---
+
+### 🔧 4. Solución Rápida si Hay Problemas
+
+```powershell
+# 1. Borrar dependencias
+Remove-Item -Recurse node_modules
+
+# 2. Borrar cache de npm
+npm cache clean --force
+
+# 3. Reinstalar todo
+npm install
+
+# 4. Intentar ejecutar nuevamente
+npm start
+```
+
+---
+
 ## 📋 Tabla de Contenidos
 
 1. [Descripción General](#descripción-general)
