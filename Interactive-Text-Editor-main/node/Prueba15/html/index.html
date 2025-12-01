@@ -88,33 +88,50 @@
     height: 100%;
   }
 
-  /* Indicador visual del atajo de teclado para reiniciar */
+  /* --- MODIFICADO: Indicador visual del atajo de teclado --- */
   .keyboard-hint {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #888;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-family: Arial, sans-serif;
+    bottom: 15px; /* Un poco más arriba */
+    right: 15px;
+    
+    /* CAMBIO: Fondo blanco casi opaco para máximo contraste sobre negro */
+    background-color: rgba(255, 255, 255, 0.9);
+    /* CAMBIO: Texto oscuro para leerse sobre el blanco */
+    color: #000; 
+    
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px; /* Ligeramente más grande */
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-weight: 600;
     z-index: 1000;
-    opacity: 0.5;
-    transition: opacity 0.3s;
+    
+    /* CAMBIO: Más visible por defecto (antes 0.5, ahora 0.9) */
+    opacity: 0.9; 
+    transition: opacity 0.3s, transform 0.2s;
+    
+    /* Sombra para despegarlo del fondo */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   }
 
   .keyboard-hint:hover {
     opacity: 1;
+    transform: scale(1.05); /* Efecto leve al pasar el mouse */
+    cursor: help;
   }
 
   .keyboard-hint kbd {
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 3px;
+    /* CAMBIO: Teclas negras con texto blanco (Invertido al contenedor) */
+    background-color: #222;
+    color: #fff;
+    
+    border: 1px solid #000;
+    border-bottom: 2px solid #000; /* Efecto 3D de tecla */
+    border-radius: 4px;
     padding: 2px 6px;
     font-family: monospace;
-    font-size: 11px;
+    font-size: 12px;
+    margin: 0 2px;
   }
 
 </style>
