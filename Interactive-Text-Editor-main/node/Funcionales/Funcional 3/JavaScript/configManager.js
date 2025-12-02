@@ -1,37 +1,46 @@
 // JavaScript/configManager.js
 
 const fs = require('fs');
+const path = require('path');
 const LAST_CONFIG_KEY = 'lastConfiguration';
 
-// NOTA: logManager se importa DENTRO de las funciones para evitar dependencias circulares,
-// ya que logManager podría necesitar configManager en algún punto futuro.
-
 let config;
-let configPath;
+let configPath; // Aquí se guarda la ruta activa (debería ser .../resources/InteractiveContentDisplay.json)
 
 // Carga la configuración inicial desde el disco
 function loadConfig(filePath) {
     const logManager = require('./logManager'); 
     
     configPath = filePath; 
+    console.log(`[CONFIG MANAGER] Ruta de configuración establecida en: ${configPath}`);
+
     try {
         const configData = fs.readFileSync(configPath, 'utf-8');
         config = JSON.parse(configData);
         return config;
     } catch (error) {
         console.error('[CONFIG FATAL ERROR] Error en loadConfig:', error);
-        // Si falla aquí, logManager puede no estar inicializado, pero intentamos
         if (logManager && logManager.logError) logManager.logError('CONFIG_LOAD', error); 
-        throw error; // El error debe subir a main.js para detener la app
+        throw error; 
     }
 }
 
-// Guarda la última selección del usuario (tamaño, archivos) en el JSON
+// Guarda la última selección del usuario
 function saveLastConfig(data) {
     const logManager = require('./logManager');
     
+    // VALIDACIÓN: Si no hay ruta definida, no podemos guardar
+    if (!configPath) {
+        const msg = '[CONFIG ERROR] Intentando guardar sin ruta definida (loadConfig no se ejecutó correctamente).';
+        console.error(msg);
+        if (logManager) logManager.logError('CONFIG_SAVE_NO_PATH', msg);
+        return;
+    }
+
     try {
-        // Leemos de nuevo para asegurar que tenemos la versión más reciente
+        console.log(`[CONFIG] Intentando guardar configuración en: ${configPath}`);
+
+        // Leemos de nuevo para asegurar que no sobrescribimos cambios externos
         const currentConfigData = fs.readFileSync(configPath, 'utf-8');
         let currentConfig = JSON.parse(currentConfigData);
         
@@ -40,14 +49,17 @@ function saveLastConfig(data) {
         
         // Escribimos al disco
         fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2), 'utf-8');
-        console.log('[CONFIG] Ultima configuración guardada con exito.');
+        
+        console.log('[CONFIG] ✓ ÉXITO: Archivo actualizado correctamente.');
+        logManager.log('INFO', 'CONFIG_SAVED', `Configuración guardada en ${configPath}`);
+
     } catch (error) {
-        console.error('[CONFIG ERROR] No se pudo guardar la ultima configuración:', error);
-        logManager.logError('CONFIG_SAVE', error); 
+        console.error('[CONFIG ERROR] Fallo al escribir en disco:', error);
+        logManager.logError('CONFIG_SAVE_WRITE', error); 
     }
 }
 
-// Recupera la configuración guardada anteriormente (si existe)
+// Recupera la configuración guardada anteriormente
 function loadLastConfig() {
     if (config && config[LAST_CONFIG_KEY]) {
         return config[LAST_CONFIG_KEY];

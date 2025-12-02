@@ -39,12 +39,6 @@
       {
         "from": "config/InteractiveContentDisplay.json",
         "to": "."
-      },
-
-
-      {
-        "from": "demo_content/", 
-        "to": "media_content"
       }
     ],
     

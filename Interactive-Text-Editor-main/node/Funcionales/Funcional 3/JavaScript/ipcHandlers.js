@@ -1,4 +1,4 @@
-// JavaScript/ipcHandlers.js (CORREGIDO + LOGGING)
+// JavaScript/ipcHandlers.js (CORREGIDO Y COMPLETO)
 
 const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
@@ -46,12 +46,21 @@ function registerHandlers() {
     // HANDLER 2: Procesar Selección (CORE LOGIC)
     // Recibe configuración, calcula posiciones y crea las ventanas.
     // ----------------------
-    ipcMain.on('selection-made', (e, { size, position, mediaFiles, distributionScheme, assignmentMap }) => {
+    ipcMain.on('selection-made', (e, selectionData) => {
+        // Desestructuramos para tener las variables disponibles como antes
+        const { size, position, mediaFiles, distributionScheme, assignmentMap } = selectionData;
         
         try {
             logManager.log('INFO', 'SELECTION_RECEIVED', `Nueva selección: Tamaño=${size}, Posición=${position}, Archivos=${mediaFiles.length}`); 
             console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
             
+            // =================================================================================
+            // [CAMBIO IMPORTANTE] GUARDAR CONFIGURACIÓN AHORA MISMO
+            // Lo hacemos al principio para asegurar que se guarde aunque fallen las ventanas después.
+            // =================================================================================
+            configManager.saveLastConfig(selectionData);
+            console.log('[IPC] Configuración guardada preventivamente.');
+
             // Limpieza previa: cerrar ventanas anteriores y limpiar timers
             windowManager.closeAllWindows();
             inactivityManager.clearInactivityTimer();
@@ -137,15 +146,7 @@ function registerHandlers() {
                 bgWindows.push(bgWin); 
             });
             
-            // Persistir configuración en disco
-            configManager.saveLastConfig({ 
-                size, 
-                position, 
-                mediaFiles, 
-                distributionScheme, 
-                assignmentMap 
-            });
-
+            // NOTA: Ya hemos guardado la configuración al principio, así que borramos la llamada que había aquí abajo.
             logManager.log('INFO', 'WINDOWS_CREATED', `Ventanas principal y ${finalOtherBounds.length} de fondo creadas con éxito.`); 
             
             // ----------------------------------------------------
@@ -168,6 +169,12 @@ function registerHandlers() {
                 const bannersTop = getMediaUrls(pathManager.bannersTopPath);
                 const bannersBottom = getMediaUrls(pathManager.bannersBottomPath);
                 const mobileImgs = getMediaUrls(pathManager.mobileImgsPath);
+
+                // Crear carpeta de recursos si no existe ANTES de hacer watch
+                if (!fs.existsSync(pathManager.resourcesDir)) {
+                    fs.mkdirSync(pathManager.resourcesDir, { recursive: true });
+                    logManager.log('INFO', 'RESOURCES_DIR_CREATED', `Carpeta de recursos creada: ${pathManager.resourcesDir}`);
+                }
 
                 // WATCHER: Vigila cambios en 'contenido.txt'
                 const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { 
