@@ -1,0 +1,69 @@
+{
+  "name": "interactive-content-display",
+  "version": "1.0.0",
+  "description": "Aplicación Electron para gestión de contenido interactivo.",
+  "main": "JavaScript/main.js",
+  "author": "Daniel",
+  "license": "ISC",
+  
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "dist": "electron-builder"
+  },
+  
+  "dependencies": {
+    
+  },
+  "devDependencies": {
+    "electron": "^28.2.1",
+    "electron-builder": "^24.9.1"
+  },
+
+  "build": {
+    "appId": "com.tuempresa.interactivecontentdisplay",
+    "productName": "Interactive Content Display",
+    "directories": {
+      "output": "dist"
+    },
+    
+    "files": [
+      "JavaScript/**/*",
+      "html/**/*",
+      "package.json",
+      "node_modules/**/*"
+      ],
+    
+    "extraFiles": [
+      {
+        "from": "config/InteractiveContentDisplay.json",
+        "to": "."
+      },
+
+
+      {
+        "from": "demo_content/", 
+        "to": "media_content"
+      }
+    ],
+    
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "Interactive Content Display"
+    },
+    
+    "win": {
+      "target": "nsis",
+      "icon": "imagenes/icon/icon.ico" 
+    },
+    
+    "mac": {
+      "target": "dmg",
+      "icon": "imagenes/icon/icon.icns" 
+    }
+  }
+}
