@@ -25,9 +25,18 @@ module.exports = {
     // RUTAS DESDE LA CARPETA DE INSTALACIÓN (global.DATA_DIR)
     // ========================================================================
     get resourcesDir() {
-        const config = getConfig();
-        return path.join(global.DATA_DIR, config.resourcesDir);
-    },
+    const config = getConfig();
+    const resourcePath = config.resourcesDir;
+    
+    // VERIFICACIÓN CLAVE: Si la ruta empieza con una unidad de disco (C:, D:, etc.)
+    // O si es una ruta absoluta de Unix/Linux, ÚSALA DIRECTAMENTE.
+    if (path.isAbsolute(resourcePath) || /^[a-zA-Z]:/.test(resourcePath)) {
+        return resourcePath; // Retorna C:\estacio directamente
+    }
+    
+    // Si no es absoluta, usa la lógica anterior (relativa a DATA_DIR)
+    return path.join(global.DATA_DIR, resourcePath);
+},
 
     get htmlDir() {
         const config = getConfig();
@@ -41,6 +50,15 @@ module.exports = {
 
     get userFile() {
         const config = getConfig();
+        const absolutePath = config.userFilePathAbsolute; // Lee la nueva ruta
+        
+        // 1. Verificar si se configuró una ruta absoluta
+        if (absolutePath && path.isAbsolute(absolutePath)) {
+            // Si es una ruta absoluta, se usa directamente (c:\estacio\display.txt)
+            return absolutePath;
+        }
+
+        // 2. Si no es absoluta, usa la lógica anterior (relativa a resourcesDir)
         return path.join(this.resourcesDir, config.userFileName);
     },
     

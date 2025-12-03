@@ -1,4 +1,4 @@
-// JavaScript/ipcHandlers.js (CORREGIDO Y COMPLETO)
+// JavaScript/ipcHandlers.js (FINAL Y FUNCIONAL)
 
 const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
@@ -13,18 +13,29 @@ const inactivityManager = require('./inactivityManager');
 const { calculatePositions } = require('./positionCalculator');
 const logManager = require('./logManager'); 
 
+// ----------------------------------------------------
+// HELPER MOVIDO AL ÁMBITO SUPERIOR (Para ser accesible)
+// ----------------------------------------------------
+const getMediaUrls = (dirPath) => {
+    if (fs.existsSync(dirPath)) {
+        return fs.readdirSync(dirPath)
+            .filter(f => /\.(png|jpe?g|gif|webp|mp4)$/i.test(f))
+            .map(f => pathManager.getFileUrl(path.join(dirPath, f)));
+    }
+    return [];
+};
+
 function registerHandlers() {
 
     // ----------------------
     // HANDLER 1: Diálogo de Selección de Archivos
-    // Permite al usuario buscar imágenes/videos en su disco local.
     // ----------------------
     ipcMain.handle('open-media-dialog', async (event, maxFiles) => {
         const window = BrowserWindow.fromWebContents(event.sender);
         
         const properties = ['openFile'];
         if (maxFiles > 1) {
-            properties.push('multiSelections'); // Habilita selección múltiple si se requiere
+            properties.push('multiSelections'); 
         }
 
         const result = await dialog.showOpenDialog(window, {
@@ -33,7 +44,7 @@ function registerHandlers() {
                 { name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4'] }
             ],
             message: `Selecciona hasta ${maxFiles} archivos de imagen o video.`,
-            defaultPath: pathManager.resourcesDir // Abre por defecto en la carpeta de recursos
+            defaultPath: pathManager.resourcesDir
         });
 
         if (result.canceled) {
@@ -44,63 +55,60 @@ function registerHandlers() {
 
     // ----------------------
     // HANDLER 2: Procesar Selección (CORE LOGIC)
-    // Recibe configuración, calcula posiciones y crea las ventanas.
     // ----------------------
     ipcMain.on('selection-made', (e, selectionData) => {
-        // Desestructuramos para tener las variables disponibles como antes
         const { size, position, mediaFiles, distributionScheme, assignmentMap } = selectionData;
         
         try {
             logManager.log('INFO', 'SELECTION_RECEIVED', `Nueva selección: Tamaño=${size}, Posición=${position}, Archivos=${mediaFiles.length}`); 
-            console.log('[SELECCION] Recibido:', { size, position, mediaFiles, distributionScheme, assignmentMap });
-            
-            // =================================================================================
-            // [CAMBIO IMPORTANTE] GUARDAR CONFIGURACIÓN AHORA MISMO
-            // Lo hacemos al principio para asegurar que se guarde aunque fallen las ventanas después.
-            // =================================================================================
             configManager.saveLastConfig(selectionData);
-            console.log('[IPC] Configuración guardada preventivamente.');
-
-            // Limpieza previa: cerrar ventanas anteriores y limpiar timers
+            
             windowManager.closeAllWindows();
             inactivityManager.clearInactivityTimer();
 
-            // Calculamos geometría de ventanas
             const { mainBounds, otherBounds } = calculatePositions(size, parseInt(position));
 
             let finalOtherBounds = otherBounds;
             let userMediaMap = {};
             
-            // --- LÓGICA DE DISTRIBUCIÓN AVANZADA (Fusión de cuadrantes) ---
-            if (size === '1') { // Caso 1/4 de pantalla
+            // --- CÁLCULO DE RUTAS DE BANNERS Y CREACIÓN DE DIRECTORIOS ---
+            const config = configManager.getConfig(); 
+            
+            // 1. Crear carpeta de recursos relativa (media_content) si no existe
+            if (!fs.existsSync(pathManager.resourcesDir)) {
+                fs.mkdirSync(pathManager.resourcesDir, { recursive: true });
+                logManager.log('INFO', 'RESOURCES_DIR_CREATED', `Carpeta de recursos creada: ${pathManager.resourcesDir}`);
+            }
+
+            // 2. Definir las variables multimedia (ACCESIBLES en el Watcher)
+            const bannersTop = getMediaUrls(pathManager.bannersTopPath);
+            const bannersBottom = getMediaUrls(pathManager.bannersBottomPath);
+            const mobileImgs = getMediaUrls(pathManager.mobileImgsPath);
+            // ----------------------------------------------------
+
+            // --- LÓGICA DE DISTRIBUCIÓN AVANZADA ---
+            if (size === '1') { 
                 const remainingBounds = otherBounds; 
                 
-                // Esquema: Una imagen grande ocupando el espacio restante (forma de L invertida)
                 if (distributionScheme === 'one_big' && mediaFiles.length >= 1) {
                     const minX = Math.min(...remainingBounds.map(b => b.x));
                     const minY = Math.min(...remainingBounds.map(b => b.y));
                     const maxX = Math.max(...remainingBounds.map(b => b.x + b.width));
                     const maxY = Math.max(...remainingBounds.map(b => b.y + b.height));
 
-                    // Creamos un súper-bounds que cubre los 3 cuadrantes restantes
                     const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY, index: 99 };
                     finalOtherBounds = [combinedBounds];
                     userMediaMap[99] = mediaFiles[0];
 
                 } else if (distributionScheme === 'three_individual' && mediaFiles.length >= 3) {
-                    // Esquema: 3 imágenes distintas en los 3 cuadrantes restantes
                     finalOtherBounds = remainingBounds;
                     remainingBounds.forEach((bounds, idx) => {
                          userMediaMap[bounds.index] = mediaFiles[idx];
                     });
-
                 } else if (distributionScheme === 'none') {
-                     // Sin fondo (negro)
                      finalOtherBounds = [];
-                
                 } else if (distributionScheme === 'two_halves' && mediaFiles.length >= 2) {
-                    // Esquema híbrido: Un bloque doble y uno simple
-                    const individualIndex = parseInt(assignmentMap.individualArea); 
+                    const individualIndex = parseInt(assignmentMap.individualArea);
                     const boundsToFuse = remainingBounds.filter(b => b.index !== individualIndex);
                     const individualBound = remainingBounds.find(b => b.index === individualIndex);
                     
@@ -117,28 +125,20 @@ function registerHandlers() {
                     userMediaMap[individualBound.index] = mediaFiles[1]; 
                 }
             } else if (size === '2' && mediaFiles.length >= 1) {
-                // Caso 1/2 pantalla: La otra mitad es el fondo
                 if (otherBounds.length > 0) {
                     finalOtherBounds = otherBounds;
                     userMediaMap[otherBounds[0].index] = mediaFiles[0];
                 }
             } else if (size === '3') {
-                // Pantalla completa no tiene fondos
                 finalOtherBounds = [];
             }
+            // ... (FIN LÓGICA DE DISTRIBUCIÓN AVANZADA)
 
+            if (appState.winSelector) { appState.winSelector.close(); appState.winSelector = null; }
 
-            // Cerrar ventana del selector una vez configurado
-            if (appState.winSelector) {
-                appState.winSelector.close();
-                appState.winSelector = null;
-            }
-
-            // 1. Crear ventana principal (VIDEO)
             const mainWin = windowManager.createWindow(mainBounds, true);
             appState.windows.push(mainWin);
             
-            // 2. Crear ventanas de fondo (IMÁGENES)
             const bgWindows = [];
             finalOtherBounds.forEach((bounds) => {
                 const bgWin = windowManager.createWindow(bounds, false);
@@ -146,7 +146,6 @@ function registerHandlers() {
                 bgWindows.push(bgWin); 
             });
             
-            // NOTA: Ya hemos guardado la configuración al principio, así que borramos la llamada que había aquí abajo.
             logManager.log('INFO', 'WINDOWS_CREATED', `Ventanas principal y ${finalOtherBounds.length} de fondo creadas con éxito.`); 
             
             // ----------------------------------------------------
@@ -154,46 +153,32 @@ function registerHandlers() {
             // ----------------------------------------------------
             mainWin.webContents.once('did-finish-load', () => {
                 
-                const config = configManager.getConfig();
-                
-                // Helper para cargar imágenes de directorios fijos (banners, etc.)
-                const getMediaUrls = (dirPath) => {
-                    if (fs.existsSync(dirPath)) {
-                        return fs.readdirSync(dirPath)
-                            .filter(f => /\.(png|jpe?g|gif|webp|mp4)$/i.test(f))
-                            .map(f => pathManager.getFileUrl(path.join(dirPath, f)));
-                    }
-                    return [];
-                };
+                // --- RUTAS PARA EL WATCHER (CORRECCIÓN DE RUTA ABSOLUTA) ---
+                const fileToWatchPath = pathManager.userFile; // Ej: c:\estacio\display.txt
+                const directoryToWatch = path.dirname(fileToWatchPath); // Ej: c:\estacio
+                const filenameToWatch = path.basename(fileToWatchPath); // Ej: display.txt
 
-                const bannersTop = getMediaUrls(pathManager.bannersTopPath);
-                const bannersBottom = getMediaUrls(pathManager.bannersBottomPath);
-                const mobileImgs = getMediaUrls(pathManager.mobileImgsPath);
-
-                // Crear carpeta de recursos si no existe ANTES de hacer watch
-                if (!fs.existsSync(pathManager.resourcesDir)) {
-                    fs.mkdirSync(pathManager.resourcesDir, { recursive: true });
-                    logManager.log('INFO', 'RESOURCES_DIR_CREATED', `Carpeta de recursos creada: ${pathManager.resourcesDir}`);
+                // Crear directorio de contenido de usuario (c:\estacio) si no existe
+                if (!fs.existsSync(directoryToWatch)) {
+                    fs.mkdirSync(directoryToWatch, { recursive: true });
+                    logManager.log('INFO', 'USER_CONTENT_DIR_CREATED', `Carpeta de contenido de usuario creada: ${directoryToWatch}`);
                 }
-
-                // WATCHER: Vigila cambios en 'contenido.txt'
-                const watcher = fs.watch(pathManager.resourcesDir, (eventType, filename) => { 
-                    if (filename === config.userFileName) { 
+                
+                // WATCHER: Vigila cambios en el archivo de contenido
+                const watcher = fs.watch(directoryToWatch, (eventType, filename) => { 
+                    if (filename === filenameToWatch) { 
                         
-                        // Reiniciar temporizador de inactividad con cada interacción
                         inactivityManager.startInactivityTimer(mainWin); 
 
-                        if (!fs.existsSync(pathManager.userFile)) { 
-                            // Si el archivo se borra, mostramos pantalla por defecto
+                        if (!fs.existsSync(fileToWatchPath)) { 
                             mainWin.webContents.send('no-file', {});
                         } else if (eventType === 'change') {
-                            // Si el archivo cambia, leemos y enviamos nuevo texto
-                            const text = fs.readFileSync(pathManager.userFile, 'utf-8'); 
+                            const text = fs.readFileSync(fileToWatchPath, 'utf-8'); 
                             mainWin.webContents.send('file-changed', text);
                             
-                            // Recargar imágenes para asegurar frescura
+                            // Recargar imágenes
                             mainWin.webContents.send('load-images', {
-                                bannersTop,
+                                bannersTop, 
                                 bannersBottom,
                                 mobileImgs,
                                 mediaFiles: []
@@ -210,8 +195,8 @@ function registerHandlers() {
                 });
 
                 // Carga inicial al abrir
-                if (fs.existsSync(pathManager.userFile)) { 
-                    const text = fs.readFileSync(pathManager.userFile, 'utf-8'); 
+                if (fs.existsSync(fileToWatchPath)) { 
+                    const text = fs.readFileSync(fileToWatchPath, 'utf-8'); 
                     mainWin.webContents.send('file-changed', text);
                     inactivityManager.startInactivityTimer(mainWin); 
                 } else {
@@ -267,8 +252,9 @@ function registerHandlers() {
                 });
             });
 
+
         } catch (error) {
-            // Manejo de Error Fatal: Si falla la creación, volvemos al selector
+            // Manejo de Error Fatal
             console.error('[FATAL CRASH] Error al procesar la configuración y crear ventanas.', error.message, error.stack);
             logManager.logFatal('SELECTION_MADE_HANDLER', error); 
             
