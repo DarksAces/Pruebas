@@ -257,42 +257,52 @@ class _PantallaJuegoState extends State<PantallaJuego> {
   }
 
   // --- 3. ALGORITMO DE RELLENO EN CRUZ (SIN DIAGONALES) ---
-  void _rellenoCruz(int startX, int startY) {
-    PixelInfo pInicial = matriz[startY][startX];
-    
-    // Solo rellenamos si es el color correcto y no está pintado
-    if (pInicial.estaPintado || pInicial.indiceColor != colorSeleccionadoIndex) return;
+// --- 3. ALGORITMO DE RELLENO EN CRUZ (SIN DIAGONALES) OPTIMIZADO ---
+void _rellenoCruz(int startX, int startY) {
+  PixelInfo pInicial = matriz[startY][startX];
+  
+  if (pInicial.estaPintado || pInicial.indiceColor != colorSeleccionadoIndex) return;
 
-    List<Point> cola = [Point(startX, startY)];
-    bool cambios = false;
+  List<Point> cola = [Point(startX, startY)];
+  // Usamos una Matriz de booleanos (o un Set de coordenadas) para registrar los visitados.
+  // Una matriz de booleanos es más rápido que un Set para accesos por índice.
+  List<List<bool>> visitados = List.generate(matriz.length, (y) => 
+      List.generate(matriz[0].length, (x) => false));
 
-    while (cola.isNotEmpty) {
-      Point p = cola.removeLast();
-      int px = p.x.toInt();
-      int py = p.y.toInt();
+  bool cambios = false;
 
-      if (px < 0 || px >= matriz[0].length || py < 0 || py >= matriz.length) continue;
+  while (cola.isNotEmpty) {
+    Point p = cola.removeLast();
+    int px = p.x.toInt();
+    int py = p.y.toInt();
 
-      PixelInfo actual = matriz[py][px];
-
-      if (!actual.estaPintado && actual.indiceColor == colorSeleccionadoIndex) {
-        setState(() => actual.estaPintado = true);
-        cambios = true;
-
-        // AQUÍ ESTÁ EL CAMBIO: Solo añadimos 4 vecinos (Cruz)
-        // No añadimos las diagonales
-        cola.add(Point(px + 1, py)); // Derecha
-        cola.add(Point(px - 1, py)); // Izquierda
-        cola.add(Point(px, py + 1)); // Abajo
-        cola.add(Point(px, py - 1)); // Arriba
-      }
+    // 1. Validar límites y verificar visitado
+    if (px < 0 || px >= matriz[0].length || py < 0 || py >= matriz.length || visitados[py][px]) {
+      continue;
     }
+    
+    visitados[py][px] = true; // Marcar como visitado
 
-    if (cambios) {
-      HapticFeedback.heavyImpact(); // Vibración fuerte
-      guardarProgreso();
+    PixelInfo actual = matriz[py][px];
+
+    // 2. Verificar condición de pintado
+    if (!actual.estaPintado && actual.indiceColor == colorSeleccionadoIndex) {
+      setState(() => actual.estaPintado = true);
+      cambios = true;
+
+      // Añadir 4 vecinos (Cruz)
+      cola.add(Point(px + 1, py)); // Derecha
+      cola.add(Point(px - 1, py)); // Izquierda
+      cola.add(Point(px, py + 1)); // Abajo
+      cola.add(Point(px, py - 1)); // Arriba
     }
   }
+
+  if (cambios) {
+    HapticFeedback.heavyImpact();
+    guardarProgreso();
+  }
+}
 
   @override
   Widget build(BuildContext context) {
