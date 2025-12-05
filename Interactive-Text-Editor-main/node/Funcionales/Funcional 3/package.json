@@ -5,59 +5,52 @@
   "main": "JavaScript/main.js",
   "author": "Daniel",
   "license": "ISC",
-  
   "scripts": {
     "start": "electron .",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "dist": "electron-builder"
   },
-  
   "dependencies": {
-    
+    "png-to-ico": "^3.0.1"
   },
   "devDependencies": {
     "electron": "^28.2.1",
     "electron-builder": "^24.9.1"
   },
-
   "build": {
     "appId": "com.tuempresa.interactivecontentdisplay",
     "productName": "Interactive Content Display",
     "directories": {
       "output": "dist"
     },
-    
     "files": [
       "JavaScript/**/*",
       "html/**/*",
       "package.json",
       "node_modules/**/*"
-      ],
-    
+    ],
     "extraFiles": [
       {
         "from": "config/InteractiveContentDisplay.json",
         "to": "."
       }
     ],
-    
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "runAfterFinish": true,
-      "shortcutName": "Interactive Content Display"
+      "shortcutName": "Interactive Content Display",
+      "installerIcon": "imagenes/icon/Logo.ico",
+      "uninstallerIcon": "imagenes/icon/Logo.ico"
     },
-    
     "win": {
-      "target": "nsis",
-      "icon": "imagenes/icon/icon.ico" 
+      "icon": "imagenes/icon/Logo.ico"
     },
-    
     "mac": {
       "target": "dmg",
-      "icon": "imagenes/icon/icon.icns" 
+      "icon": "imagenes/icon/icon.icns"
     }
   }
 }
