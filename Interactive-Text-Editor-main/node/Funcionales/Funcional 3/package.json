@@ -50,7 +50,7 @@
       "uninstallerIcon": "media_content/imagenes/icon/logo.ico"
     },
     "win": {
-      "icon": "media_content/imagenes/icon/logo.ico"
+      "icon": "media_content/imagenes/icon/logo.png"
     },
     "mac": {
       "target": "dmg",
