@@ -1,4 +1,4 @@
-package com.example.space_miner
+package com.daniel.omnirealms
 
 import io.flutter.embedding.android.FlutterActivity
 
