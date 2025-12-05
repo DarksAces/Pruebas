@@ -111,25 +111,46 @@ class StationScreen extends StatelessWidget {
                     itemCount: WorldManager.worlds.length,
                     itemBuilder: (ctx, index) {
                       final world = WorldManager.worlds[index];
+                      final isUnlocked = player.unlockedWorlds.contains(world.id);
                       final isCurrent = player.currentWorldId == world.id;
+
                       return Card(
-                        color: isCurrent ? Colors.blue[900] : Colors.grey[850],
+                        color: isUnlocked 
+                            ? (isCurrent ? Colors.blue[900] : Colors.grey[850]) 
+                            : Colors.black54,
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
-                          title: Text(loc.get(world.name), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          subtitle: Text(loc.get(world.description), style: const TextStyle(color: Colors.white70)),
+                          leading: Icon(
+                            isUnlocked ? Icons.public : Icons.lock, 
+                            color: isUnlocked ? Colors.cyanAccent : Colors.grey
+                          ),
+                          title: Text(
+                            loc.get(world.name), 
+                            style: TextStyle(
+                              color: isUnlocked ? Colors.white : Colors.grey, 
+                              fontWeight: FontWeight.bold
+                            )
+                          ),
+                          subtitle: isUnlocked 
+                              ? Text(loc.get(world.description), style: const TextStyle(color: Colors.white70))
+                              : Text(
+                                  loc.get('unlock_reach_floor').replaceFirst('%s', _getPreviousWorldName(player, world.id, loc)),
+                                  style: const TextStyle(color: Colors.redAccent, fontStyle: FontStyle.italic)
+                                ),
                           trailing: isCurrent
                               ? const Icon(Icons.location_on, color: Colors.blueAccent)
-                              : ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[800]),
-                                  onPressed: () {
-                                    player.travelTo(world.id);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Traveled to ${loc.get(world.name)}!')),
-                                    );
-                                  },
-                                  child: const Text('Travel'),
-                                ),
+                              : isUnlocked
+                                  ? ElevatedButton(
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[800]),
+                                      onPressed: () {
+                                        player.travelTo(world.id);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('${loc.get('travel')} -> ${loc.get(world.name)}!')),
+                                        );
+                                      },
+                                      child: Text(loc.get('travel')),
+                                    )
+                                  : Icon(Icons.lock_outline, color: Colors.white24),
                         ),
                       );
                     },
@@ -141,6 +162,28 @@ class StationScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getPreviousWorldName(PlayerState player, String currentWorldId, Localization loc) {
+     // Naive implementation: find previous index in master list.
+     // In reality, we should ask WorldManager or PlayerState for the "unlock parent".
+     // For now, based on strict order:
+     final order = [
+      'kingdom_valor',
+      'jurassica',
+      'neon_tokyo',
+      'mystic_woods',
+      'void_nexus'
+    ];
+    int index = order.indexOf(currentWorldId);
+    if (index > 0) {
+      String prevId = order[index - 1];
+      // Get name from localized ID
+      // We don't have direct access to World object here easily without searching WorldManager again, which is fine.
+      final prevWorld = WorldManager.getWorld(prevId);
+      return loc.get(prevWorld.name);
+    }
+    return "Unknown";
   }
 
 

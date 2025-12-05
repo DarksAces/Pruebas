@@ -28,8 +28,11 @@ class PlayerState extends ChangeNotifier {
   bool _nextFightDefenseBoost = false; // Iron Skin
   bool _nextFightLuckBoost = false; // Luck Charm
 
-  // Location
-  String _currentWorldId = "kingdom_valor"; // Default to first new world
+  // Location & Progression
+  String _currentWorldId = "kingdom_valor";
+  int _currentFloor = 1;
+  final Map<String, int> _maxFloorsReached = {}; // worldId -> maxFloor
+  final List<String> _unlockedWorlds = ["kingdom_valor"];
 
   // Getters
   double get currentHealth => _currentHealth;
@@ -44,6 +47,8 @@ class PlayerState extends ChangeNotifier {
   double get attackDamage => _attackDamage;
   String get weaponName => _weaponName;
   String get currentWorldId => _currentWorldId;
+  int get currentFloor => _currentFloor;
+  List<String> get unlockedWorlds => _unlockedWorlds;
   bool get nextFightDamageBoost => _nextFightDamageBoost;
   bool get nextFightShieldBoost => _nextFightShieldBoost;
   bool get nextFightDefenseBoost => _nextFightDefenseBoost;
@@ -151,9 +156,65 @@ class PlayerState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void travelTo(String worldId) {
-    _currentWorldId = worldId;
+  int getMaxFloorForWorld(String worldId) {
+    return _maxFloorsReached[worldId] ?? 1;
+  }
+
+  void advanceFloor() {
+    _currentFloor++;
+    
+    // Update Max Floor
+    int currentMax = _maxFloorsReached[_currentWorldId] ?? 1;
+    if (_currentFloor > currentMax) {
+      _maxFloorsReached[_currentWorldId] = _currentFloor;
+    }
+
+    // Unlock Next World at Floor 100
+    if (_currentFloor == 100) {
+      _unlockNextWorld();
+    }
+    
+    save();
     notifyListeners();
+  }
+
+  void _unlockNextWorld() {
+    const worldOrder = [
+      'kingdom_valor',
+      'jurassica',
+      'neon_tokyo',
+      'mystic_woods',
+      'void_nexus'
+    ];
+    
+    int currentIndex = worldOrder.indexOf(_currentWorldId);
+    if (currentIndex != -1 && currentIndex < worldOrder.length - 1) {
+      String nextWorld = worldOrder[currentIndex + 1];
+      if (!_unlockedWorlds.contains(nextWorld)) {
+        _unlockedWorlds.add(nextWorld);
+        notifyListeners(); // UI should show toast about unlock
+      }
+    }
+  }
+
+  void travelTo(String worldId) {
+    if (_unlockedWorlds.contains(worldId)) {
+      _currentWorldId = worldId;
+      _currentFloor = 1; // Reset to floor 1 when traveling? Or keep logic?
+      // Logic: User can teleport to checkpoint floors, default to 1
+      notifyListeners();
+    }
+  }
+  
+  void teleportToFloor(int floor) {
+    int maxObtained = _maxFloorsReached[_currentWorldId] ?? 1;
+    // Allow teleport to milestones (1, 10, 20...) if reached
+    // OR simply allow traveling to any reached floor? 
+    // Roguelike standard: usually checkpoints. Let's stick to max floor check.
+    if (floor <= maxObtained) {
+      _currentFloor = floor;
+      notifyListeners();
+    }
   }
 
   void _levelUp() {
@@ -208,6 +269,22 @@ class PlayerState extends ChangeNotifier {
     _credits = prefs.getDouble('credits') ?? 0;
     _attackDamage = prefs.getDouble('attackDamage') ?? 10;
     _currentWorldId = prefs.getString('currentWorldId') ?? "kingdom_valor";
+    _currentFloor = prefs.getInt('currentFloor') ?? 1;
+    
+    _unlockedWorlds.clear();
+    _unlockedWorlds.addAll(prefs.getStringList('unlockedWorlds') ?? ["kingdom_valor"]);
+    
+    // Load map manually from storage if complicated, or simple encoding
+    // For simplicity, we just save each world key individually or use JSON
+    // Being simple: we reset max floors if we don't implement full map json serialization yet
+    // To properly save map:
+    // We will assume keys are known or iterate world ids.
+    // For now, let's just use "maxFloor_worldId" keys
+    _maxFloorsReached.clear();
+    for (var worldId in ['kingdom_valor', 'jurassica', 'neon_tokyo', 'mystic_woods', 'void_nexus']) {
+       _maxFloorsReached[worldId] = prefs.getInt('maxFloor_$worldId') ?? 1;
+    }
+
     _inventory.clear();
     _inventory.addAll(prefs.getStringList('inventory') ?? []);
     _nextFightDamageBoost = prefs.getBool('nextFightDamageBoost') ?? false;
@@ -229,6 +306,13 @@ class PlayerState extends ChangeNotifier {
     await prefs.setDouble('credits', _credits);
     await prefs.setDouble('attackDamage', _attackDamage);
     await prefs.setString('currentWorldId', _currentWorldId);
+    await prefs.setInt('currentFloor', _currentFloor);
+    await prefs.setStringList('unlockedWorlds', _unlockedWorlds);
+    
+    for (var entry in _maxFloorsReached.entries) {
+      await prefs.setInt('maxFloor_${entry.key}', entry.value);
+    }
+
     await prefs.setStringList('inventory', _inventory);
     await prefs.setBool('nextFightDamageBoost', _nextFightDamageBoost);
     await prefs.setBool('nextFightShieldBoost', _nextFightShieldBoost);

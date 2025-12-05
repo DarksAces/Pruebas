@@ -1,21 +1,24 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/player_state.dart';
+import '../services/achievement_service.dart';
 import '../models/world.dart';
 
 import '../services/localization.dart';
+import '../models/item_data.dart';
 
 enum EnemyIntent { attack, charge, defend }
 
 class CombatEngine extends ChangeNotifier {
   final PlayerState _player;
+  final AchievementService _achievements;
   Monster? _currentMonster;
   final List<String> _combatLog = [];
   bool _isPlayerTurn = true;
   EnemyIntent _nextEnemyMove = EnemyIntent.attack;
   Localization? _loc;
 
-  CombatEngine(this._player);
+  CombatEngine(this._player, this._achievements);
 
   Monster? get currentMonster => _currentMonster;
   List<String> get combatLog => _combatLog;
@@ -38,6 +41,9 @@ class CombatEngine extends ChangeNotifier {
     
     _determineEnemyIntent(); // Decide first move
     _log("⚠️ Encountered a ${loc.get(monster.name)}!");
+    if (monster.isBoss) {
+      _log("💀 BOSS THREAT LEVEL: EXTREME");
+    }
     _log(loc.get(monster.description));
     
     if (_player.nextFightDamageBoost) {
@@ -194,21 +200,51 @@ class CombatEngine extends ChangeNotifier {
     }
   }
 
-
   void _victory() {
     if (_currentMonster == null) return;
     _log("🏆 You defeated ${_loc!.get(_currentMonster!.name)}!");
-    _log("💰 Gained \$${_currentMonster!.creditReward} and ${_currentMonster!.xpReward} XP.");
+    _log("💰 Gained \$${_currentMonster!.creditReward.toInt()} and ${_currentMonster!.xpReward.toInt()} XP.");
     
     _player.gainCredits(_currentMonster!.creditReward);
     _player.gainXp(_currentMonster!.xpReward);
     
+    // Achievement Checks
+    _achievements.unlock('first_blood');
+    
+    if (_currentMonster!.isBoss) {
+      _achievements.unlock('boss_killer');
+    }
+
+    if (_player.currentHealth < 10 && _player.currentHealth > 0) {
+      _achievements.unlock('survivor');
+    }
+
+    if (_player.level >= 5) {
+      _achievements.unlock('novice_hunter');
+    }
+
+    if (_player.credits >= 1000) {
+      _achievements.unlock('big_spender');
+    }
+    
+
+    // Loot Drop (30% chance)
+    final rand = Random();
+    if (rand.nextDouble() < 0.3) {
+      final items = ItemRepository.items; // Need to import this
+      final item = items[rand.nextInt(items.length)];
+      _player.addItem(item.name); // Using name as ID for now based on legacy logic
+      _log("🎁 Loot found: ${item.name}!");
+    }
+
+    _player.advanceFloor();
+    _log("📍 Advanced to Floor ${_player.currentFloor}.");
+
     if (_player.nextFightDamageBoost) {
       _player.consumeDamageBoost();
     }
     
     _player.save(); // Save progress after fight
-
     _currentMonster = null;
     notifyListeners();
   }

@@ -33,7 +33,11 @@
     "extraFiles": [
       {
         "from": "config/InteractiveContentDisplay.json",
-        "to": "."
+        "to": "resources"
+      },
+      {
+        "from": "media_content",
+        "to": "media_content"
       }
     ],
     "nsis": {
@@ -42,11 +46,11 @@
       "createDesktopShortcut": true,
       "runAfterFinish": true,
       "shortcutName": "Interactive Content Display",
-      "installerIcon": "imagenes/icon/Logo.ico",
-      "uninstallerIcon": "imagenes/icon/Logo.ico"
+      "installerIcon": "media_content/imagenes/icon/logo.ico",
+      "uninstallerIcon": "media_content/imagenes/icon/logo.ico"
     },
     "win": {
-      "icon": "imagenes/icon/Logo.ico"
+      "icon": "media_content/imagenes/icon/logo.ico"
     },
     "mac": {
       "target": "dmg",

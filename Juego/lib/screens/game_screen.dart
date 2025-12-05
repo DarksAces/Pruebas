@@ -8,9 +8,55 @@ import '../services/world_manager.dart';
 import '../services/localization.dart';
 import 'station_screen.dart';
 
-class GameScreen extends StatelessWidget {
+import '../services/achievement_service.dart';
+
+class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Listen for achievements
+    final achievements = context.read<AchievementService>();
+    achievements.addListener(_onAchievementUnlocked);
+  }
+
+  @override
+  void dispose() {
+    context.read<AchievementService>().removeListener(_onAchievementUnlocked);
+    super.dispose();
+  }
+
+  void _onAchievementUnlocked() {
+    final achievements = context.read<AchievementService>();
+    if (achievements.recentlyUnlocked.isNotEmpty) {
+      for (final achievement in achievements.recentlyUnlocked) {
+         ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.amber,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("🏆 ACHIEVEMENT UNLOCKED!", style: GoogleFonts.orbitron(fontWeight: FontWeight.bold, color: Colors.black)),
+                Text(achievement.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                Text(achievement.description, style: const TextStyle(color: Colors.black87)),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      achievements.clearRecentlyUnlocked();
+    }
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerState>();
@@ -19,89 +65,126 @@ class GameScreen extends StatelessWidget {
     final world = WorldManager.getWorld(player.currentWorldId);
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text('${loc.get('tactical_log')}: ${world.name}', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 16)),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.language, color: Colors.white),
-            onSelected: (String code) {
-              loc.setLanguage(code);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(value: 'en', child: Text('English')),
-              const PopupMenuItem<String>(value: 'es', child: Text('Español')),
-              const PopupMenuItem<String>(value: 'fr', child: Text('Français')),
-              const PopupMenuItem<String>(value: 'pt', child: Text('Português')),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black, Colors.blueGrey[900]!],
+          ),
+        ),
+        child: SafeArea( // Use SafeArea
+          child: Column(
+            children: [
+              // Custom AppBar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.black54,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                         Text(loc.get(world.name), style: GoogleFonts.orbitron(color: Colors.white, fontSize: 16)),
+                         Text(loc.get('floor_label').replaceFirst('%s', player.currentFloor.toString()), style: GoogleFonts.orbitron(color: Colors.cyanAccent, fontSize: 14, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.backpack, color: Colors.white),
+                          onPressed: () => _showInventory(context, player, loc),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.emoji_events, color: Colors.amber),
+                          onPressed: () => _showAchievements(context),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.language, color: Colors.cyanAccent),
+                          onSelected: (String code) {
+                             loc.setLanguage(code);
+                          },
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(value: 'en', child: Text('English')),
+                            const PopupMenuItem<String>(value: 'es', child: Text('Español')),
+                            const PopupMenuItem<String>(value: 'fr', child: Text('Français')),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              
+              // Top Stats Bar
+              Container(
+                margin: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStat(loc.get('hp'), '${player.currentHealth.ceil()}/${player.maxHealth.ceil()}', Colors.red),
+                    _buildStat(loc.get('energy'), '${player.currentEnergy.ceil()}/${player.maxEnergy.ceil()}', Colors.blueAccent),
+                    _buildStat(loc.get('xp'), 'Lvl ${player.level}', Colors.purple), // Compact XP
+                    _buildStat(loc.get('credits'), '\$${player.credits.ceil()}', Colors.green),
+                  ],
+                ),
+              ),
+
+              // Combat Log (The "Game")
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.greenAccent.withOpacity(0.1)),
+                  ),
+                  child: ListView.builder(
+                    reverse: true, // Newest at bottom
+                    itemCount: combat.combatLog.length,
+                    itemBuilder: (context, index) {
+                      // Reverse index for display
+                      final logIndex = combat.combatLog.length - 1 - index;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        child: Text(
+                          combat.combatLog[logIndex],
+                          style: GoogleFonts.firaCode(
+                            color: Colors.greenAccent, 
+                            fontSize: 13,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // Action Area
+              Container(
+                height: 260, 
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10, offset: const Offset(0, -5))],
+                ),
+                child: combat.currentMonster == null
+                    ? _buildExplorationActions(context, world, combat, loc)
+                    : _buildCombatActions(context, combat, player, loc),
+              ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.backpack, color: Colors.white),
-            onPressed: () => _showInventory(context, player, loc),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(child: Text('Lvl ${player.level}', style: const TextStyle(color: Colors.amber))),
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          // Top Stats Bar
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: Colors.grey[900],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStat(loc.get('hp'), '${player.currentHealth.ceil()}/${player.maxHealth.ceil()}', Colors.red),
-                _buildStat(loc.get('energy'), '${player.currentEnergy.ceil()}/${player.maxEnergy.ceil()}', Colors.blueAccent),
-                _buildStat(loc.get('xp'), '${player.xp.ceil()}/${player.xpToNextLevel.ceil()}', Colors.purple),
-                _buildStat(loc.get('credits'), '\$${player.credits.ceil()}', Colors.green),
-              ],
-            ),
-          ),
-
-          // Combat Log (The "Game")
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.symmetric(horizontal: BorderSide(color: Colors.greenAccent.withOpacity(0.3))),
-              ),
-              child: ListView.builder(
-                reverse: true, // Newest at bottom
-                itemCount: combat.combatLog.length,
-                itemBuilder: (context, index) {
-                  // Reverse index for display
-                  final logIndex = combat.combatLog.length - 1 - index;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Text(
-                      combat.combatLog[logIndex],
-                      style: GoogleFonts.firaCode(
-                        color: Colors.greenAccent, 
-                        fontSize: 14,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // Action Area
-          Container(
-            height: 280, // Taller for skills
-            padding: const EdgeInsets.all(16),
-            color: Colors.grey[900],
-            child: combat.currentMonster == null
-                ? _buildExplorationActions(context, world, combat, loc)
-                : _buildCombatActions(context, combat, player, loc),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -205,91 +288,70 @@ class GameScreen extends StatelessWidget {
   }
 
   Widget _buildExplorationActions(BuildContext context, dynamic world, CombatEngine combat, Localization loc) {
+    final player = context.read<PlayerState>();
+    int maxFloor = player.getMaxFloorForWorld(player.currentWorldId);
+
+    // Calculate checkpoints
+    List<int> checkpoints = [];
+    for (int i = 10; i <= maxFloor; i+=10) {
+      checkpoints.add(i);
+    }
+    // Always add floor 1 if not present and we want to allow going back? 
+    // Usually roguelikes are forward only or town. 
+    // User said "teleport to level 10 when you complete it".
+    
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          loc.get('you_are_in').replaceAll('%s', loc.get(world.name)),
-          style: const TextStyle(color: Colors.white70, fontStyle: FontStyle.italic),
-        ),
-        const SizedBox(height: 20),
+        if (checkpoints.isNotEmpty)
+          Padding(
+             padding: const EdgeInsets.only(bottom: 10),
+             child: SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                   const Center(child: Text("Portal: ", style: TextStyle(color: Colors.cyanAccent))),
+                   ...checkpoints.map((floor) => Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                     child: ActionChip(
+                       label: Text("F$floor"),
+                       backgroundColor: Colors.cyan.withOpacity(0.2),
+                       onPressed: () {
+                          player.teleportToFloor(floor);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Warped to Floor $floor")));
+                       },
+                     ),
+                   )),
+                ],
+              ),
+             ),
+          ),
+
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[900],
+              backgroundColor: Colors.orange[900],
               padding: const EdgeInsets.all(16),
+              elevation: 5,
             ),
             onPressed: () {
-              final rand = Random();
-              final roll = rand.nextDouble();
-
-              if (roll < 0.1) {
-                // 10% Chance: Treasure Chest
-                final creditReward = 50 + rand.nextInt(100);
-                final items = ['Nano-Potion', 'Energy Cell', 'item_strength_potion', 'item_iron_skin_potion'];
-                final itemKey = items[rand.nextInt(items.length)];
-                
-                // Give rewards
-                final player = context.read<PlayerState>();
-                player.gainCredits(creditReward.toDouble());
-                player.addItem(itemKey);
-
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: Colors.grey[900],
-                    title: Text(loc.get('encounter_chest_title'), style: const TextStyle(color: Colors.amber)),
-                    content: Text(
-                      loc.get('encounter_chest_content')
-                          .replaceAll('%s', creditReward.toString())
-                          .replaceFirst('%s', loc.get(itemKey)),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text(loc.get('action_claim'), style: const TextStyle(color: Colors.amber)),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (roll < 0.2) {
-                // 10% Chance: Ancient Shrine
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: Colors.grey[900],
-                    title: Text(loc.get('encounter_shrine_title'), style: const TextStyle(color: Colors.cyanAccent)),
-                    content: Text(loc.get('encounter_shrine_content'), style: const TextStyle(color: Colors.white)),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          context.read<PlayerState>().heal(1000); // Full Heal
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('msg_health_restored'))));
-                        },
-                        child: Text(loc.get('action_pray'), style: const TextStyle(color: Colors.greenAccent)),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          context.read<PlayerState>().restoreEnergy(1000); // Full Energy
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('msg_energy_restored'))));
-                        },
-                        child: Text(loc.get('action_meditate'), style: const TextStyle(color: Colors.blueAccent)),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                // 80% Chance: Monster
-                final monster = world.spawnPool();
-                combat.startEncounter(monster, loc);
-              }
+               // Exploration Logic
+               final rand = Random();
+               final roll = rand.nextDouble();
+               
+               if (roll < 0.1) {
+                  // Healing Spring
+                  context.read<PlayerState>().heal(50);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('healing_spring'))));
+               } else {
+                  final monster = world.spawnPool(player.currentFloor);
+                  combat.startEncounter(monster, loc);
+               }
             },
-            icon: const Icon(Icons.radar, color: Colors.white),
-            label: Text(loc.get('scan_enemies'), style: const TextStyle(color: Colors.white, fontSize: 16)),
+            icon: const Icon(Icons.explore, color: Colors.white),
+            label: Text(loc.get('explore_floor').replaceFirst('%s', player.currentFloor.toString()), style: GoogleFonts.orbitron(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
         ),
         const SizedBox(height: 10),
@@ -357,10 +419,17 @@ class GameScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(
-                "VS ${loc.get(combat.currentMonster!.name)} (HP: ${combat.currentMonster!.currentHealth.ceil()})",
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   if (combat.currentMonster!.isBoss)
+                    Text("⚠️ BOSS BATTLE ⚠️", style: GoogleFonts.orbitron(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text(
+                    "VS ${loc.get(combat.currentMonster!.name)} (HP: ${combat.currentMonster!.currentHealth.ceil()})",
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
             Row(
@@ -418,6 +487,51 @@ class GameScreen extends StatelessWidget {
           Text("${cost.toInt()} Energy", style: TextStyle(color: canAfford ? Colors.white70 : Colors.white24, fontSize: 10)),
         ],
       ),
+    );
+  }
+
+  void _showAchievements(BuildContext context) {
+    final achievements = context.read<AchievementService>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text("Achievements", style: GoogleFonts.orbitron(color: Colors.amber, fontSize: 20)),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: achievements.achievements.length,
+                  itemBuilder: (ctx, index) {
+                    final achievement = achievements.achievements[index];
+                    final isUnlocked = achievement.isUnlocked;
+                    
+                    if (achievement.hidden && !isUnlocked) {
+                      return const ListTile(
+                        leading: Icon(Icons.lock, color: Colors.grey),
+                        title: Text("???", style: TextStyle(color: Colors.grey)),
+                        subtitle: Text("Hidden Achievement", style: TextStyle(color: Colors.grey)),
+                      );
+                    }
+
+                    return ListTile(
+                      leading: Icon(
+                        isUnlocked ? Icons.emoji_events : Icons.lock_outline, 
+                        color: isUnlocked ? Colors.amber : Colors.grey
+                      ),
+                      title: Text(achievement.title, style: TextStyle(color: isUnlocked ? Colors.white : Colors.grey)),
+                      subtitle: Text(achievement.description, style: TextStyle(color: isUnlocked ? Colors.white70 : Colors.grey)),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

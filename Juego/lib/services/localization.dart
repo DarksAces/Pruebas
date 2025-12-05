@@ -142,6 +142,14 @@ class Localization extends ChangeNotifier {
     'msg_used_iron_skin': 'Iron Skin Potion Used: Defense Boost!',
     'msg_used_luck': 'Luck Charm Used: Double Credits!',
     'you_are_in': 'You are in %s.',
+    'locked': 'Locked',
+    'unlock_reach_floor': 'Reach Floor 100 in %s to unlock',
+    'floor_label': 'FLOOR %s',
+    'boss_warning': '⚠️ BOSS BATTLE ⚠️',
+    'portal_label': 'Portal',
+    'warp_msg': 'Warped to Floor %s',
+    'explore_floor': 'EXPLORE FLOOR %s',
+    'healing_spring': 'Found a Healing Spring! +50 HP',
   };
 
   static final Map<String, String> _es = {
@@ -257,6 +265,14 @@ class Localization extends ChangeNotifier {
     'msg_used_iron_skin': 'Poción Piel de Hierro Usada: ¡Aumento de Defensa!',
     'msg_used_luck': 'Amuleto de Suerte Usado: ¡Créditos Dobles!',
     'you_are_in': 'Estás en %s.',
+    'locked': 'Bloqueado',
+    'unlock_reach_floor': 'Llega al Piso 100 en %s para desbloquear',
+    'floor_label': 'PISO %s',
+    'boss_warning': '⚠️ BATALLA DE JEFE ⚠️',
+    'portal_label': 'Portal',
+    'warp_msg': 'Teletransportado al Piso %s',
+    'explore_floor': 'EXPLORAR PISO %s',
+    'healing_spring': '¡Manantial Curativo! +50 PV',
   };
 
   static final Map<String, String> _fr = {
@@ -372,6 +388,8 @@ class Localization extends ChangeNotifier {
     'msg_used_iron_skin': 'Potion Peau de Fer Utilisée : Boost de Défense !',
     'msg_used_luck': 'Charme de Chance Utilisé : Crédits Doubles !',
     'you_are_in': 'Vous êtes à %s.',
+    'explore_floor': 'EXPLORER ÉTAGE %s',
+    'healing_spring': 'Source de Guérison ! +50 PV',
   };
 
   static final Map<String, String> _pt = {
@@ -487,5 +505,7 @@ class Localization extends ChangeNotifier {
     'msg_used_iron_skin': 'Poção Pele de Ferro Usada: Aumento de Defesa!',
     'msg_used_luck': 'Amuleto da Sorte Usado: Créditos em Dobro!',
     'you_are_in': 'Você está em %s.',
+    'explore_floor': 'EXPLORAR ANDAR %s',
+    'healing_spring': 'Fonte Curativa! +50 PV',
   };
 }
