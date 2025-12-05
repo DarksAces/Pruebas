@@ -39,7 +39,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardLight,
         elevation: 4,
         shadowColor: Colors.black12,
@@ -73,7 +73,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
-       cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardDark,
         elevation: 4,
         shadowColor: Colors.black45,

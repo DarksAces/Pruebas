@@ -1,15 +1,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../models/models.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Mock current user
-    final currentUser = mockUsers[0]; // Reuse Sofia as current user
+    // Get current user from Firebase
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Center(child: Text('Please Login'));
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -42,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: CircleAvatar(
                       radius: 60,
-                      backgroundImage: NetworkImage(currentUser.imageUrl),
+                      backgroundImage: NetworkImage(user.photoURL ?? 'https://via.placeholder.com/150'),
                     ),
                   ),
                 ),
@@ -52,14 +54,14 @@ class ProfileScreen extends StatelessWidget {
             
             // Name & Bio
             Text(
-              currentUser.name,
+              user.displayName ?? 'User',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
              const SizedBox(height: 8),
             Text(
-              currentUser.bio,
+              user.email ?? 'No Email',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey,
@@ -100,8 +102,8 @@ class ProfileScreen extends StatelessWidget {
              _ProfileMenuItem(
               icon: Icons.logout,
               title: 'Logout',
-              onTap: () {
-                // In real app, trigger logout logic
+              onTap: () async {
+                 await AuthService().signOut();
               },
               isDestructive: true,
             ),

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../services/auth_service.dart';
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
@@ -116,7 +117,21 @@ class AuthScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _SocialButton(icon: FontAwesomeIcons.google, onPressed: () {}),
+                    _SocialButton(
+                      icon: FontAwesomeIcons.google, 
+                      onPressed: () async {
+                         // Import AuthService first
+                         // This is a quick inline fix, ideally use Provider/DI
+                         try {
+                           final auth = AuthService(); // Or context.read<AuthService>()
+                           await auth.signInWithGoogle();
+                         } catch (e) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(content: Text('Sign in failed: $e')),
+                           );
+                         }
+                      }
+                    ),
                     const SizedBox(width: 20),
                     _SocialButton(icon: FontAwesomeIcons.apple, onPressed: () {}),
                     const SizedBox(width: 20),

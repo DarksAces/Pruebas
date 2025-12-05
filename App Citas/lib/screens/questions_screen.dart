@@ -1,14 +1,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../models/models.dart';
+import '../models/models.dart' as app_models;
+
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/database_service.dart';
 
 class QuestionsScreen extends StatelessWidget {
   const QuestionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final questions = mockQuestions;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Center(child: Text('Please login'));
 
     return Scaffold(
       appBar: AppBar(
@@ -22,18 +26,43 @@ class QuestionsScreen extends StatelessWidget {
           IconButton(
             icon: const FaIcon(FontAwesomeIcons.paperPlane),
             onPressed: () {
+               // Demo: Send a question to self
+               final q = app_models.Question(
+                 id: DateTime.now().millisecondsSinceEpoch.toString(),
+                 text: 'How are you finding the app?',
+                 senderId: 'anonymous',
+                 receiverId: user.uid,
+                 timestamp: DateTime.now(),
+                 isAnonymous: true,
+               );
+               DatabaseService().saveQuestion(q);
                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Send a question feature')),
+                  const SnackBar(content: Text('Sent demo question to self')),
                 );
             },
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: questions.length,
-        itemBuilder: (context, index) {
-          return _QuestionCard(question: questions[index]);
+      body: StreamBuilder<List<app_models.Question>>(
+        stream: DatabaseService().getQuestionsForUser(user.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+             return const Center(child: Text('No questions yet.'));
+          }
+
+          final questions = snapshot.data!;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: questions.length,
+            itemBuilder: (context, index) {
+              return _QuestionCard(question: questions[index]);
+            },
+          );
         },
       ),
     );
@@ -41,7 +70,7 @@ class QuestionsScreen extends StatelessWidget {
 }
 
 class _QuestionCard extends StatelessWidget {
-  final Question question;
+  final app_models.Question question;
 
   const _QuestionCard({required this.question});
 
