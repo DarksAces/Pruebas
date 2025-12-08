@@ -1,4 +1,4 @@
-# Política de Privacidad de Space Miner
+# Política de Privacidad de Omni realmns
 
 **Última actualización:** 8 de Diciembre de 2025
 
