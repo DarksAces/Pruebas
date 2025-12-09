@@ -7,7 +7,6 @@ adb_path = r"C:\Users\Daniel\Downloads\platform-tools-latest-windows\platform-to
 if os.path.isdir(adb_path) and adb_path not in os.environ["PATH"]:
     os.environ["PATH"] += os.pathsep + adb_path
 
-
 def check_adb():
     """Verifica si ADB está instalado y disponible."""
     try:
@@ -89,7 +88,7 @@ def find_thumbnails(device):
 
 def scan_junk(device):
     """Busca archivos basura conocidos."""
-    print(f"\n[*] Escaneando dispositivo: {device}...")
+    print(f"\n[*] Escaneando archivos basura comunes en: {device}...")
     
     # Rutas comunes de basura
     targets = [
@@ -128,106 +127,159 @@ def scan_junk(device):
 
     return found_junk, total_kb
 
-def clean_junk(device, junk_list):
-    """Elimina los archivos detectados."""
-    print(f"\n[!] Iniciando limpieza en {device}...")
-    cleaned_kb = 0
+def scan_large_folders(device):
+    """Escanea carpetas que suelen ocupar mucho espacio (WhatsApp, Telegram, etc)."""
+    print("\n[*] Realizando escaneo profundo de carpetas grandes...")
     
-    for item in junk_list:
-        print(f"  -> Eliminando: {item['desc']} ({human_readable_size(item['size_kb'])})")
-        
-        # En vez de borrar el patrón, borramos las rutas encontradas (más seguro con wildcards)
-        # Ojo: si hay miles de archivos, el comando puede ser muy largo.
-        # Mejor borrar el directorio padre si es caché completas, o usar rm con wildcard si es seguro.
-        
-        # Estrategia híbrida:
-        # Si 'real_paths' son muchos, intentamos borrar el patrón original si es seguro.
-        # Caso: /sdcard/Download/*.apk -> rm /sdcard/Download/*.apk funciona.
-        
-        target_path = item['path']
-        
-        if "*" in target_path:
-             # Borrado con wildcard
-             # Aseguramos comillas
-             cmd = f"adb -s {device} shell rm -rf \"{target_path}\""
-             subprocess.run(cmd, shell=True)
-             # Asumimos borrado correcto
-             cleaned_kb += item['size_kb']
-             
-        elif "Thumbnails" in target_path:
-             # Borrar cada carpeta de thumbnails encontrada
-             for p in item['real_paths']:
-                 # Solo borrar si es carpeta de .thumbnails o contenido
-                 if ".thumbnails" in p:
-                     # rm -rf de la carpeta
-                     cmd = f"adb -s {device} shell rm -rf \"{p}\""
-                     subprocess.run(cmd, shell=True)
-             cleaned_kb += item['size_kb']
-        else:
-             # Carpeta directa
-             cmd = f"adb -s {device} shell rm -rf \"{target_path}\""
-             subprocess.run(cmd, shell=True)
-             cleaned_kb += item['size_kb']
-
+    # Rutas probables de WhatsApp (varían según versión de Android)
+    wa_paths = [
+        "/sdcard/WhatsApp/Media/WhatsApp Video/Sent",
+        "/sdcard/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Video/Sent",
+        "/sdcard/WhatsApp/Media/WhatsApp Images/Sent",
+        "/sdcard/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/Sent",
+        "/sdcard/Telegram/Telegram Video",
+        "/sdcard/Telegram/Telegram Audio",
+    ]
+    
+    found_heavy = []
+    
+    for path in wa_paths:
+        kb, paths = get_size_and_paths(device, path)
+        if kb > 1024: # Solo mostrar si ocupa más de 1MB
+            desc = f"Archivos enviados de {path.split('/')[-2]} ({path.split('/')[-1]})"
+            found_heavy.append({
+                "path": path,
+                "desc": desc,
+                "size_kb": kb,
+                "real_paths": paths,
+                "is_dangerous": True # Marcar como requiere cuidado
+            })
             
-    print(f"\n[OK] Limpieza completada.")
-    return cleaned_kb
+    # Escaneo de nivel superior para ver qué ocupa más espacio
+    print("   -> Analizando uso de almacenamiento general (Top 5 carpetas)...")
+    cmd = f"adb -s {device} shell du -d 1 -k /sdcard/ 2>/dev/null"
+    res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    
+    top_dirs = []
+    for line in res.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            try:
+                kb = int(parts[0])
+                path = " ".join(parts[1:])
+                if path.strip() == "/sdcard/": continue
+                if kb > 100 * 1024: # Más de 100MB
+                     top_dirs.append((kb, path))
+            except:
+                pass
+                
+    top_dirs.sort(key=lambda x: x[0], reverse=True)
+    
+    return found_heavy, top_dirs
 
+def clean_item(device, item):
+    """Limpia un item específico con los métodos apropiados."""
+    cmd_list = []
+    
+    # Decidir método de borrado
+    if "*" in item['path']:
+         cmd_list.append(f"adb -s {device} shell rm -rf \"{item['path']}\"")
+    elif "Thumbnails" in item['desc']:
+         for p in item['real_paths']:
+             if ".thumbnails" in p:
+                 cmd_list.append(f"adb -s {device} shell rm -rf \"{p}\"")
+    else:
+         # Carpeta directa
+         cmd_list.append(f"adb -s {device} shell rm -rf \"{item['path']}\"")
+
+    cleaned_kb = 0
+    success = True
+    
+    for cmd in cmd_list:
+        res = subprocess.run(cmd, shell=True, capture_output=True)
+        if res.returncode != 0:
+            success = False
+            # print(f"Error: {res.stderr.decode()}")
+    
+    if success:
+        return item['size_kb']
+    return 0
 
 def main():
     print("=== Limpiador de Móvil Android ===")
     
     if not check_adb():
-        print("[Error] ADB no se encuentra. Asegúrate de tener instalado 'platform-tools' y agregado al PATH.")
-        print("Puedes descargarlo aquí: https://developer.android.com/studio/releases/platform-tools")
+        print("[Error] ADB no se encuentra. Asegúrate de tener instalado 'platform-tools' compruébalo.")
         input("Presiona Enter para salir...")
         return
 
     devices = get_devices()
     if not devices:
         print("[!] No se detectan dispositivos.")
-        print(" Asegúrate de:")
-        print("  1. Conectar el móvil por USB.")
-        print("  2. Activar 'Depuración USB' en Opciones de Desarrollador.")
-        print("  3. Aceptar la huella digital RSA en la pantalla del móvil si aparece.")
         input("Presiona Enter para salir...")
         return
 
     device = devices[0]
-    if len(devices) > 1:
-        print(f"[!] Múltiples dispositivos detectados. Usando el primero: {device}")
-    else:
-        print(f"[*] Dispositivo conectado: {device}")
+    print(f"[*] Dispositivo conectado: {device}")
 
-    print("\nBuscando archivos inútiles...")
-    junk_list, total_kb = scan_junk(device)
-
-    if total_kb == 0:
-        print("[*] Tu móvil parece estar limpio o no tenemos acceso a las carpetas de sistema.")
-        return
-
-    print("\n--- Resumen de Basura Encontrada ---")
-    for item in junk_list:
-        print(f" - {item['desc']}: {human_readable_size(item['size_kb'])}")
+    # 1. Escaneo de Basura Estándar
+    junk_list, junk_kb = scan_junk(device)
     
-    print(f"\nTotal a liberar: {human_readable_size(total_kb)}")
+    # 2. Escaneo Profundo
+    heavy_list, top_dirs = scan_large_folders(device)
     
-    confirm = input("\n¿Deseas eliminar estos archivos? (s/n): ").lower()
-    if confirm == 's':
-        cleaned = clean_junk(device, junk_list)
-        print(f"\nEspacio liberado: {human_readable_size(cleaned)}")
-        
-        # Opción extra: Limpiar caché de apps genérico (Comando peligroso si no se tiene cuidado, pero rm -rf de caché es seguro)
-        print("\n¿Quieres intentar limpiar la caché de TODAS las aplicaciones en /Android/data/?")
-        print("Nota: En Android 11+ puede fallar por permisos.")
-        deep_clean = input("¿Limpieza profunda de caché de apps? (s/n): ").lower()
-        if deep_clean == 's':
-            print("Limpiando /sdcard/Android/data/*/cache ...")
-            subprocess.run(f"adb -s {device} shell rm -rf /sdcard/Android/data/*/cache", shell=True)
-            print("Comando enviado.")
-
+    total_cleaned = 0
+    
+    print("\n=== Resultados del Análisis ===")
+    
+    # Procesar Basura Común
+    if junk_list:
+        print("\n--- Archivos Basura (Seguro de borrar) ---")
+        for item in junk_list:
+            size_str = human_readable_size(item['size_kb'])
+            print(f"\nEncontrado: {item['desc']}")
+            print(f"Ubicación: {item['path']}")
+            print(f"Tamaño: {size_str}")
+            
+            resp = input(f"¿Quieres eliminar esto? ({size_str}) (s/n): ").lower()
+            if resp == 's':
+                cleaned = clean_item(device, item)
+                total_cleaned += cleaned
+                print(" -> Eliminado.")
+            else:
+                print(" -> Omitido.")
     else:
-        print("Operación cancelada.")
+        print("\nNo se encontró basura común.")
+
+    # Procesar Carpetas Pesadas (Deep Scan)
+    if heavy_list:
+        print("\n--- Carpetas Grandes (Archivos Enviados de WhatsApp/Telegram) ---")
+        print("NOTA: Esto borrará archivos que HAS ENVIADO (videos, fotos).")
+        for item in heavy_list:
+            size_str = human_readable_size(item['size_kb'])
+            print(f"\nEncontrado: {item['desc']}")
+            print(f"Ubicación: {item['path']}")
+            print(f"Tamaño: {size_str}")
+            
+            resp = input(f"¿Quieres eliminar esto? ({size_str}) (s/n): ").lower()
+            if resp == 's':
+                cleaned = clean_item(device, item)
+                total_cleaned += cleaned
+                print(" -> Eliminado.")
+            else:
+                print(" -> Omitido.")
+
+    # Mostrar carpetas grandes informativas
+    if top_dirs:
+        print("\n--- ¿Dónde están tus 12GB? (Top Carpetas) ---")
+        print("Estas carpetas ocupan mucho espacio. Revisa manualmente.")
+        for size_kb, path in top_dirs[:5]:
+             print(f" - {path}: {human_readable_size(size_kb)}")
+
+    print(f"\n========================================")
+    print(f"Limpieza finalizada.")
+    print(f"Espacio total liberado: {human_readable_size(total_cleaned)}")
+    input("Presiona Enter para salir...")
 
 if __name__ == "__main__":
     main()
