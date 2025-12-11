@@ -3,12 +3,13 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.models import Model
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import os
 
 # Configuración
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 500 # "ULTRA MARATHON MODE": 12 Horas de capacidad
 DATASET_DIR = 'dataset/train'
 VALIDATION_DIR = 'dataset/validation'
 MODEL_FILE = 'model.h5'
@@ -16,15 +17,15 @@ MODEL_FILE = 'model.h5'
 def train_network():
     # Detectar número de clases dinámicamente
     if not os.path.exists(DATASET_DIR):
-        print(f"❌ Error: No existe la carpeta {DATASET_DIR}")
+        print(f"[ERROR] No existe la carpeta {DATASET_DIR}")
         return
 
     classes = [d for d in os.listdir(DATASET_DIR) if os.path.isdir(os.path.join(DATASET_DIR, d))]
     num_classes = len(classes)
-    print(f"✅ Se han detectado {num_classes} categorías: {classes}")
+    print(f"[OK] Se han detectado {num_classes} categorías: {classes}")
 
     if num_classes < 2:
-        print("❌ Error: Necesitas al menos 2 categorías para entrenar.")
+        print("[ERROR] Necesitas al menos 2 categorías para entrenar.")
         return
 
     # Generadores de datos (Data Augmentation)
@@ -74,16 +75,71 @@ def train_network():
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    print("\nComenzando entrenamiento...")
+    # Callbacks para "Modo Avanzado" - ULTRA RESISTENCIA
+    callbacks = [
+        # EarlyStopping desactivado para que entrene SÍ o SÍ hasta el final
+        # EarlyStopping(monitor='val_accuracy', patience=50, verbose=1, restore_best_weights=True),
+        ModelCheckpoint(MODEL_FILE, monitor='val_accuracy', save_best_only=True, verbose=1)
+    ]
+
+    print("\nComenzando entrenamiento AVANZADO (Fase 1: Calentamiento)...")
     history = model.fit(
         train_generator,
         epochs=EPOCHS,
-        validation_data=validation_generator
+        validation_data=validation_generator,
+        callbacks=callbacks
+    )
+
+    # --- FASE 2: FINE-TUNING (Adam) ---
+    print("\n>>> INICIANDO FASE 2: FINE-TUNING (Refinamiento con Adam) <<<")
+    
+    # Descongelar el modelo base para ajustar pesos profundos
+    base_model.trainable = True
+    
+    # Recompilar con Learning Rate MUY BAJO (1e-5)
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    FINE_TUNE_EPOCHS_ADAM = 300 # Reducimos un poco para dejar hueco a la Fase 3
+    total_epochs_phase2 = EPOCHS + FINE_TUNE_EPOCHS_ADAM
+
+    print(f"Entrenando por {FINE_TUNE_EPOCHS_ADAM} épocas extra con ajuste fino (Adam)...")
+    
+    history_fine_adam = model.fit(
+        train_generator,
+        epochs=total_epochs_phase2,
+        initial_epoch=history.epoch[-1] + 1,
+        validation_data=validation_generator,
+        callbacks=callbacks
+    )
+
+    # --- FASE 3: POLISHING (SGD) ---
+    print("\n>>> INICIANDO FASE 3: PULIDO FINAL (SGD) <<<")
+    
+    # Cambiamos a SGD (Stochastic Gradient Descent) con un LR minúsculo
+    # El SGD suele encontrar mínimos más estables al final del entrenamiento
+    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=1e-5, momentum=0.9),
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    FINE_TUNE_EPOCHS_SGD = 200
+    total_epochs_phase3 = total_epochs_phase2 + FINE_TUNE_EPOCHS_SGD
+
+    print(f"Entrenando por {FINE_TUNE_EPOCHS_SGD} épocas extra con SGD para pulido final...")
+
+    history_fine_sgd = model.fit(
+        train_generator,
+        epochs=total_epochs_phase3,
+        initial_epoch=history_fine_adam.epoch[-1] + 1,
+        validation_data=validation_generator,
+        callbacks=callbacks
     )
 
     # Guardar modelo
-    model.save(MODEL_FILE)
-    print(f"\nModelo guardado exitosamente como '{MODEL_FILE}'")
+    # Guardar modelo final (aunque el Checkpoint ya guardó el mejor)
+    # model.save(MODEL_FILE) 
+    print(f"\nEntrenamiento finalizado. El mejor modelo se guardó en '{MODEL_FILE}'")
     
     # Guardar mapeo de clases para referencia
     print("\nMapeo de clases:")

@@ -21,7 +21,11 @@ def predict_folder(folder_path):
         print(f"Error cargando el modelo: {e}")
         return
 
-    class_names = ['artworks', 'monuments', 'others']
+    class_names = [
+        'architecture', 'artworks', 'ceramics', 'drawings', 'frescoes', 
+        'graffiti', 'monuments', 'mosaics', 'others', 'paintings', 
+        'photography', 'sculptures', 'textiles'
+    ]
     
     # Extensiones de imagen comunes
     extensions = ['*.jpg', '*.jpeg', '*.png', '*.webp', '*.JPG', '*.JPEG', '*.PNG']
@@ -38,7 +42,7 @@ def predict_folder(folder_path):
     print(f"{'ARCHIVO':<40} | {'PREDICCIÓN':<15} | {'CONFIANZA'}")
     print("-" * 70)
 
-    stats = {'artworks': 0, 'monuments': 0, 'others': 0}
+    stats = {name: 0 for name in class_names}
 
     for img_path in image_files:
         try:
@@ -66,9 +70,9 @@ def predict_folder(folder_path):
 
     print("-" * 70)
     print("\nRESUMEN:")
-    print(f"Monumentos: {stats['monuments']}")
-    print(f"Obras de Arte: {stats['artworks']}")
-    print(f"Otros: {stats['others']}")
+    for name, count in stats.items():
+        if count > 0:
+            print(f"{name.capitalize()}: {count}")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

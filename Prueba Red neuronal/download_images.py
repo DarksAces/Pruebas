@@ -7,7 +7,10 @@ import hashlib
 
 def download_images_from_url(url, category, limit=50):
     # Validar categoría
-    valid_categories = ['monuments', 'artworks', 'others']
+    valid_categories = [
+        'paintings', 'sculptures', 'drawings', 'graffiti', 'architecture',
+        'mosaics', 'ceramics', 'textiles', 'photography', 'frescoes', 'others'
+    ]
     if category not in valid_categories:
         print(f"Error: Categoría no válida. Usa una de: {', '.join(valid_categories)}")
         return
@@ -15,6 +18,10 @@ def download_images_from_url(url, category, limit=50):
     # Directorios de destino (80% train, 20% validation)
     train_dir = os.path.join('dataset', 'train', category)
     val_dir = os.path.join('dataset', 'validation', category)
+
+    # Crear directorios si no existen
+    os.makedirs(train_dir, exist_ok=True)
+    os.makedirs(val_dir, exist_ok=True)
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -77,6 +84,12 @@ def download_images_from_url(url, category, limit=50):
                 filename = f"{category}_{img_hash}{ext}"
                 filepath = os.path.join(save_dir, filename)
                 
+                # Evitar re-escritura si ya existe
+                if os.path.exists(filepath):
+                    print(f"[{count+1}/{limit}] Saltando (ya existe): {filename}")
+                    count += 1 # Contamos como procesada para llegar al límite y pasar a la siguiente
+                    continue
+
                 with open(filepath, 'wb') as f:
                     f.write(img_data)
                     
