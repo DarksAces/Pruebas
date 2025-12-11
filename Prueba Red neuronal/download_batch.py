@@ -14,6 +14,24 @@ sites = {
         "https://es.wikipedia.org/wiki/Stencil",
         "https://es.wikipedia.org/wiki/Tag_(graffiti)",
 
+        # --- ANEXOS Y GALERÍAS MASIVAS (MUCHAS IMÁGENES) ---
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Vincent_van_Gogh",
+        "https://es.wikipedia.org/wiki/Anexo:Cuadros_de_Leonardo_da_Vinci",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Miguel_Ángel_Buonarroti",
+        "https://es.wikipedia.org/wiki/Anexo:Cuadros_de_Rembrandt",
+        "https://es.wikipedia.org/wiki/Anexo:Cuadros_de_Velázquez",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Francisco_de_Goya",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Salvador_Dalí",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Pablo_Picasso_1889-1900",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Frida_Kahlo",
+        "https://es.wikipedia.org/wiki/Anexo:Obras_de_Joaquín_Sorolla",
+        
+        # --- MOVIMIENTOS ARTÍSTICOS (Galerías) ---
+        "https://es.wikipedia.org/wiki/Pintura_del_Renacimiento",
+        "https://es.wikipedia.org/wiki/Pintura_barroca_de_España",
+        "https://es.wikipedia.org/wiki/Pintura_gótica",
+        "https://es.wikipedia.org/wiki/Muralismo_mexicano",
+        
         # --- MAESTROS DEL ARTE (Renacimiento a Moderno) ---
         "https://es.wikipedia.org/wiki/Leonardo_da_Vinci",
         "https://es.wikipedia.org/wiki/Miguel_Ángel",
@@ -122,6 +140,19 @@ sites = {
         "https://es.wikipedia.org/wiki/Pagoda",
         "https://es.wikipedia.org/wiki/Torre_del_reloj",
         "https://es.wikipedia.org/wiki/Reloj_astronómico",
+
+        # --- LISTAS DE PATRIMONIO UNESCO (MILES DE MONUMENTOS) ---
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_España",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Italia",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Francia",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Alemania",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_China",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_México",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_el_Perú",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Estados_Unidos",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Reino_Unido",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Grecia",
+        "https://es.wikipedia.org/wiki/Anexo:Patrimonio_de_la_Humanidad_en_Egipto",
 
         # --- ARQUITECTURA CLÁSICA Y RELIGIOSA ---
         "https://es.wikipedia.org/wiki/Pirámides_de_Egipto",
