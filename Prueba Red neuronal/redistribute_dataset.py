@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 MODEL_PATH = 'model.h5'
 DATASET_DIR = 'dataset/train'
 REVIEW_DIR = 'dataset_review'  # Carpeta donde moveremos las dudosas
-CONFIDENCE_THRESHOLD = 0.95    # Solo mover si está MUY seguro de que está mal (95%)
+CONFIDENCE_THRESHOLD = 0.70    # BAJAMOS UMBRAL: Si sospecha al 70%, que nos avise.
 
 CLASSES = ['artworks', 'monuments', 'others']
 
@@ -23,8 +23,8 @@ def redistribute_dataset():
     if not os.path.exists(REVIEW_DIR):
         os.makedirs(REVIEW_DIR)
 
-    print(f"--- INICIANDO AUDITORÍA DEL DATASET ---")
-    print(f"Buscando imágenes que estén en la categoría incorrecta con >{CONFIDENCE_THRESHOLD*100}% de seguridad.\n")
+    print(f"--- INICIANDO AUDITORÍA DEL DATASET (MODO SENSIBLE) ---")
+    print(f"Buscando imágenes sospechosas con >{CONFIDENCE_THRESHOLD*100}% de confianza.\n")
 
     moves_count = 0
 
@@ -34,8 +34,12 @@ def redistribute_dataset():
             continue
         
         print(f"Analizando carpeta: {current_label} ...")
+        files = os.listdir(folder_path)
+        total_files = len(files)
         
-        for file in os.listdir(folder_path):
+        for i, file in enumerate(files):
+            if i % 100 == 0: print(f"  Procesando {i}/{total_files}...") # Feedback de progreso
+            
             if not file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
                 continue
                 
@@ -56,9 +60,9 @@ def redistribute_dataset():
                 predicted_label = CLASSES[predicted_index]
                 confidence = np.max(score)
 
-                # Si el modelo está MUY seguro de que NO es lo que debería ser
+                # Si el modelo cree que es otra cosa con >70% de seguridad
                 if predicted_label != current_label and confidence > CONFIDENCE_THRESHOLD:
-                    print(f"⚠️ DUDOSA: {file} está en '{current_label}' pero parece '{predicted_label}' ({confidence:.2f})")
+                    print(f"⚠️ DUDOSA: {file} está en '{current_label}' pero parece '{predicted_label}' ({confidence*100:.1f}%)")
                     
                     # Mover a carpeta de revisión
                     # Estructura: dataset_review/artworks_to_monuments/archivo.jpg
