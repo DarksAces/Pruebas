@@ -3,18 +3,24 @@ node_modules/
 **/node_modules/ # Asegura que ignora node_modules en subdirectorios
 /node/
 /Prueba*/
+!/Prueba Red neuronal/
+
+# Python Virtual Environment
+venv/
+.venv/
+env/
+
+# Dataset (Demasiado grande para GitHub)
+# dataset/
+
+
+# Modelos entrenados (Opcional: Si pesa >100MB, GitHub lo rechaza sin LFS)
+# *.h5
+# *.keras
+
+# Archivos de caché
+__pycache__/
+*.pyc
+
 /Pruebas anteriores/
 
-# Multimedia
-*.gif
-*.jpg
-*.jpeg
-*.png
-*.svg
-*.webp
-*.mp4
-*.mov
-*.avi
-*.webm
-*.mp3
-*.wav
