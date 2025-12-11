@@ -11,8 +11,8 @@ venv/
 env/
 
 # Dataset (Demasiado grande para GitHub)
-dataset/
-mis_pruebas/
+# dataset/
+
 
 # Modelos entrenados (Opcional: Si pesa >100MB, GitHub lo rechaza sin LFS)
 # *.h5
@@ -37,3 +37,4 @@ __pycache__/
 *.webm
 *.mp3
 *.wav
+*.avif
