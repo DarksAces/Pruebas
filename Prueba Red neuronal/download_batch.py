@@ -4,6 +4,16 @@ from download_images import download_images_from_url
 # ¡AMPLIACIÓN MASIVA v3.0 - EL SUPER DATASET!
 sites = {
     'artworks': [
+        # --- GRAFFITI Y ARTE URBANO (Prioridad para corrección) ---
+        "https://es.wikipedia.org/wiki/Graffiti",
+        "https://es.wikipedia.org/wiki/Arte_urbano",
+        "https://es.wikipedia.org/wiki/Muralismo",
+        "https://es.wikipedia.org/wiki/Keith_Haring",
+        "https://es.wikipedia.org/wiki/Jean-Michel_Basquiat",
+        "https://es.wikipedia.org/wiki/Banksy",
+        "https://es.wikipedia.org/wiki/Stencil",
+        "https://es.wikipedia.org/wiki/Tag_(graffiti)",
+
         # --- MAESTROS DEL ARTE (Renacimiento a Moderno) ---
         "https://es.wikipedia.org/wiki/Leonardo_da_Vinci",
         "https://es.wikipedia.org/wiki/Miguel_Ángel",

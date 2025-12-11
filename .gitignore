@@ -24,17 +24,3 @@ __pycache__/
 
 /Pruebas anteriores/
 
-# Multimedia
-*.gif
-*.jpg
-*.jpeg
-*.png
-*.svg
-*.webp
-*.mp4
-*.mov
-*.avi
-*.webm
-*.mp3
-*.wav
-*.avif
