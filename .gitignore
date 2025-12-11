@@ -15,8 +15,8 @@ dataset/
 mis_pruebas/
 
 # Modelos entrenados (Opcional: Si pesa >100MB, GitHub lo rechaza sin LFS)
-*.h5
-*.keras
+# *.h5
+# *.keras
 
 # Archivos de caché
 __pycache__/
