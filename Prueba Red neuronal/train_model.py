@@ -1,30 +1,33 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
 import os
 
 # Configuración
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 EPOCHS = 10
-LEARNING_RATE = 0.0001
-DATASET_DIR = 'dataset'
+DATASET_DIR = 'dataset/train'
+VALIDATION_DIR = 'dataset/validation'
+MODEL_FILE = 'model.h5'
 
-def train():
-    # Rutas
-    train_dir = os.path.join(DATASET_DIR, 'train')
-    val_dir = os.path.join(DATASET_DIR, 'validation')
-
-    # Verificar que existen los directorios
-    if not os.path.exists(train_dir) or not os.path.exists(val_dir):
-        print(f"Error: No se encuentra el directorio de datos en {DATASET_DIR}")
-        print("Asegúrate de tener la estructura: dataset/train y dataset/validation")
+def train_network():
+    # Detectar número de clases dinámicamente
+    if not os.path.exists(DATASET_DIR):
+        print(f"❌ Error: No existe la carpeta {DATASET_DIR}")
         return
 
-    # Generadores de datos con Data Augmentation para entrenamiento
+    classes = [d for d in os.listdir(DATASET_DIR) if os.path.isdir(os.path.join(DATASET_DIR, d))]
+    num_classes = len(classes)
+    print(f"✅ Se han detectado {num_classes} categorías: {classes}")
+
+    if num_classes < 2:
+        print("❌ Error: Necesitas al menos 2 categorías para entrenar.")
+        return
+
+    # Generadores de datos (Data Augmentation)
     train_datagen = ImageDataGenerator(
         rescale=1./255,
         rotation_range=20,
@@ -40,57 +43,51 @@ def train():
 
     print("Cargando datos...")
     train_generator = train_datagen.flow_from_directory(
-        train_dir,
+        DATASET_DIR,
         target_size=IMG_SIZE,
         batch_size=BATCH_SIZE,
         class_mode='categorical'
     )
 
     validation_generator = val_datagen.flow_from_directory(
-        val_dir,
+        VALIDATION_DIR,
         target_size=IMG_SIZE,
         batch_size=BATCH_SIZE,
         class_mode='categorical'
     )
 
-    # Transfer Learning con MobileNetV2
-    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=IMG_SIZE + (3,))
+    # Modelo Base (MobileNetV2)
+    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
     
-    # Congelar capas base
+    # Congelar modelo base
     base_model.trainable = False
 
-    # Añadir capas personalizadas
+    # Capas personalizadas
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
     x = Dense(1024, activation='relu')(x)
-    # 3 clases: monuments, artworks, others
-    predictions = Dense(3, activation='softmax')(x)
+    x = Dropout(0.2)(x)
+    # Capa de salida dinámica según número de clases encontradas
+    predictions = Dense(num_classes, activation='softmax')(x)
 
-    model = Model(inputs=base_model.input, outputs=predictions)
+    model = Model(inputs=base_model.inputs, outputs=predictions)
 
-    model.compile(optimizer=Adam(learning_rate=LEARNING_RATE),
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     print("\nComenzando entrenamiento...")
-    try:
-        history = model.fit(
-            train_generator,
-            epochs=EPOCHS,
-            validation_data=validation_generator
-        )
-        
-        # Guardar el modelo
-        model.save('model.h5')
-        print("\nModelo guardado exitosamente como 'model.h5'")
-        
-        # Imprimir mapeo de clases
-        print("\nMapeo de clases:")
-        print(train_generator.class_indices)
+    history = model.fit(
+        train_generator,
+        epochs=EPOCHS,
+        validation_data=validation_generator
+    )
 
-    except Exception as e:
-        print(f"\nError durante el entrenamiento: {e}")
-        print("Posible causa: No hay suficientes imágenes en las carpetas.")
+    # Guardar modelo
+    model.save(MODEL_FILE)
+    print(f"\nModelo guardado exitosamente como '{MODEL_FILE}'")
+    
+    # Guardar mapeo de clases para referencia
+    print("\nMapeo de clases:")
+    print(train_generator.class_indices)
 
-if __name__ == '__main__':
-    train()
+if __name__ == "__main__":
+    train_network()
