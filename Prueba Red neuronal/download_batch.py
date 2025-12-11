@@ -416,7 +416,7 @@ def batch_download():
             print(f"--- [{processed}/{total_sites}] Procesando: {url} ---")
             try:
                 # Limitamos a 100 para MAXIMIZAR datos (User Request)
-                download_images_from_url(url, category, limit=100)
+                download_images_from_url(url, category, limit=10000)
             except Exception as e:
                 print(f"Error procesando sitio {url}: {e}")
 

@@ -8,72 +8,16 @@ import os
 
 # Configuración
 IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
-EPOCHS = 500 # "ULTRA MARATHON MODE": 12 Horas de capacidad
+# Configuración
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 64 # AUMENTADO: Procesa el doble de fotos por segundo
+EPOCHS = 500 # Fase 1: Calentamiento (GOD MODE)
 DATASET_DIR = 'dataset/train'
 VALIDATION_DIR = 'dataset/validation'
 MODEL_FILE = 'model.h5'
 
 def train_network():
-    # Detectar número de clases dinámicamente
-    if not os.path.exists(DATASET_DIR):
-        print(f"[ERROR] No existe la carpeta {DATASET_DIR}")
-        return
-
-    classes = [d for d in os.listdir(DATASET_DIR) if os.path.isdir(os.path.join(DATASET_DIR, d))]
-    num_classes = len(classes)
-    print(f"[OK] Se han detectado {num_classes} categorías: {classes}")
-
-    if num_classes < 2:
-        print("[ERROR] Necesitas al menos 2 categorías para entrenar.")
-        return
-
-    # Generadores de datos (Data Augmentation)
-    train_datagen = ImageDataGenerator(
-        rescale=1./255,
-        rotation_range=20,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest'
-    )
-
-    val_datagen = ImageDataGenerator(rescale=1./255)
-
-    print("Cargando datos...")
-    train_generator = train_datagen.flow_from_directory(
-        DATASET_DIR,
-        target_size=IMG_SIZE,
-        batch_size=BATCH_SIZE,
-        class_mode='categorical'
-    )
-
-    validation_generator = val_datagen.flow_from_directory(
-        VALIDATION_DIR,
-        target_size=IMG_SIZE,
-        batch_size=BATCH_SIZE,
-        class_mode='categorical'
-    )
-
-    # Modelo Base (MobileNetV2)
-    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
-    
-    # Congelar modelo base
-    base_model.trainable = False
-
-    # Capas personalizadas
-    x = base_model.output
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(1024, activation='relu')(x)
-    x = Dropout(0.2)(x)
-    # Capa de salida dinámica según número de clases encontradas
-    predictions = Dense(num_classes, activation='softmax')(x)
-
-    model = Model(inputs=base_model.inputs, outputs=predictions)
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    # ... (rest of code) ...
 
     # Callbacks para "Modo Avanzado" - ULTRA RESISTENCIA
     callbacks = [
@@ -87,7 +31,8 @@ def train_network():
         train_generator,
         epochs=EPOCHS,
         validation_data=validation_generator,
-        callbacks=callbacks
+        callbacks=callbacks,
+        workers=4 # Paralelismo: Usa 4 núcleos de CPU para cargar fotos
     )
 
     # --- FASE 2: FINE-TUNING (Adam) ---
@@ -101,7 +46,7 @@ def train_network():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    FINE_TUNE_EPOCHS_ADAM = 300 # Reducimos un poco para dejar hueco a la Fase 3
+    FINE_TUNE_EPOCHS_ADAM = 300 
     total_epochs_phase2 = EPOCHS + FINE_TUNE_EPOCHS_ADAM
 
     print(f"Entrenando por {FINE_TUNE_EPOCHS_ADAM} épocas extra con ajuste fino (Adam)...")
@@ -111,7 +56,8 @@ def train_network():
         epochs=total_epochs_phase2,
         initial_epoch=history.epoch[-1] + 1,
         validation_data=validation_generator,
-        callbacks=callbacks
+        callbacks=callbacks,
+        workers=4
     )
 
     # --- FASE 3: POLISHING (SGD) ---
@@ -133,7 +79,8 @@ def train_network():
         epochs=total_epochs_phase3,
         initial_epoch=history_fine_adam.epoch[-1] + 1,
         validation_data=validation_generator,
-        callbacks=callbacks
+        callbacks=callbacks,
+        workers=4
     )
 
     # Guardar modelo
