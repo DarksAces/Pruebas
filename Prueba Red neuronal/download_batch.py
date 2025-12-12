@@ -63,6 +63,12 @@ sites = {
         "https://es.wikipedia.org/wiki/Escultura_románica",
         "https://es.wikipedia.org/wiki/Escultura_maya",
         "https://es.wikipedia.org/wiki/Escultura_azteca",
+        "https://es.wikipedia.org/wiki/Busto_(escultura)",
+        "https://es.wikipedia.org/wiki/Estatua",
+        "https://es.wikipedia.org/wiki/Relieve_(arte)",
+        "https://es.wikipedia.org/wiki/Talla_de_madera",
+        "https://es.wikipedia.org/wiki/Bronce_(escultura)",
+        "https://es.wikipedia.org/wiki/Mármol",
         # Artistas famosos
         "https://es.wikipedia.org/wiki/Gian_Lorenzo_Bernini",
         "https://es.wikipedia.org/wiki/Miguel_Ángel",
@@ -84,7 +90,13 @@ sites = {
         "https://es.wikipedia.org/wiki/Cristo_Redentor",
         "https://es.wikipedia.org/wiki/Moái",
         "https://es.wikipedia.org/wiki/Guerreros_de_terracota",
-        "https://es.wikipedia.org/wiki/Gran_Esfinge_de_Guiza"
+        "https://es.wikipedia.org/wiki/Gran_Esfinge_de_Guiza",
+        # Reinforcement to distinguish from Graffiti/Paintings
+        "https://en.wikipedia.org/wiki/Statue",
+        "https://en.wikipedia.org/wiki/Bust_(sculpture)",
+        "https://en.wikipedia.org/wiki/Bronze_sculpture",
+        "https://en.wikipedia.org/wiki/Marble_sculpture",
+        "https://en.wikipedia.org/wiki/Wood_carving"
     ],
 
     # 3. DIBUJOS (Drawings)
@@ -153,7 +165,12 @@ sites = {
         "https://en.wikipedia.org/wiki/Category:Street_art_festivals",
         "https://en.wikipedia.org/wiki/Category:Stencil_graffiti",
         "https://en.wikipedia.org/wiki/Category:Murals_in_Northern_Ireland",
-        "https://en.wikipedia.org/wiki/Category:Street_artist_stubs"
+        "https://en.wikipedia.org/wiki/Category:Street_artist_stubs",
+        # Reinforcement to distinguish from Paintings
+        "https://en.wikipedia.org/wiki/Throw_up_(graffiti)",
+        "https://en.wikipedia.org/wiki/Wildstyle",
+        "https://en.wikipedia.org/wiki/Graffiti_fandom",
+        "https://en.wikipedia.org/wiki/Anti-graffiti_coating"
     ],
 
     # 5. ARQUITECTURA (Architecture)
@@ -399,10 +416,593 @@ sites = {
         "https://en.wikipedia.org/wiki/Calligraphy",
         "https://en.wikipedia.org/wiki/Collage",
         "https://en.wikipedia.org/wiki/Printmaking",
-        "https://en.wikipedia.org/wiki/Installation_art",
         "https://en.wikipedia.org/wiki/Performance_art"
+    ],
+
+    # 12. PLASTILINA (Plasticine/Clay)
+    'plasticine': [
+        "https://es.wikipedia.org/wiki/Plastilina",
+        "https://es.wikipedia.org/wiki/Arcilla_polimérica",
+        "https://es.wikipedia.org/wiki/Stop_motion",
+        "https://es.wikipedia.org/wiki/Claymation",
+        "https://es.wikipedia.org/wiki/Aardman_Animations",
+        "https://es.wikipedia.org/wiki/Wallace_y_Gromit",
+        "https://es.wikipedia.org/wiki/Pingu",
+        "https://es.wikipedia.org/wiki/Celebrity_Deathmatch",
+        "https://es.wikipedia.org/wiki/Robot_Chicken",
+        "https://es.wikipedia.org/wiki/Modelado",
+        # Balance URLs (English)
+        "https://en.wikipedia.org/wiki/Plasticine",
+        "https://en.wikipedia.org/wiki/Clay_animation",
+        "https://en.wikipedia.org/wiki/Modelling_clay",
+        "https://en.wikipedia.org/wiki/Polymer_clay",
+        "https://en.wikipedia.org/wiki/Gumby",
+        "https://en.wikipedia.org/wiki/Morph_(character)",
+        "https://en.wikipedia.org/wiki/Play-Doh",
+        # Categories
+        "https://en.wikipedia.org/wiki/Category:Clay_animation",
+        "https://en.wikipedia.org/wiki/Category:Stop-motion_animated_characters",
+        "https://en.wikipedia.org/wiki/Category:Aardman_Animations",
+        "https://en.wikipedia.org/wiki/Category:Clay_animators"
     ]
 }
+
+# =================================================================================================
+#  MEGA-EXPANSIÓN DE ENLACES (V20 - V80 ULTRA PACK)
+# =================================================================================================
+
+# --- V20 ULTRA EXPANSION ---
+sites['paintings'] += [
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_por_orden_cronológico",
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_del_Renacimiento",
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_del_Barroco",
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_del_Impresionismo",
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_del_Surrealismo",
+    "https://es.wikipedia.org/wiki/Anexo:Pintores_por_nacionalidad",
+    "https://es.wikipedia.org/wiki/Anexo:Pinturas_más_caras",
+    "https://es.wikipedia.org/wiki/Anexo:Museo_del_Prado",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Tiziano",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Rubens",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Botticelli",
+    "https://es.wikipedia.org/wiki/Sandro_Botticelli",
+    "https://en.wikipedia.org/wiki/List_of_painters_by_name",
+    "https://en.wikipedia.org/wiki/List_of_art_movements",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Leonardo_da_Vinci",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Picasso",
+    "https://en.wikipedia.org/wiki/List_of_World_Heritage_Sites_in_the_arts",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Raphael",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Titian",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Peter_Paul_Rubens",
+    "https://en.wikipedia.org/wiki/List_of_paintings_in_the_Louvre",
+    "https://en.wikipedia.org/wiki/Category:Famous_paintings",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_paintings",
+    "https://en.wikipedia.org/wiki/Category:Baroque_paintings",
+    "https://en.wikipedia.org/wiki/Category:Impressionist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Expressionist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Cubist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Abstract_paintings",
+    "https://en.wikipedia.org/wiki/Category:Pop_art",
+    "https://en.wikipedia.org/wiki/Category:Symbolist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Modern_paintings",
+]
+
+sites['sculptures'] += [
+    "https://es.wikipedia.org/wiki/Anexo:Escultores",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Miguel_Ángel",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Bernini",
+    "https://es.wikipedia.org/wiki/Arte_mobiliario",
+    "https://en.wikipedia.org/wiki/List_of_sculptors",
+    "https://en.wikipedia.org/wiki/List_of_statues_by_height",
+    "https://en.wikipedia.org/wiki/List_of_colossal_sculptures",
+    "https://en.wikipedia.org/wiki/List_of_statues",
+    "https://en.wikipedia.org/wiki/List_of_equestrian_statues",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_in_Italy",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_in_Greece",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_in_Rome",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_in_the_Louvre",
+    "https://en.wikipedia.org/wiki/Category:Modern_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Bronze_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Marble_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Stone_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Wooden_sculptures",
+]
+
+sites['drawings'] += [
+    "https://es.wikipedia.org/wiki/Dibujo_artístico",
+    "https://es.wikipedia.org/wiki/Dibujo_a_lápiz",
+    "https://es.wikipedia.org/wiki/Dibujo_infográfico",
+    "https://en.wikipedia.org/wiki/List_of_drawings_by_Leonardo_da_Vinci",
+    "https://en.wikipedia.org/wiki/List_of_drawings_by_Michelangelo",
+    "https://en.wikipedia.org/wiki/Category:Drawings",
+    "https://en.wikipedia.org/wiki/Category:Ink_drawings",
+    "https://en.wikipedia.org/wiki/Category:Pencil_drawings",
+    "https://en.wikipedia.org/wiki/Category:Sketches",
+    "https://en.wikipedia.org/wiki/Category:Illustrators",
+]
+
+sites['graffiti'] += [
+    "https://es.wikipedia.org/wiki/Arte_mural",
+    "https://es.wikipedia.org/wiki/Bombing_(graffiti)",
+    "https://es.wikipedia.org/wiki/Graffiti_latinoamericano",
+    "https://en.wikipedia.org/wiki/List_of_street_artists",
+    "https://en.wikipedia.org/wiki/List_of_graffiti_artists",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_by_city",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_artists",
+    "https://en.wikipedia.org/wiki/Category:Street_art_by_country",
+    "https://en.wikipedia.org/wiki/Category:Muralists",
+    "https://en.wikipedia.org/wiki/Category:Urban_art",
+]
+
+sites['architecture'] += [
+    "https://es.wikipedia.org/wiki/Historia_de_la_arquitectura",
+    "https://es.wikipedia.org/wiki/Arquitectura_contemporánea",
+    "https://es.wikipedia.org/wiki/Arquitectura_sostenible",
+    "https://en.wikipedia.org/wiki/List_of_architectural_styles",
+    "https://en.wikipedia.org/wiki/List_of_palaces",
+    "https://en.wikipedia.org/wiki/List_of_cathedrals",
+    "https://en.wikipedia.org/wiki/List_of_mosques",
+    "https://en.wikipedia.org/wiki/List_of_skyscrapers",
+    "https://en.wikipedia.org/wiki/List_of_modernist_architecture",
+    "https://en.wikipedia.org/wiki/Category:World_Heritage_Sites",
+    "https://en.wikipedia.org/wiki/Category:Architectural_styles",
+    "https://en.wikipedia.org/wiki/Category:Ancient_architecture",
+    "https://en.wikipedia.org/wiki/Category:Castles_by_country",
+]
+
+sites['mosaics'] += [
+    "https://es.wikipedia.org/wiki/Mosaico_moderno",
+    "https://en.wikipedia.org/wiki/List_of_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Roman_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Greek_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Byzantine_mosaics_in_Turkey",
+    "https://en.wikipedia.org/wiki/Category:Mosaic_artists",
+]
+
+sites['ceramics'] += [
+    "https://es.wikipedia.org/wiki/Alfarería_indígena",
+    "https://en.wikipedia.org/wiki/List_of_ceramic_artists",
+    "https://en.wikipedia.org/wiki/List_of_pottery_styles",
+    "https://en.wikipedia.org/wiki/Category:Pottery_by_country",
+    "https://en.wikipedia.org/wiki/Category:Porcelain_by_country",
+    "https://en.wikipedia.org/wiki/Category:Ceramics_museums",
+]
+
+sites['textiles'] += [
+    "https://es.wikipedia.org/wiki/Arte_têxtil_andino",
+    "https://en.wikipedia.org/wiki/List_of_textile_artists",
+    "https://en.wikipedia.org/wiki/List_of_textile_patterns",
+    "https://en.wikipedia.org/wiki/Category:Textile_museums",
+    "https://en.wikipedia.org/wiki/Category:Traditional_textile_art",
+    "https://en.wikipedia.org/wiki/Category:Weaving",
+]
+
+sites['photography'] += [
+    "https://es.wikipedia.org/wiki/Fotografía_documental",
+    "https://es.wikipedia.org/wiki/Fotografía_aérea",
+    "https://es.wikipedia.org/wiki/Fotografía_nocturna",
+    "https://en.wikipedia.org/wiki/List_of_photographers",
+    "https://en.wikipedia.org/wiki/List_of_photojournalists",
+    "https://en.wikipedia.org/wiki/List_of_landscape_photographers",
+    "https://en.wikipedia.org/wiki/Category:Photography_by_genre",
+    "https://en.wikipedia.org/wiki/Category:Photographs",
+]
+
+sites['frescoes'] += [
+    "https://es.wikipedia.org/wiki/Frescos_renacentistas",
+    "https://en.wikipedia.org/wiki/List_of_frescoes",
+    "https://en.wikipedia.org/wiki/Category:Fresco_by_country",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_fresco_paintings",
+    "https://en.wikipedia.org/wiki/Category:Murals",
+]
+
+sites['others'] += [
+    "https://es.wikipedia.org/wiki/Arte_sonoro",
+    "https://es.wikipedia.org/wiki/Holografía",
+    "https://en.wikipedia.org/wiki/List_of_contemporary_artists",
+    "https://en.wikipedia.org/wiki/List_of_installation_artists",
+    "https://en.wikipedia.org/wiki/Category:Digital_art",
+    "https://en.wikipedia.org/wiki/Category:Kinetic_art",
+    "https://en.wikipedia.org/wiki/Category:Land_art",
+]
+
+sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/List_of_clay_animators",
+    "https://en.wikipedia.org/wiki/List_of_Aardman_Animations_films",
+    "https://en.wikipedia.org/wiki/Category:Claymation_films",
+    "https://en.wikipedia.org/wiki/Category:Stop_motion_techniques",
+    "https://en.wikipedia.org/wiki/Category:Stop-motion_films",
+]
+
+# --- V30 ULTRA EXPANSION ---
+sites['paintings'] += [
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Rafael",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Tiziano",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Pieter_Brueghel",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Sandro_Botticelli",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Giorgione",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Paul_Gauguin",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Rodin",
+    "https://es.wikipedia.org/wiki/Anexo:Obras_de_Marcel_Duchamp",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_El_Greco",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Caravaggio",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Vermeer",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Goya",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Rubens",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Rembrandt",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_Wassily_Kandinsky",
+    "https://en.wikipedia.org/wiki/List_of_Impressionist_artists",
+    "https://en.wikipedia.org/wiki/List_of_Baroque_artists",
+    "https://en.wikipedia.org/wiki/List_of_Abstract_artists",
+    "https://en.wikipedia.org/wiki/List_of_Expressionist_artists",
+    "https://en.wikipedia.org/wiki/List_of_Surrealist_artists",
+    "https://en.wikipedia.org/wiki/List_of_Cubists",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Vatican_Museums",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Prado_Museum",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Louvre_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_art",
+    "https://en.wikipedia.org/wiki/Category:18th-century_paintings",
+    "https://en.wikipedia.org/wiki/Category:19th-century_paintings",
+    "https://en.wikipedia.org/wiki/Category:20th-century_paintings",
+    "https://en.wikipedia.org/wiki/Category:Italian_paintings",
+    "https://en.wikipedia.org/wiki/Category:French_paintings",
+    "https://en.wikipedia.org/wiki/Category:German_paintings",
+]
+
+sites['sculptures'] += [
+    "https://es.wikipedia.org/wiki/Escultura_moderna",
+    "https://es.wikipedia.org/wiki/Escultura_contemporánea",
+    "https://es.wikipedia.org/wiki/Anexo:Escultores_del_Renacimiento",
+    "https://es.wikipedia.org/wiki/Anexo:Escultores_modernos",
+    "https://es.wikipedia.org/wiki/Arte_megalítico",
+    "https://en.wikipedia.org/wiki/List_of_colossal_statues",
+    "https://en.wikipedia.org/wiki/List_of_Hellenistic_sculptures",
+    "https://en.wikipedia.org/wiki/List_of_Roman_sculptures",
+    "https://en.wikipedia.org/wiki/List_of_Egyptian_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_country",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_in_Museums",
+    "https://en.wikipedia.org/wiki/Category:Ancient_Greek_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Roman_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Neoclassical_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Modern_sculptors",
+    "https://en.wikipedia.org/wiki/Category:Stone_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Metal_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Outdoor_sculptures",
+]
+
+sites['drawings'] += [
+    "https://es.wikipedia.org/wiki/Dibujo_barroco",
+    "https://es.wikipedia.org/wiki/Dibujo_renacentista",
+    "https://en.wikipedia.org/wiki/List_of_draughtsmen",
+    "https://en.wikipedia.org/wiki/List_of_illustrators_by_name",
+    "https://en.wikipedia.org/wiki/List_of_children%27s_book_illustrators",
+    "https://en.wikipedia.org/wiki/Category:Ink_art",
+    "https://en.wikipedia.org/wiki/Category:Pencil_art",
+    "https://en.wikipedia.org/wiki/Category:Charcoal_drawings",
+    "https://en.wikipedia.org/wiki/Category:Sketch_artists",
+]
+
+sites['graffiti'] += [
+    "https://es.wikipedia.org/wiki/Graffiti_latino",
+    "https://es.wikipedia.org/wiki/Graffiti_argentino",
+    "https://es.wikipedia.org/wiki/Graffiti_mexicano",
+    "https://es.wikipedia.org/wiki/Graffiti_español",
+    "https://en.wikipedia.org/wiki/List_of_street_art_museums",
+    "https://en.wikipedia.org/wiki/List_of_street_art_festivals",
+    "https://en.wikipedia.org/wiki/List_of_street_artists_by_city",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_art_by_country",
+    "https://en.wikipedia.org/wiki/Category:Muralists_by_country",
+    "https://en.wikipedia.org/wiki/Category:Urban_culture",
+]
+
+sites['architecture'] += [
+    "https://es.wikipedia.org/wiki/Arquitectura_precolombina",
+    "https://es.wikipedia.org/wiki/Arquitectura_preclásica_maya",
+    "https://es.wikipedia.org/wiki/Arquitectura_incaica",
+    "https://en.wikipedia.org/wiki/List_of_architectural_heritage_sites",
+    "https://en.wikipedia.org/wiki/List_of_modernist_buildings",
+    "https://en.wikipedia.org/wiki/List_of_ancient_monuments",
+    "https://en.wikipedia.org/wiki/List_of_world%27s_most_visited_palaces",
+    "https://en.wikipedia.org/wiki/List_of_Barcelona_landmarks",
+    "https://en.wikipedia.org/wiki/List_of_Paris_landmarks",
+    "https://en.wikipedia.org/wiki/List_of_Roman_monuments",
+    "https://en.wikipedia.org/wiki/List_of_architects_by_nationality",
+    "https://en.wikipedia.org/wiki/Category:Architectural_sites",
+    "https://en.wikipedia.org/wiki/Category:Ancient_buildings",
+    "https://en.wikipedia.org/wiki/Category:Castles_in_Spain",
+    "https://en.wikipedia.org/wiki/Category:Castles_in_France",
+]
+
+sites['mosaics'] += [
+    "https://en.wikipedia.org/wiki/List_of_Byzantine_mosaics",
+    "https://en.wikipedia.org/wiki/List_of_Roman_sites_with_mosaics",
+    "https://en.wikipedia.org/wiki/List_of_ancient_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Mosaic_artists_by_nationality",
+    "https://en.wikipedia.org/wiki/Category:Islamic_mosaics",
+]
+
+sites['ceramics'] += [
+    "https://es.wikipedia.org/wiki/Cerámica_ibérica",
+    "https://es.wikipedia.org/wiki/Cerámica_romana",
+    "https://es.wikipedia.org/wiki/Cerámica_islámica",
+    "https://en.wikipedia.org/wiki/List_of_pottery_styles",
+    "https://en.wikipedia.org/wiki/List_of_Chinese_pottery_and_porcelain",
+    "https://en.wikipedia.org/wiki/List_of_Islamic_pottery",
+    "https://en.wikipedia.org/wiki/Category:Porcelain_museums",
+]
+
+sites['textiles'] += [
+    "https://es.wikipedia.org/wiki/Textil_precolombino",
+    "https://es.wikipedia.org/wiki/Arte_textil_maya",
+    "https://en.wikipedia.org/wiki/List_of_fashion_designers",
+    "https://en.wikipedia.org/wiki/List_of_fabric_names",
+    "https://en.wikipedia.org/wiki/Category:Traditional_clothing",
+    "https://en.wikipedia.org/wiki/Category:Historic_textiles",
+]
+
+sites['photography'] += [
+    "https://es.wikipedia.org/wiki/Fotografía_urbana",
+    "https://en.wikipedia.org/wiki/List_of_photography_awards",
+    "https://en.wikipedia.org/wiki/List_of_landmark_photographs",
+    "https://en.wikipedia.org/wiki/List_of_fashion_photographers",
+    "https://en.wikipedia.org/wiki/Category:Photography_museums",
+    "https://en.wikipedia.org/wiki/Category:Iconic_photographs",
+]
+
+sites['frescoes'] += [
+    "https://en.wikipedia.org/wiki/List_of_fresco_cycles",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_fresco_artists",
+    "https://en.wikipedia.org/wiki/Category:Greek_frescoes",
+    "https://en.wikipedia.org/wiki/Category:Roman_frescoes",
+]
+
+sites['others'] += [
+    "https://es.wikipedia.org/wiki/Arte_lumínico",
+    "https://es.wikipedia.org/wiki/Arte_interactivo",
+    "https://en.wikipedia.org/wiki/List_of_contemporary_art_museums",
+    "https://en.wikipedia.org/wiki/List_of_installation_artists",
+    "https://en.wikipedia.org/wiki/List_of_conceptual_artists",
+    "https://en.wikipedia.org/wiki/Category:Digital_sculptures",
+]
+
+sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/List_of_stop-motion_series",
+    "https://en.wikipedia.org/wiki/List_of_stop-motion_films",
+    "https://en.wikipedia.org/wiki/Category:Stop_motion_animation",
+    "https://en.wikipedia.org/wiki/Category:Claymation_artists",
+]
+
+# --- V40 MEGA DROP ---
+sites['paintings'] += [
+    "https://en.wikipedia.org/wiki/List_of_Italian_paintings",
+    "https://en.wikipedia.org/wiki/List_of_French_paintings",
+    "https://en.wikipedia.org/wiki/List_of_German_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Spanish_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Russian_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Japanese_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Chinese_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Persian_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Indian_paintings",
+    "https://en.wikipedia.org/wiki/List_of_American_paintings",
+    "https://en.wikipedia.org/wiki/List_of_modernist_artworks",
+    "https://en.wikipedia.org/wiki/List_of_expressionist_paintings",
+    "https://en.wikipedia.org/wiki/List_of_post-impressionist_artists",
+    "https://en.wikipedia.org/wiki/List_of_national_treasures_of_Japan_(paintings)",
+    "https://en.wikipedia.org/wiki/List_of_Korean_paintings",
+    "https://en.wikipedia.org/wiki/List_of_cave_art",
+    "https://en.wikipedia.org/wiki/List_of_medieval_paintings",
+    "https://en.wikipedia.org/wiki/List_of_Renaissance_artists",
+    "https://en.wikipedia.org/wiki/List_of_art_movements",
+    "https://en.wikipedia.org/wiki/Category:Famous_paintings",
+    "https://en.wikipedia.org/wiki/Category:Painting_collections",
+    "https://en.wikipedia.org/wiki/Category:Portraits_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Landscape_paintings",
+    "https://en.wikipedia.org/wiki/Category:Religious_paintings",
+    "https://en.wikipedia.org/wiki/Category:Mythological_paintings",
+]
+
+sites['sculptures'] += [
+    "https://en.wikipedia.org/wiki/List_of_ancient_statues",
+    "https://en.wikipedia.org/wiki/List_of_colossal_statues_in_Egypt",
+    "https://en.wikipedia.org/wiki/List_of_Greek_statues",
+    "https://en.wikipedia.org/wiki/List_of_Roman_statues",
+    "https://en.wikipedia.org/wiki/List_of_Egyptian_monuments",
+    "https://en.wikipedia.org/wiki/List_of_Norse_artifacts",
+    "https://en.wikipedia.org/wiki/List_of_pre-Columbian_art",
+    "https://en.wikipedia.org/wiki/List_of_medieval_sculpture",
+    "https://en.wikipedia.org/wiki/List_of_modern_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_period",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_material",
+    "https://en.wikipedia.org/wiki/Category:Marble_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Bronze_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Stone_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Sculpture_collections",
+]
+
+sites['drawings'] += [
+    "https://en.wikipedia.org/wiki/List_of_artists_known_for_drawing",
+    "https://en.wikipedia.org/wiki/List_of_lithographs",
+    "https://en.wikipedia.org/wiki/List_of_watercolor_art",
+    "https://en.wikipedia.org/wiki/Category:Sketches",
+    "https://en.wikipedia.org/wiki/Category:Pencil_drawings",
+    "https://en.wikipedia.org/wiki/Category:Charcoal_art",
+    "https://en.wikipedia.org/wiki/Category:Ink_drawings",
+    "https://en.wikipedia.org/wiki/Category:Illustration_collections",
+]
+
+sites['graffiti'] += [
+    "https://en.wikipedia.org/wiki/List_of_Banksy_works",
+    "https://en.wikipedia.org/wiki/List_of_street_art_murals",
+    "https://en.wikipedia.org/wiki/List_of_street_artists",
+    "https://en.wikipedia.org/wiki/List_of_graffiti_terms",
+    "https://en.wikipedia.org/wiki/Category:Street_art_by_city",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_art_by_year",
+]
+
+sites['architecture'] += [
+    "https://en.wikipedia.org/wiki/List_of_famous_buildings",
+    "https://en.wikipedia.org/wiki/List_of_Hindu_temples",
+    "https://en.wikipedia.org/wiki/List_of_Buddhist_temples",
+    "https://en.wikipedia.org/wiki/List_of_mosques",
+    "https://en.wikipedia.org/wiki/List_of_cathedrals",
+    "https://en.wikipedia.org/wiki/List_of_palaces",
+    "https://en.wikipedia.org/wiki/List_of_castles",
+    "https://en.wikipedia.org/wiki/List_of_ancient_structures",
+    "https://en.wikipedia.org/wiki/List_of_pyramids",
+    "https://en.wikipedia.org/wiki/List_of_Mayan_sites",
+    "https://en.wikipedia.org/wiki/List_of_Aztec_sites",
+    "https://en.wikipedia.org/wiki/List_of_Inca_sites",
+    "https://en.wikipedia.org/wiki/List_of_Roman_sites",
+    "https://en.wikipedia.org/wiki/List_of_Greek_temples",
+    "https://en.wikipedia.org/wiki/Category:Architecture_by_period",
+    "https://en.wikipedia.org/wiki/Category:Architecture_by_country",
+]
+
+sites['mosaics'] += [
+    "https://en.wikipedia.org/wiki/List_of_ancient_mosaics",
+    "https://en.wikipedia.org/wiki/List_of_Baroque_mosaics",
+    "https://en.wikipedia.org/wiki/List_of_Islamic_mosaics",
+    "https://en.wikipedia.org/wiki/List_of_Roman_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Mosaic_art_by_period",
+]
+
+sites['ceramics'] += [
+    "https://en.wikipedia.org/wiki/List_of_ceramic_artists",
+    "https://en.wikipedia.org/wiki/List_of_pottery_styles",
+    "https://en.wikipedia.org/wiki/List_of_pre-Columbian_pottery",
+    "https://en.wikipedia.org/wiki/List_of_Japanese_pottery_and_porcelain",
+    "https://en.wikipedia.org/wiki/List_of_Chinese_porcelain",
+    "https://en.wikipedia.org/wiki/Category:Ceramics_by_country",
+]
+
+sites['textiles'] += [
+    "https://en.wikipedia.org/wiki/List_of_traditional_textiles",
+    "https://en.wikipedia.org/wiki/List_of_fabrics",
+    "https://en.wikipedia.org/wiki/List_of_tapestries",
+    "https://en.wikipedia.org/wiki/Category:Embroidery",
+    "https://en.wikipedia.org/wiki/Category:African_textiles",
+]
+
+sites['photography'] += [
+    "https://en.wikipedia.org/wiki/List_of_iconic_photographs",
+    "https://en.wikipedia.org/wiki/List_of_famous_photographers",
+    "https://en.wikipedia.org/wiki/List_of_photo_collections",
+    "https://en.wikipedia.org/wiki/List_of_photojournalists",
+    "https://en.wikipedia.org/wiki/Category:Photography_by_country",
+    "https://en.wikipedia.org/wiki/Category:Historical_photographs",
+]
+
+sites['frescoes'] += [
+    "https://en.wikipedia.org/wiki/List_of_frescoes",
+    "https://en.wikipedia.org/wiki/List_of_Renaissance_frescoes",
+    "https://en.wikipedia.org/wiki/List_of_Baroque_frescoes",
+    "https://en.wikipedia.org/wiki/Category:Fresco_painters",
+]
+
+# --- V80 OVERKILL (GENERATED LINKS) ---
+sites['paintings'] += [
+    "https://en.wikipedia.org/wiki/List_of_paintings",
+    "https://en.wikipedia.org/wiki/List_of_paintings_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Paintings_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Paintings_by_country",
+    "https://en.wikipedia.org/wiki/Category:Paintings_by_century",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Louvre",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Metropolitan_Museum_of_Art",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_Rijksmuseum",
+    "https://en.wikipedia.org/wiki/Category:Paintings_in_the_National_Gallery,_London",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_paintings",
+    "https://en.wikipedia.org/wiki/Category:Baroque_paintings",
+    "https://en.wikipedia.org/wiki/Category:Impressionist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Modern_paintings",
+]
+
+sites['sculptures'] += [
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_period",
+    "https://en.wikipedia.org/wiki/Category:Ancient_Greek_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Roman_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Egyptian_sculpture",
+    "https://en.wikipedia.org/wiki/Category:Outdoor_sculptures",
+    "https://en.wikipedia.org/wiki/List_of_statues",
+    "https://en.wikipedia.org/wiki/List_of_colossal_statues",
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_museum",
+]
+
+sites['drawings'] += [
+    "https://en.wikipedia.org/wiki/Category:Drawings_by_artist",
+    "https://en.wikipedia.org/wiki/Category:Sketches",
+    "https://en.wikipedia.org/wiki/Category:Pencil_drawings",
+    "https://en.wikipedia.org/wiki/Category:Ink_drawings",
+    "https://en.wikipedia.org/wiki/List_of_drawings",
+]
+
+sites['graffiti'] += [
+    "https://en.wikipedia.org/wiki/Category:Graffiti",
+    "https://en.wikipedia.org/wiki/Category:Street_art",
+    "https://en.wikipedia.org/wiki/Category:Murals_by_city",
+    "https://en.wikipedia.org/wiki/List_of_street_artists",
+    "https://en.wikipedia.org/wiki/List_of_murals",
+]
+
+sites['architecture'] += [
+    "https://en.wikipedia.org/wiki/Category:Architectural_styles",
+    "https://en.wikipedia.org/wiki/Category:Buildings_and_structures_by_country",
+    "https://en.wikipedia.org/wiki/Category:Temples_by_country",
+    "https://en.wikipedia.org/wiki/Category:Palaces_by_country",
+    "https://en.wikipedia.org/wiki/Category:Castles_by_country",
+    "https://en.wikipedia.org/wiki/Category:Archaeological_sites_by_country",
+    "https://en.wikipedia.org/wiki/List_of_World_Heritage_Sites",
+    "https://en.wikipedia.org/wiki/List_of_ancient_cities",
+    "https://en.wikipedia.org/wiki/List_of_archaeological_sites_sorted_by_country",
+]
+
+sites['mosaics'] += [
+    "https://en.wikipedia.org/wiki/Category:Mosaics_by_period",
+    "https://en.wikipedia.org/wiki/Category:Mosaics_by_country",
+    "https://en.wikipedia.org/wiki/List_of_mosaics",
+]
+
+sites['ceramics'] += [
+    "https://en.wikipedia.org/wiki/Category:Pottery_by_country",
+    "https://en.wikipedia.org/wiki/Category:Ceramics_by_period",
+    "https://en.wikipedia.org/wiki/Category:Porcelain",
+    "https://en.wikipedia.org/wiki/Category:Chinese_pottery",
+    "https://en.wikipedia.org/wiki/List_of_pottery_and_porcelain_terms",
+]
+
+sites['textiles'] += [
+    "https://en.wikipedia.org/wiki/Category:Textiles_by_country",
+    "https://en.wikipedia.org/wiki/Category:Embroidery",
+    "https://en.wikipedia.org/wiki/Category:Tapestries",
+    "https://en.wikipedia.org/wiki/List_of_textile_artists",
+]
+
+sites['photography'] += [
+    "https://en.wikipedia.org/wiki/Category:Photography_collections",
+    "https://en.wikipedia.org/wiki/Category:Historic_photographs",
+    "https://en.wikipedia.org/wiki/List_of_photographers",
+    "https://en.wikipedia.org/wiki/List_of_photojournalists",
+    "https://en.wikipedia.org/wiki/Category:Press_photographs",
+]
+
+sites['frescoes'] += [
+    "https://en.wikipedia.org/wiki/Category:Fresco_painters",
+    "https://en.wikipedia.org/wiki/Category:Fresco_cycles",
+    "https://en.wikipedia.org/wiki/List_of_frescoes",
+]
+
+sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/Category:Stop_motion_films",
+    "https://en.wikipedia.org/wiki/Category:Clay_animation",
+    "https://en.wikipedia.org/wiki/List_of_stop-motion_animated_television_series",
+]
+
+# --- AUTO-GENERATED ARTIST LISTS (BY LETTER) ---
+letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+sites['paintings'] += [f"https://en.wikipedia.org/wiki/Category:Painters_by_name:?from={l}" for l in letters]
+sites['sculptures'] += [f"https://en.wikipedia.org/wiki/Category:Sculptors_by_name:?from={l}" for l in letters]
+sites['photography'] += [f"https://en.wikipedia.org/wiki/Category:Photographers_by_name:?from={l}" for l in letters]
+
+
 
 def batch_download():
     print("Iniciando MEGA-DESCARGA de ARTE (Deep Search Complete)... ¡Prepárate!")

@@ -11,7 +11,7 @@ IMG_SIZE = (224, 224)
 # Configuración
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 64 # AUMENTADO: Procesa el doble de fotos por segundo
-EPOCHS = 500 # Fase 1: Calentamiento (GOD MODE)
+EPOCHS = 50 # Fase 1: Calentamiento (Modo Supervisado)
 DATASET_DIR = 'dataset/train'
 VALIDATION_DIR = 'dataset/validation'
 MODEL_FILE = 'model.h5'
@@ -65,21 +65,23 @@ def train_network():
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 
-    # Callbacks para "Modo Avanzado" - ULTRA RESISTENCIA
+    # Callbacks para "Modo Supervisado" - Ágil y Responsivo
     callbacks = [
-        # EarlyStopping desactivado para que entrene SÍ o SÍ hasta el final
-        # EarlyStopping(monitor='val_accuracy', patience=50, verbose=1, restore_best_weights=True),
+        # EarlyStopping activado: Si no mejora en 10 épocas, pasa a la siguiente fase
+        EarlyStopping(monitor='val_accuracy', patience=10, verbose=1, restore_best_weights=True),
         ModelCheckpoint(MODEL_FILE, monitor='val_accuracy', save_best_only=True, verbose=1)
     ]
 
-    print("\nComenzando entrenamiento AVANZADO (Fase 1: Calentamiento)...")
+    print("\nComenzando entrenamiento SUPERVISADO (Fase 1: Calentamiento)...")
     history = model.fit(
         train_generator,
         epochs=EPOCHS,
         validation_data=validation_generator,
-        callbacks=callbacks,
-
+        callbacks=callbacks
     )
+
+    # Obtenemos la última época real de la Fase 1
+    last_epoch_phase1 = history.epoch[-1] + 1
 
     # --- FASE 2: FINE-TUNING (Adam) ---
     print("\n>>> INICIANDO FASE 2: FINE-TUNING (Refinamiento con Adam) <<<")
@@ -92,19 +94,21 @@ def train_network():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    FINE_TUNE_EPOCHS_ADAM = 300 
-    total_epochs_phase2 = EPOCHS + FINE_TUNE_EPOCHS_ADAM
+    FINE_TUNE_EPOCHS_ADAM = 30 # Reducido de 300
+    # Calculamos el total basándonos en donde terminó REALMENTE la fase anterior
+    total_epochs_phase2 = last_epoch_phase1 + FINE_TUNE_EPOCHS_ADAM
 
     print(f"Entrenando por {FINE_TUNE_EPOCHS_ADAM} épocas extra con ajuste fino (Adam)...")
     
     history_fine_adam = model.fit(
         train_generator,
         epochs=total_epochs_phase2,
-        initial_epoch=history.epoch[-1] + 1,
+        initial_epoch=last_epoch_phase1,
         validation_data=validation_generator,
-        callbacks=callbacks,
-
+        callbacks=callbacks
     )
+    
+    last_epoch_phase2 = history_fine_adam.epoch[-1] + 1
 
     # --- FASE 3: POLISHING (SGD) ---
     print("\n>>> INICIANDO FASE 3: PULIDO FINAL (SGD) <<<")
@@ -115,18 +119,17 @@ def train_network():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    FINE_TUNE_EPOCHS_SGD = 200
-    total_epochs_phase3 = total_epochs_phase2 + FINE_TUNE_EPOCHS_SGD
+    FINE_TUNE_EPOCHS_SGD = 20 # Reducido de 200
+    total_epochs_phase3 = last_epoch_phase2 + FINE_TUNE_EPOCHS_SGD
 
     print(f"Entrenando por {FINE_TUNE_EPOCHS_SGD} épocas extra con SGD para pulido final...")
 
     history_fine_sgd = model.fit(
         train_generator,
         epochs=total_epochs_phase3,
-        initial_epoch=history_fine_adam.epoch[-1] + 1,
+        initial_epoch=last_epoch_phase2,
         validation_data=validation_generator,
-        callbacks=callbacks,
-
+        callbacks=callbacks
     )
 
     # Guardar modelo

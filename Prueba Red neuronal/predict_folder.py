@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import os
 import glob
+import shutil
 
 def predict_folder(folder_path):
     if not os.path.exists('model.h5'):
@@ -27,6 +28,16 @@ def predict_folder(folder_path):
         'photography', 'sculptures', 'textiles'
     ]
     
+    # Crear carpeta de resultados
+    results_dir = 'predicted_results'
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+        
+    for class_name in class_names:
+        class_dir = os.path.join(results_dir, class_name)
+        if not os.path.exists(class_dir):
+            os.makedirs(class_dir)
+
     # Extensiones de imagen comunes
     extensions = ['*.jpg', '*.jpeg', '*.png', '*.webp', '*.JPG', '*.JPEG', '*.PNG']
     image_files = []
@@ -39,6 +50,7 @@ def predict_folder(folder_path):
         return
 
     print(f"\nAnalizando {len(image_files)} imágenes en '{folder_path}'...\n")
+    print(f"Los resultados se guardarán en la carpeta '{results_dir}'\n")
     print(f"{'ARCHIVO':<40} | {'PREDICCIÓN':<15} | {'CONFIANZA'}")
     print("-" * 70)
 
@@ -59,11 +71,17 @@ def predict_folder(folder_path):
             stats[predicted_class] += 1
             
             filename = os.path.basename(img_path)
+            
+            # Copiar imagen a la carpeta correspondiente
+            dest_path = os.path.join(results_dir, predicted_class, filename)
+            shutil.copy2(img_path, dest_path)
+
             # Acortar nombre si es muy largo para que quepa en la tabla
-            if len(filename) > 35:
-                filename = filename[:32] + "..."
+            display_name = filename
+            if len(display_name) > 35:
+                display_name = display_name[:32] + "..."
                 
-            print(f"{filename:<40} | {predicted_class:<15} | {confidence:.2%}")
+            print(f"{display_name:<40} | {predicted_class:<15} | {confidence:.2%}")
 
         except Exception as e:
             print(f"Error en {os.path.basename(img_path)}: {e}")
@@ -73,6 +91,7 @@ def predict_folder(folder_path):
     for name, count in stats.items():
         if count > 0:
             print(f"{name.capitalize()}: {count}")
+    print(f"\n¡Listo! Puedes ver las imágenes organizadas en: {os.path.abspath(results_dir)}")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
