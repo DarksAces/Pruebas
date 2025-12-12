@@ -515,9 +515,17 @@ sites['drawings'] += [
     "https://en.wikipedia.org/wiki/List_of_drawings_by_Michelangelo",
     "https://en.wikipedia.org/wiki/Category:Drawings",
     "https://en.wikipedia.org/wiki/Category:Ink_drawings",
+
     "https://en.wikipedia.org/wiki/Category:Pencil_drawings",
     "https://en.wikipedia.org/wiki/Category:Sketches",
     "https://en.wikipedia.org/wiki/Category:Illustrators",
+    
+    # Children's Art (Solicitado por usuario)
+    "https://en.wikipedia.org/wiki/Child_art",
+    "https://es.wikipedia.org/wiki/Arte_infantil",
+    "https://en.wikipedia.org/wiki/Category:Child_art",
+    "https://en.wikipedia.org/wiki/International_Child_Art_Foundation",
+    "https://en.wikipedia.org/wiki/Museum_of_Children%27s_Art",
 ]
 
 sites['graffiti'] += [
