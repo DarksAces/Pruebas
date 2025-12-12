@@ -17,7 +17,53 @@ VALIDATION_DIR = 'dataset/validation'
 MODEL_FILE = 'model.h5'
 
 def train_network():
-    # ... (rest of code) ...
+    # Generadores de datos
+    train_datagen = ImageDataGenerator(
+        rescale=1./255,
+        rotation_range=20,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode='nearest'
+    )
+
+    validation_datagen = ImageDataGenerator(rescale=1./255)
+
+    print("Cargando imágenes...")
+    train_generator = train_datagen.flow_from_directory(
+        DATASET_DIR,
+        target_size=IMG_SIZE,
+        batch_size=BATCH_SIZE,
+        class_mode='categorical'
+    )
+
+    validation_generator = validation_datagen.flow_from_directory(
+        VALIDATION_DIR,
+        target_size=IMG_SIZE,
+        batch_size=BATCH_SIZE,
+        class_mode='categorical'
+    )
+
+    # Crear modelo base pre-entrenado
+    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=IMG_SIZE + (3,))
+    
+    # Congelar capas base inicialmente
+    base_model.trainable = False
+
+    # Añadir capas personalizadas
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(1024, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    predictions = Dense(train_generator.num_classes, activation='softmax')(x)
+
+    model = Model(inputs=base_model.input, outputs=predictions)
+
+    # Compilar modelo (Fase 1: Adam)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
 
     # Callbacks para "Modo Avanzado" - ULTRA RESISTENCIA
     callbacks = [
@@ -32,7 +78,7 @@ def train_network():
         epochs=EPOCHS,
         validation_data=validation_generator,
         callbacks=callbacks,
-        workers=4 # Paralelismo: Usa 4 núcleos de CPU para cargar fotos
+
     )
 
     # --- FASE 2: FINE-TUNING (Adam) ---
@@ -57,7 +103,7 @@ def train_network():
         initial_epoch=history.epoch[-1] + 1,
         validation_data=validation_generator,
         callbacks=callbacks,
-        workers=4
+
     )
 
     # --- FASE 3: POLISHING (SGD) ---
@@ -80,7 +126,7 @@ def train_network():
         initial_epoch=history_fine_adam.epoch[-1] + 1,
         validation_data=validation_generator,
         callbacks=callbacks,
-        workers=4
+
     )
 
     # Guardar modelo

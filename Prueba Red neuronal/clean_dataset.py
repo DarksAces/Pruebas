@@ -1,31 +1,34 @@
 import os
+import glob
 from PIL import Image
 
-DATASET_DIR = "dataset"
-
-def clean_images():
-    print(f"Escaneando '{DATASET_DIR}' en busca de imágenes corruptas...")
-    deleted_count = 0
-    checked_count = 0
-
-    for root, dirs, files in os.walk(DATASET_DIR):
-        for file in files:
-            filepath = os.path.join(root, file)
-            checked_count += 1
+def clean_dataset(folder_path):
+    print(f"Limpiando dataset en: {folder_path}")
+    image_files = glob.glob(os.path.join(folder_path, '**', '*'), recursive=True)
+    
+    count = 0
+    removed = 0
+    
+    for file_path in image_files:
+        if os.path.isdir(file_path):
+            continue
             
+        try:
+            with Image.open(file_path) as img:
+                img.verify() # Validar estructura interna de la imagen
+        except (IOError, SyntaxError) as e:
+            print(f"Eliminando archivo corrupto: {file_path}")
             try:
-                with Image.open(filepath) as img:
-                    img.verify() # Verificar integridad
-            except (IOError, SyntaxError) as e:
-                print(f"[CORRUPTA] Eliminando: {filepath} - Error: {e}")
-                os.remove(filepath)
-                deleted_count += 1
+                os.remove(file_path)
+                removed += 1
             except Exception as e:
-                print(f"[ERROR GENÉRICO] Eliminando: {filepath} - Error: {e}")
-                os.remove(filepath)
-                deleted_count += 1
+                print(f"Error borrando {file_path}: {e}")
+        
+        count += 1
+        if count % 1000 == 0:
+            print(f"Procesadas {count} archivos...")
 
-    print(f"\nResumen: {checked_count} analizadas. {deleted_count} eliminadas.")
+    print(f"\nLimpieza completada. Se eliminaron {removed} archivos corruptos.")
 
 if __name__ == "__main__":
-    clean_images()
+    clean_dataset("dataset")
