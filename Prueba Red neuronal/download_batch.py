@@ -769,6 +769,21 @@ sites['plasticine'] += [
     "https://en.wikipedia.org/wiki/Category:Claymation_artists",
 ]
 
+sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/Jan_%C5%A0vankmajer",
+    "https://en.wikipedia.org/wiki/Will_Vinton",
+    "https://en.wikipedia.org/wiki/Art_Clokey",
+    "https://en.wikipedia.org/wiki/Bruce_Bickford_(animator)",
+    "https://en.wikipedia.org/wiki/Nick_Park",
+    "https://en.wikipedia.org/wiki/Peter_Lord",
+    "https://en.wikipedia.org/wiki/David_Sproxton",
+    "https://en.wikipedia.org/wiki/Aardman_Animations",
+    "https://en.wikipedia.org/wiki/Laika_(company)",
+    "https://en.wikipedia.org/wiki/Category:Czech_stop-motion_animators",
+    "https://en.wikipedia.org/wiki/Category:British_stop-motion_animators",
+    "https://en.wikipedia.org/wiki/Category:American_stop-motion_animators",
+]
+
 # --- V40 MEGA DROP ---
 sites['paintings'] += [
     "https://en.wikipedia.org/wiki/List_of_Italian_paintings",
@@ -989,9 +1004,174 @@ sites['frescoes'] += [
 ]
 
 sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/Category:Stop-motion_films_by_decade",
+    "https://en.wikipedia.org/wiki/Category:Stop-motion_short_films",
+    "https://en.wikipedia.org/wiki/Category:Clay_animation_television_series",
+    "https://en.wikipedia.org/wiki/Category:Films_animated_by_Aardman_Animations",
+    "https://en.wikipedia.org/wiki/List_of_Aardman_Animations_productions",
+    "https://en.wikipedia.org/wiki/Category:Works_by_Jan_%C5%A0vankmajer",
+    "https://en.wikipedia.org/wiki/Category:Films_directed_by_Will_Vinton",
+    "https://en.wikipedia.org/wiki/Category:Stop-motion_animators",
+    "https://en.wikipedia.org/wiki/Stop_motion",
+    "https://en.wikipedia.org/wiki/Go_motion",
+]
+
+sites['plasticine'] += [
     "https://en.wikipedia.org/wiki/Category:Stop_motion_films",
     "https://en.wikipedia.org/wiki/Category:Clay_animation",
     "https://en.wikipedia.org/wiki/List_of_stop-motion_animated_television_series",
+]
+
+# --- CHILDREN'S ART & CLAY WORLD (Solicitado por Usuario) ---
+sites['plasticine'] += [
+    "https://en.wikipedia.org/wiki/Category:Child_art",
+    "https://en.wikipedia.org/wiki/Category:Modelling_clay",
+    "https://en.wikipedia.org/wiki/Category:Play-Doh",
+    "https://en.wikipedia.org/wiki/Category:Plasticine_modelling", 
+    "https://en.wikipedia.org/wiki/Category:Children%27s_art",
+]
+
+# =================================================================================================
+#  V50 OMEGA EXPANSION - THE FINAL FRONTIER (ALL CATEGORIES)
+# =================================================================================================
+
+sites['paintings'] += [
+    "https://en.wikipedia.org/wiki/Category:Paintings_by_movement_or_period",
+    "https://en.wikipedia.org/wiki/Category:Baroque_paintings",
+    "https://en.wikipedia.org/wiki/Category:Cubist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Expressionist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Impressionist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Modern_paintings",
+    "https://en.wikipedia.org/wiki/Category:Realist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_paintings",
+    "https://en.wikipedia.org/wiki/Category:Romantic_paintings",
+    "https://en.wikipedia.org/wiki/Category:Surrealist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Symbolist_paintings",
+    "https://en.wikipedia.org/wiki/Category:Paintings_by_century",
+]
+
+sites['sculptures'] += [
+    "https://en.wikipedia.org/wiki/Category:Sculptures_by_material",
+    "https://en.wikipedia.org/wiki/Category:Bronze_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Marble_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Stone_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Wood_carvings",
+    "https://en.wikipedia.org/wiki/Category:Glass_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Ivory_works_of_art",
+    "https://en.wikipedia.org/wiki/Category:Ceramic_sculptures",
+    "https://en.wikipedia.org/wiki/Category:Reliefs",
+]
+
+sites['drawings'] += [
+    "https://en.wikipedia.org/wiki/Category:Drawings_by_subject",
+    "https://en.wikipedia.org/wiki/Category:Drawings_by_genre",
+    "https://en.wikipedia.org/wiki/Category:Drawings_by_technique",
+    "https://en.wikipedia.org/wiki/Category:Pen_and_ink_drawings",
+    "https://en.wikipedia.org/wiki/Category:Chalk_drawings",
+    "https://en.wikipedia.org/wiki/Category:Pastel_drawings",
+    "https://en.wikipedia.org/wiki/Category:Charcoal_drawings",
+    "https://en.wikipedia.org/wiki/Category:Silverpoint_drawings",
+]
+
+sites['graffiti'] += [
+    "https://en.wikipedia.org/wiki/Category:Street_art_festivals",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_in_Europe",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_in_North_America",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_in_South_America",
+    "https://en.wikipedia.org/wiki/Category:Graffiti_in_Asia",
+    "https://en.wikipedia.org/wiki/Category:Sticker_art",
+    "https://en.wikipedia.org/wiki/Category:Street_art_by_continent",
+]
+
+sites['architecture'] += [
+    "https://en.wikipedia.org/wiki/Category:Architecture_by_region",
+    "https://en.wikipedia.org/wiki/Category:Architecture_in_Europe",
+    "https://en.wikipedia.org/wiki/Category:Architecture_in_Asia",
+    "https://en.wikipedia.org/wiki/Category:Architecture_in_North_America",
+    "https://en.wikipedia.org/wiki/Category:Religious_architecture_by_country",
+    "https://en.wikipedia.org/wiki/Category:Residential_architecture_by_country",
+    "https://en.wikipedia.org/wiki/Category:Vernacular_architecture",
+]
+
+sites['mosaics'] += [
+    "https://en.wikipedia.org/wiki/Category:Ancient_Roman_mosaics_by_country",
+    "https://en.wikipedia.org/wiki/Category:Byzantine_mosaics_by_country",
+    "https://en.wikipedia.org/wiki/Category:Mosaics_in_religious_buildings",
+    "https://en.wikipedia.org/wiki/Category:Floor_mosaics",
+    "https://en.wikipedia.org/wiki/Category:Mosaic_sculptures",
+]
+
+sites['textiles'] += [
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_by_country",
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_of_China",
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_of_India",
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_of_Japan",
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_of_Peru",
+    "https://en.wikipedia.org/wiki/Category:Textile_arts_of_the_United_Kingdom",
+    "https://en.wikipedia.org/wiki/Category:Rugs_and_carpets_by_country",
+]
+
+sites['photography'] += [
+    "https://en.wikipedia.org/wiki/Category:Photography_by_genre",
+    "https://en.wikipedia.org/wiki/Category:Photography_by_topic",
+    "https://en.wikipedia.org/wiki/Category:Portrait_photography",
+    "https://en.wikipedia.org/wiki/Category:Landscape_photography",
+    "https://en.wikipedia.org/wiki/Category:Architectural_photography",
+    "https://en.wikipedia.org/wiki/Category:Wildlife_photography",
+    "https://en.wikipedia.org/wiki/Category:War_photography",
+    "https://en.wikipedia.org/wiki/Category:Travel_photography",
+]
+
+sites['ceramics'] += [
+    "https://en.wikipedia.org/wiki/Category:Ceramics_by_country",
+    "https://en.wikipedia.org/wiki/Category:Pottery_by_region",
+    "https://en.wikipedia.org/wiki/Category:Ancient_Greek_pottery_by_type",
+    "https://en.wikipedia.org/wiki/Category:Chinese_ceramics_by_period",
+    "https://en.wikipedia.org/wiki/Category:Japanese_ceramics",
+]
+
+# =================================================================================================
+#  V60 INFINITY EXPANSION - MUSEUMS & NICHE CORNER
+# =================================================================================================
+
+sites['museum_collections'] = [
+    "https://en.wikipedia.org/wiki/Category:Collections_of_the_British_Museum",
+    "https://en.wikipedia.org/wiki/Category:Collections_of_the_Louvre",
+    "https://en.wikipedia.org/wiki/Category:Collections_of_the_Metropolitan_Museum_of_Art",
+    "https://en.wikipedia.org/wiki/Category:Collections_of_the_Rijksmuseum",
+    "https://en.wikipedia.org/wiki/Category:Collections_of_the_Museo_del_Prado",
+]
+
+sites['masks'] = [
+    "https://en.wikipedia.org/wiki/Category:Masks_by_region",
+    "https://en.wikipedia.org/wiki/Category:African_masks",
+    "https://en.wikipedia.org/wiki/Category:Venetian_masks",
+    "https://en.wikipedia.org/wiki/Category:Ritual_masks",
+]
+
+sites['jewellery'] = [
+    "https://en.wikipedia.org/wiki/Category:Jewellery_by_country",
+    "https://en.wikipedia.org/wiki/Category:Ancient_jewellery",
+    "https://en.wikipedia.org/wiki/Category:Renaissance_jewellery",
+    "https://en.wikipedia.org/wiki/Category:Royal_jewellery",
+]
+
+sites['stained_glass'] = [
+    "https://en.wikipedia.org/wiki/Category:Stained_glass_by_country",
+    "https://en.wikipedia.org/wiki/Category:Stained_glass_windows",
+    "https://en.wikipedia.org/wiki/Category:Rose_windows",
+]
+
+sites['paintings'] += [
+    "https://en.wikipedia.org/wiki/Category:Illuminated_manuscripts_by_provenance",
+    "https://en.wikipedia.org/wiki/Category:Miniature_paintings",
+]
+
+sites['photography'] += [
+    "https://en.wikipedia.org/wiki/Category:Underwater_photography",
+    "https://en.wikipedia.org/wiki/Category:Macro_photography",
+    "https://en.wikipedia.org/wiki/Category:Astrophotography",
+    "https://en.wikipedia.org/wiki/Category:Microscopic_images",
 ]
 
 # --- AUTO-GENERATED ARTIST LISTS (BY LETTER) ---
