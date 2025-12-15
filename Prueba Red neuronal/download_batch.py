@@ -1182,6 +1182,312 @@ sites['photography'] += [f"https://en.wikipedia.org/wiki/Category:Photographers_
 
 
 
+# --- V50 CREATIVE EXPANSION (CONCEPT & STYLES) ---
+sites['concept_art'] = [
+    "https://en.wikipedia.org/wiki/Concept_art",
+    "https://en.wikipedia.org/wiki/Fantasy_art",
+    "https://en.wikipedia.org/wiki/Science_fiction_art",
+    "https://en.wikipedia.org/wiki/Matte_painting",
+    "https://en.wikipedia.org/wiki/Category:Concept_art",
+    "https://en.wikipedia.org/wiki/Category:Fantasy_artists",
+    "https://en.wikipedia.org/wiki/Category:Science_fiction_artists",
+    "https://en.wikipedia.org/wiki/Syd_Mead",
+    "https://en.wikipedia.org/wiki/Ralph_McQuarrie",
+    "https://en.wikipedia.org/wiki/H._R._Giger",
+    "https://en.wikipedia.org/wiki/Frank_Frazetta",
+    "https://en.wikipedia.org/wiki/Digital_painting",
+]
+
+sites['ukiyo_e'] = [
+    "https://en.wikipedia.org/wiki/Ukiyo-e",
+    "https://en.wikipedia.org/wiki/Woodblock_printing_in_Japan",
+    "https://en.wikipedia.org/wiki/Hokusai",
+    "https://en.wikipedia.org/wiki/Hiroshige",
+    "https://en.wikipedia.org/wiki/Thirty-six_Views_of_Mount_Fuji",
+    "https://en.wikipedia.org/wiki/Category:Ukiyo-e_artists",
+    "https://en.wikipedia.org/wiki/Utamaro",
+    "https://en.wikipedia.org/wiki/Kuniyoshi",
+    "https://en.wikipedia.org/wiki/Sharaku",
+    "https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa",
+    "https://en.wikipedia.org/wiki/Japonisme",
+]
+
+sites['pixel_art'] = [
+    "https://en.wikipedia.org/wiki/Pixel_art",
+    "https://en.wikipedia.org/wiki/Sprite_(computer_graphics)",
+    "https://en.wikipedia.org/wiki/Isometric_video_game_graphics",
+    "https://en.wikipedia.org/wiki/Category:Pixel_art",
+    "https://en.wikipedia.org/wiki/Eboy",
+    "https://en.wikipedia.org/wiki/Voxel",
+    "https://en.wikipedia.org/wiki/Tile_set",
+    "https://en.wikipedia.org/wiki/Demoscene",
+    "https://en.wikipedia.org/wiki/Mosaic",
+    "https://en.wikipedia.org/wiki/Pointillism", # Related tech
+]
+
+sites['scientific_illustration'] = [
+    "https://en.wikipedia.org/wiki/Biological_illustration",
+    "https://en.wikipedia.org/wiki/Botanical_illustration",
+    "https://en.wikipedia.org/wiki/Medical_illustration",
+    "https://en.wikipedia.org/wiki/Zoological_illustration",
+    "https://en.wikipedia.org/wiki/Ernst_Haeckel",
+    "https://en.wikipedia.org/wiki/Kunstformen_der_Natur",
+    "https://en.wikipedia.org/wiki/Audubon%27s_Birds_of_America",
+    "https://en.wikipedia.org/wiki/Marianne_North",
+    "https://en.wikipedia.org/wiki/Category:Scientific_illustrators",
+    "https://en.wikipedia.org/wiki/Technical_illustration",
+    "https://en.wikipedia.org/wiki/Gray%27s_Anatomy",
+]
+
+sites['cyberpunk'] = [
+    "https://en.wikipedia.org/wiki/Cyberpunk",
+    "https://en.wikipedia.org/wiki/Blade_Runner",
+    "https://en.wikipedia.org/wiki/Cyberpunk_2077",
+    "https://en.wikipedia.org/wiki/Akira_(franchise)",
+    "https://en.wikipedia.org/wiki/Ghost_in_the_Shell",
+    "https://en.wikipedia.org/wiki/Category:Cyberpunk_images", # Hypothetical, using search
+    "https://en.wikipedia.org/wiki/William_Gibson",
+    "https://en.wikipedia.org/wiki/The_Matrix",
+    "https://en.wikipedia.org/wiki/Neuromancer",
+    "https://en.wikipedia.org/wiki/Tech_noir",
+    "https://en.wikipedia.org/wiki/Japanese_cyberpunk",
+]
+
+sites['steampunk'] = [
+    "https://en.wikipedia.org/wiki/Steampunk",
+    "https://en.wikipedia.org/wiki/The_League_of_Extraordinary_Gentlemen",
+    "https://en.wikipedia.org/wiki/Bioshock_Infinite",
+    "https://en.wikipedia.org/wiki/Category:Steampunk_images", # Hypothetical
+    "https://en.wikipedia.org/wiki/Jules_Verne",
+    "https://en.wikipedia.org/wiki/H._G._Wells",
+    "https://en.wikipedia.org/wiki/Mortal_Engines",
+    "https://en.wikipedia.org/wiki/Retro-futurism",
+    "https://en.wikipedia.org/wiki/Dieselpunk",
+    "https://en.wikipedia.org/wiki/Victorian_fashion",
+]
+
+sites['low_poly'] = [
+    "https://en.wikipedia.org/wiki/Low_poly",
+    "https://en.wikipedia.org/wiki/Category:Low_poly_video_games",
+    "https://en.wikipedia.org/wiki/Polygon_mesh",
+    "https://en.wikipedia.org/wiki/Flat_shading",
+    "https://en.wikipedia.org/wiki/Virtua_Fighter",
+    "https://en.wikipedia.org/wiki/Star_Fox_(1993_video_game)",
+    "https://en.wikipedia.org/wiki/Minecraft",
+    "https://en.wikipedia.org/wiki/Roblox",
+    "https://en.wikipedia.org/wiki/Minimalism_(visual_arts)",
+    "https://en.wikipedia.org/wiki/Papercraft",
+]
+
+
+
+# --- V60 MEGA PACK (ESTILOS Y TÉCNICAS) ---
+sites['watercolor'] = [
+    "https://en.wikipedia.org/wiki/Watercolor_painting",
+    "https://en.wikipedia.org/wiki/Category:Watercolor_painters",
+    "https://es.wikipedia.org/wiki/Acuarela",
+    "https://en.wikipedia.org/wiki/Gouache",
+    "https://en.wikipedia.org/wiki/Category:Watercolor_paintings",
+    "https://en.wikipedia.org/wiki/J._M._W._Turner",
+    "https://en.wikipedia.org/wiki/Winslow_Homer",
+    "https://en.wikipedia.org/wiki/John_Singer_Sargent",
+    "https://en.wikipedia.org/wiki/Georgia_O%27Keeffe",
+    "https://en.wikipedia.org/wiki/Albrecht_D%C3%BCrer",
+]
+
+sites['oil_painting'] = [
+    "https://en.wikipedia.org/wiki/Oil_painting",
+    "https://en.wikipedia.org/wiki/Category:Oil_painting",
+    "https://es.wikipedia.org/wiki/Pintura_al_óleo",
+    "https://en.wikipedia.org/wiki/Jan_van_Eyck",
+    "https://en.wikipedia.org/wiki/Johannes_Vermeer",
+    "https://en.wikipedia.org/wiki/Rembrandt",
+    "https://en.wikipedia.org/wiki/Impasto",
+    "https://en.wikipedia.org/wiki/Alla_prima",
+    "https://en.wikipedia.org/wiki/Glaze_(painting_technique)",
+    "https://en.wikipedia.org/wiki/Category:Oil_paintings",
+]
+
+sites['3d_render'] = [
+    "https://en.wikipedia.org/wiki/Rendering_(computer_graphics)",
+    "https://en.wikipedia.org/wiki/Ray_tracing_(graphics)",
+    "https://en.wikipedia.org/wiki/Blender_(software)",
+    "https://en.wikipedia.org/wiki/Category:Computer-generated_imagery",
+    "https://en.wikipedia.org/wiki/Autodesk_Maya",
+    "https://en.wikipedia.org/wiki/Cinema_4D",
+    "https://en.wikipedia.org/wiki/ZBrush",
+    "https://en.wikipedia.org/wiki/Unreal_Engine",
+    "https://en.wikipedia.org/wiki/Digital_sculpting",
+    "https://en.wikipedia.org/wiki/Category:3D_graphics_software",
+]
+
+sites['vaporwave'] = [
+    "https://en.wikipedia.org/wiki/Vaporwave",
+    "https://en.wikipedia.org/wiki/Seapunk",
+    "https://en.wikipedia.org/wiki/Synthwave",
+    "https://en.wikipedia.org/wiki/Aesthetics_(vaporwave)",
+    "https://en.wikipedia.org/wiki/Glitch_art",
+    "https://en.wikipedia.org/wiki/Category:Internet_aesthetics",
+    "https://en.wikipedia.org/wiki/Memphis_Group",
+    "https://en.wikipedia.org/wiki/Cyberculture",
+    "https://en.wikipedia.org/wiki/Retro-futurism",
+    "https://en.wikipedia.org/wiki/Neon_lighting",
+]
+
+sites['fractal_art'] = [
+    "https://en.wikipedia.org/wiki/Fractal_art",
+    "https://en.wikipedia.org/wiki/Mandelbrot_set",
+    "https://en.wikipedia.org/wiki/Category:Fractal_art",
+    "https://en.wikipedia.org/wiki/Julia_set",
+    "https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle",
+    "https://en.wikipedia.org/wiki/Koch_snowflake",
+    "https://en.wikipedia.org/wiki/L-system",
+    "https://en.wikipedia.org/wiki/Electric_Sheep",
+    "https://en.wikipedia.org/wiki/Chaos_theory",
+    "https://en.wikipedia.org/wiki/Self-similarity",
+]
+
+sites['african_art'] = [
+    "https://en.wikipedia.org/wiki/African_art",
+    "https://en.wikipedia.org/wiki/Traditional_African_masks",
+    "https://en.wikipedia.org/wiki/Benin_Bronzes",
+    "https://en.wikipedia.org/wiki/Category:African_art",
+    "https://en.wikipedia.org/wiki/Nok_culture",
+    "https://en.wikipedia.org/wiki/Yoruba_art",
+    "https://en.wikipedia.org/wiki/Dogon_art",
+    "https://en.wikipedia.org/wiki/Chokwe_art",
+    "https://en.wikipedia.org/wiki/Kente_cloth",
+    "https://en.wikipedia.org/wiki/Category:West_African_art",
+]
+
+sites['islamic_art'] = [
+    "https://en.wikipedia.org/wiki/Islamic_art",
+    "https://en.wikipedia.org/wiki/Islamic_geometric_patterns",
+    "https://en.wikipedia.org/wiki/Islamic_calligraphy",
+    "https://en.wikipedia.org/wiki/Category:Islamic_art",
+    "https://en.wikipedia.org/wiki/Arabesque",
+    "https://en.wikipedia.org/wiki/Iznik_pottery",
+    "https://en.wikipedia.org/wiki/Persian_miniature",
+    "https://en.wikipedia.org/wiki/Mughal_painting",
+    "https://en.wikipedia.org/wiki/Ottoman_architecture",
+    "https://en.wikipedia.org/wiki/Category:Islamic_architecture",
+]
+
+sites['tattoo_art'] = [
+    "https://en.wikipedia.org/wiki/Tattoo",
+    "https://en.wikipedia.org/wiki/History_of_tattooing",
+    "https://en.wikipedia.org/wiki/Old_school_(tattoo)",
+    "https://en.wikipedia.org/wiki/Irezumi",
+    "https://en.wikipedia.org/wiki/Category:Tattooing",
+    "https://en.wikipedia.org/wiki/New_School_(tattoo)",
+    "https://en.wikipedia.org/wiki/Biomech",
+    "https://en.wikipedia.org/wiki/Permanent_makeup",
+    "https://en.wikipedia.org/wiki/Henna",
+    "https://en.wikipedia.org/wiki/Category:Tattoo_artists",
+]
+
+sites['origami'] = [
+    "https://en.wikipedia.org/wiki/Origami",
+    "https://en.wikipedia.org/wiki/Paper_folding",
+    "https://en.wikipedia.org/wiki/Category:Origami",
+    "https://en.wikipedia.org/wiki/Kirigami",
+    "https://en.wikipedia.org/wiki/Wet-folding",
+    "https://en.wikipedia.org/wiki/Modular_origami",
+    "https://en.wikipedia.org/wiki/Action_origami",
+    "https://en.wikipedia.org/wiki/Akira_Yoshizawa",
+    "https://en.wikipedia.org/wiki/Sadako_Sasaki",
+    "https://en.wikipedia.org/wiki/Category:Origami_artists",
+]
+
+sites['stained_glass'] = [
+    "https://en.wikipedia.org/wiki/Stained_glass",
+    "https://en.wikipedia.org/wiki/Rose_window",
+    "https://en.wikipedia.org/wiki/Category:Stained_glass",
+    "https://en.wikipedia.org/wiki/Tiffany_glass",
+    "https://en.wikipedia.org/wiki/Leadlight",
+    "https://en.wikipedia.org/wiki/Sainte-Chapelle",
+    "https://en.wikipedia.org/wiki/Chartres_Cathedral",
+    "https://en.wikipedia.org/wiki/Category:Stained_glass_artists",
+    "https://en.wikipedia.org/wiki/Glass_art",
+    "https://en.wikipedia.org/wiki/Fused_glass",
+]
+
+
+# --- V70 ULTRA DENSITY PACK (SUB-GENRES & TEXTURES) ---
+sites['comics_manga'] = [
+    "https://en.wikipedia.org/wiki/Comics",
+    "https://en.wikipedia.org/wiki/Manga",
+    "https://en.wikipedia.org/wiki/Category:Anime_and_manga",
+    "https://en.wikipedia.org/wiki/American_comic_books",
+    "https://en.wikipedia.org/wiki/Bande_dessinée",
+    "https://en.wikipedia.org/wiki/Jack_Kirby",
+    "https://en.wikipedia.org/wiki/Osamu_Tezuka",
+    "https://en.wikipedia.org/wiki/Hayao_Miyazaki",
+    "https://en.wikipedia.org/wiki/Stan_Lee",
+    "https://en.wikipedia.org/wiki/Will_Eisner",
+    "https://en.wikipedia.org/wiki/Moebius_(artist)",
+    "https://en.wikipedia.org/wiki/List_of_manga_artists",
+    "https://en.wikipedia.org/wiki/History_of_comics",
+    "https://en.wikipedia.org/wiki/Golden_Age_of_Comic_Books",
+    "https://en.wikipedia.org/wiki/Silver_Age_of_Comic_Books",
+    "https://en.wikipedia.org/wiki/Category:Comics_characters",
+]
+
+sites['fashion'] = [
+    "https://en.wikipedia.org/wiki/Fashion_design",
+    "https://en.wikipedia.org/wiki/Haute_couture",
+    "https://en.wikipedia.org/wiki/Streetwear",
+    "https://en.wikipedia.org/wiki/Category:History_of_clothing",
+    "https://en.wikipedia.org/wiki/Costume_design",
+    "https://en.wikipedia.org/wiki/Coco_Chanel",
+    "https://en.wikipedia.org/wiki/Christian_Dior",
+    "https://en.wikipedia.org/wiki/Yves_Saint_Laurent",
+    "https://en.wikipedia.org/wiki/Alexander_McQueen",
+    "https://en.wikipedia.org/wiki/Fashion_week",
+    "https://en.wikipedia.org/wiki/Sustainable_fashion",
+    "https://en.wikipedia.org/wiki/Textile_design",
+    "https://en.wikipedia.org/wiki/Category:Fashion_accessories",
+    "https://en.wikipedia.org/wiki/Category:Clothing_by_nationality",
+    "https://en.wikipedia.org/wiki/Category:Fashion_museums",
+]
+
+sites['textures'] = [
+    "https://en.wikipedia.org/wiki/Texture_mapping",
+    "https://en.wikipedia.org/wiki/Wood_grain",
+    "https://en.wikipedia.org/wiki/Marble",
+    "https://en.wikipedia.org/wiki/Rust",
+    "https://en.wikipedia.org/wiki/Fabric",
+    "https://en.wikipedia.org/wiki/Category:Textures",
+    "https://en.wikipedia.org/wiki/Brickwork",
+    "https://en.wikipedia.org/wiki/Concrete",
+    "https://en.wikipedia.org/wiki/Bark",
+    "https://en.wikipedia.org/wiki/Fur",
+    "https://en.wikipedia.org/wiki/Leather",
+    "https://en.wikipedia.org/wiki/Metal_working",
+    "https://en.wikipedia.org/wiki/Glass",
+    "https://en.wikipedia.org/wiki/Water_pattern",
+    "https://en.wikipedia.org/wiki/Cloud_texture",
+]
+
+sites['vehicles'] = [
+    "https://en.wikipedia.org/wiki/Automotive_design",
+    "https://en.wikipedia.org/wiki/Concept_car",
+    "https://en.wikipedia.org/wiki/Aircraft_design",
+    "https://en.wikipedia.org/wiki/Category:Vehicles",
+    "https://en.wikipedia.org/wiki/Spacecraft_design",
+    "https://en.wikipedia.org/wiki/Muscle_car",
+    "https://en.wikipedia.org/wiki/Sports_car",
+    "https://en.wikipedia.org/wiki/Luxury_car",
+    "https://en.wikipedia.org/wiki/Motorcycle",
+    "https://en.wikipedia.org/wiki/Locomotive",
+    "https://en.wikipedia.org/wiki/Ship_replica",
+    "https://en.wikipedia.org/wiki/Bicycle",
+    "https://en.wikipedia.org/wiki/Tank",
+    "https://en.wikipedia.org/wiki/Category:Civil_aircraft",
+    "https://en.wikipedia.org/wiki/Category:Naval_ships",
+]
+
+
 def batch_download():
     print("Iniciando MEGA-DESCARGA de ARTE (Deep Search Complete)... ¡Prepárate!")
     total_sites = sum(len(urls) for urls in sites.values())
@@ -1193,7 +1499,7 @@ def batch_download():
             processed += 1
             print(f"--- [{processed}/{total_sites}] Procesando: {url} ---")
             try:
-                # Limitamos a 100 para MAXIMIZAR datos (User Request)
+                # Limitamos a 300 para CALIDAD V50
                 download_images_from_url(url, category, limit=10000)
             except Exception as e:
                 print(f"Error procesando sitio {url}: {e}")

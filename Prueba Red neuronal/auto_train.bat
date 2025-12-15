@@ -13,6 +13,10 @@ if %errorlevel% neq 0 (
 )
 
 echo.
+echo [1.5/3] DESCARGANDO DE JOVI (FIREBASE LEGACY)...
+.\venv\Scripts\python.exe download_firebase.py
+
+echo.
 echo [2/3] LIMPIANDO DATASET (Borrando imagenes corruptas)...
 .\venv\Scripts\python.exe clean_dataset.py
 if %errorlevel% neq 0 (
@@ -33,5 +37,16 @@ if %errorlevel% neq 0 (
 echo.
 echo ===========================================
 echo PROCESO COMPLETADO CON EXITO!
+echo ===========================================
+
+echo.
+echo [4/3] SUBIENDO DATASET A NUBE (REDTRAIN - COMPRESION)...
+.\venv\Scripts\python.exe upload_dataset.py
+if %errorlevel% neq 0 (
+    echo ERROR en la subida a nube. (No critico)
+)
+
+echo.
+echo TODO TERMINADO.
 echo ===========================================
 pause
