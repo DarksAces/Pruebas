@@ -94,7 +94,7 @@ def train_network():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    FINE_TUNE_EPOCHS_ADAM = 30 # Reducido de 300
+    FINE_TUNE_EPOCHS_ADAM = 50 # Reducido de 300
     # Calculamos el total basándonos en donde terminó REALMENTE la fase anterior
     total_epochs_phase2 = last_epoch_phase1 + FINE_TUNE_EPOCHS_ADAM
 
@@ -119,7 +119,7 @@ def train_network():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    FINE_TUNE_EPOCHS_SGD = 20 # Reducido de 200
+    FINE_TUNE_EPOCHS_SGD = 30 # Reducido de 200
     total_epochs_phase3 = last_epoch_phase2 + FINE_TUNE_EPOCHS_SGD
 
     print(f"Entrenando por {FINE_TUNE_EPOCHS_SGD} épocas extra con SGD para pulido final...")

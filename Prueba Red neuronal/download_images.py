@@ -9,7 +9,12 @@ def download_images_from_url(url, category, limit=50):
     # Validar categoría
     valid_categories = [
         'paintings', 'sculptures', 'drawings', 'graffiti', 'architecture',
-        'mosaics', 'ceramics', 'textiles', 'photography', 'frescoes', 'others'
+        'mosaics', 'ceramics', 'textiles', 'photography', 'frescoes', 'others',
+        'concept_art', 'ukiyo_e', 'pixel_art', 'scientific_illustration',
+        'cyberpunk', 'steampunk', 'low_poly',
+        'watercolor', 'oil_painting', '3d_render', 'vaporwave', 'fractal_art',
+        'african_art', 'islamic_art', 'tattoo_art', 'origami', 'stained_glass',
+        'comics_manga', 'fashion', 'textures', 'vehicles'
     ]
     if category not in valid_categories:
         print(f"Error: Categoría no válida. Usa una de: {', '.join(valid_categories)}")

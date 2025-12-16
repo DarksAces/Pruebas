@@ -5,7 +5,7 @@ import os
 import re
 
 # --- CONFIGURACIÓN ---
-KEY_PATH = "serviceAccountKey.json" 
+KEY_PATH = "serviceAccountKeyJovi.json" 
 
 # Tu bucket
 BUCKET_NAME = "jovi-45c79.firebasestorage.app"
@@ -13,15 +13,16 @@ BUCKET_NAME = "jovi-45c79.firebasestorage.app"
 # La carpeta que quieres descargar
 SOURCE_FOLDER = "stop_photos" 
 
-# Carpeta local donde se guardarán
-LOCAL_FOLDER = "firebase_downloads" 
+# Carpeta local donde se guardarán (directo al dataset de entrenamiento para integrarlo)
+# Lo mandamos a una carpeta temporal o directo a 'dataset/train/firebase_jovi' para que el script de limpieza lo pille
+LOCAL_FOLDER = "dataset/train/firebase_jovi" 
 
 def sanitize_filename(name):
     # Reemplaza caracteres prohibidos en Windows (< > : " / \ | ? *) por guión bajo
     return re.sub(r'[<>:"/\\|?*]', '_', name)
 
 def download_from_firebase():
-    print("--- DESCARGADOR DE FIREBASE ---")
+    print("--- DESCARGADOR DE FIREBASE (JOVI) ---")
     
     if not os.path.exists(KEY_PATH):
         print(f"❌ ERROR: No encuentro el archivo de llave '{KEY_PATH}'.")
@@ -30,8 +31,11 @@ def download_from_firebase():
     try:
         # Iniciar sesión
         cred = credentials.Certificate(KEY_PATH)
-        if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred, {
+        # Check if app already initialized to avoid errors
+        try:
+            app = firebase_admin.get_app()
+        except ValueError:
+            app = firebase_admin.initialize_app(cred, {
                 'storageBucket': BUCKET_NAME
             })
         
@@ -54,16 +58,16 @@ def download_from_firebase():
             if not original_filename:
                 continue
 
-            # Extensión del archivo
-            ext = os.path.splitext(original_filename)[1]
-            if not ext:
-                 ext = ".jpg"
-
-            # Nombre numérico: 1.jpg, 2.png, etc.
-            filename = f"{count + 1}{ext}"
-            local_path = os.path.join(LOCAL_FOLDER, filename)
+            # Sanitize name
+            safe_name = sanitize_filename(original_filename)
+            local_path = os.path.join(LOCAL_FOLDER, safe_name)
             
-            print(f"Descargando: {filename} (Original: {original_filename})")
+            # Skip if exists
+            if os.path.exists(local_path):
+                 print(f"Saltando (ya existe): {safe_name}")
+                 continue
+
+            print(f"Descargando: {safe_name}")
             blob.download_to_filename(local_path)
             count += 1
 
