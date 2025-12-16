@@ -22,8 +22,14 @@ local function processReceipt(receiptInfo)
         print("💰 " .. player.Name .. " compró SALTAR COLA")
         
         if _G.QueueSystem then
-            _G.QueueSystem.SkipToFront(player)
-            return Enum.ProductPurchaseDecision.PurchaseGranted
+            local success = _G.QueueSystem.SkipOneSpot(player)
+            if success then
+                 return Enum.ProductPurchaseDecision.PurchaseGranted
+            else
+                 -- Si está primero y no puede saltar, igual cobramos o le damos otra cosa?
+                 -- Por simplicidad, cobramos por el intento.
+                 return Enum.ProductPurchaseDecision.PurchaseGranted
+            end
         else
             warn("Sistema de Cola no cargado aún")
             return Enum.ProductPurchaseDecision.NotProcessedYet

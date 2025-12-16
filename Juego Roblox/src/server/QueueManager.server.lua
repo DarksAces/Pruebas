@@ -1,6 +1,7 @@
 --[[
-    QueueManager.server.lua
-    Gestiona la lógica central de la cola y los turnos.
+    QueueManager.server.lua (STRICT VERSION)
+    - Bloquea movimiento.
+    - Soporta skip de 1 en 1.
 ]]
 
 local Players = game:GetService("Players")
@@ -9,49 +10,74 @@ local Workspace = game:GetService("Workspace")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
 
--- Estado del Servidor
+-- Estado
 local currentAdmin = nil
-local queue = {} -- Lista de UserIds: {12345, 67890, ...}
+local queue = {} -- {UserId1, UserId2, ...}
 local turnTimer = 0
 
--- Eventos Remotos (Rojo no crea las instancias, asumimos que se crearán o las creamos por código)
-local function getRemote(name)
-    local remote = ReplicatedStorage:FindFirstChild(name)
-    if not remote then
-        remote = Instance.new("RemoteEvent")
-        remote.Name = name
-        remote.Parent = ReplicatedStorage
-    end
-    return remote
+-- Comunicación Interna
+local ServerEvents = ReplicatedStorage:FindFirstChild("ServerEvents")
+if not ServerEvents then
+    ServerEvents = Instance.new("Folder", ReplicatedStorage)
+    ServerEvents.Name = "ServerEvents"
 end
 
-local UpdateQueueEvent = getRemote("UpdateQueueEvent")
-local AdminTurnStarted = getRemote("AdminTurnStarted")
-local AdminTurnEnded = getRemote("AdminTurnEnded")
+local InternalTurnStart = Instance.new("BindableEvent", ServerEvents)
+InternalTurnStart.Name = "InternalTurnStart"
+local InternalTurnEnd = Instance.new("BindableEvent", ServerEvents)
+InternalTurnEnd.Name = "InternalTurnEnd"
 
--- === FUNCIONES DE LA COLA ===
+local UpdateQueueEvent = ReplicatedStorage:FindFirstChild("UpdateQueueEvent") or Instance.new("RemoteEvent", ReplicatedStorage)
+UpdateQueueEvent.Name = "UpdateQueueEvent"
+local AdminTurnStarted = ReplicatedStorage:FindFirstChild("AdminTurnStarted") or Instance.new("RemoteEvent", ReplicatedStorage)
+AdminTurnStarted.Name = "AdminTurnStarted"
+local AdminTurnEnded = ReplicatedStorage:FindFirstChild("AdminTurnEnded") or Instance.new("RemoteEvent", ReplicatedStorage)
+AdminTurnEnded.Name = "AdminTurnEnded"
+
+-- === FUNCIONES DE MOVIMIENTO ===
+
+local function lockPlayer(player, targetPart)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and targetPart then
+        local hrp = player.Character.HumanoidRootPart
+        local hum = player.Character.Humanoid
+        
+        -- Opción 1: Teleport + Anchor (Más seguro)
+        hrp.CFrame = targetPart.CFrame + Vector3.new(0, 3, 0)
+        -- hrp.Anchored = true -- Descomentar si quieres que sea IMPOSIBLE moverse (puede causar lag visual)
+        
+        -- Opción 2: WalkSpeed 0 (Más suave)
+        hum.WalkSpeed = 0
+        hum.JumpPower = 0
+    end
+end
+
+local function unlockPlayer(player)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local hum = player.Character.Humanoid
+        hum.WalkSpeed = 16
+        hum.JumpPower = 50
+        player.Character.HumanoidRootPart.Anchored = false
+    end
+end
 
 local function updateQueueVisuals()
-    -- Envía la info de la cola a todos los clientes para actualizar su UI
     UpdateQueueEvent:FireAllClients(queue, currentAdmin)
     
-    -- Teletransportar físicamente a los jugadores en la cola (Opcional, si quieres cola física)
+    -- Mover a cada jugador a su plataforma correspondiente
+    local queueFolder = Workspace:FindFirstChild("QueueSystem")
+    
     for i, userId in ipairs(queue) do
         local player = Players:GetPlayerByUserId(userId)
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            -- Mover al jugador al punto "QueuePt_i" si existe
-            local pointName = "QueuePt_" .. i
-            local point = Workspace:FindFirstChild(pointName) or Workspace:FindFirstChild("QueueStart")
+        if player then
+            local platName = "QueuePt_" .. i
+            local plat = queueFolder and queueFolder:FindFirstChild(platName)
             
-            if point then
-                -- Lógica simple de movimiento: Un pequeño offset para que no se amontonen si es el mismo punto
-                local targetCFrame = point.CFrame
-                if not Workspace:FindFirstChild("QueuePt_" .. i) then 
-                     targetCFrame = targetCFrame * CFrame.new(0, 0, i * 3) -- Fila india hacia atrás
-                end
-                
-                -- Usamos MoveTo o PivotTo
-                player.Character:PivotTo(targetCFrame)
+            if plat then
+                lockPlayer(player, plat)
+            else
+                -- Si hay más gente que plataformas, se quedan en la última
+                local lastPlat = queueFolder:FindFirstChild("QueuePt_" .. #queueFolder:GetChildren())
+                if lastPlat then lockPlayer(player, lastPlat) end
             end
         end
     end
@@ -61,15 +87,16 @@ local function endTurn()
     if currentAdmin then
         local player = Players:GetPlayerByUserId(currentAdmin)
         if player then
-            print("👑 El turno de " .. player.Name .. " ha terminado.")
+            print("👑 Fin de turno: " .. player.Name)
             AdminTurnEnded:FireClient(player)
+            InternalTurnEnd:Fire(player)
+            unlockPlayer(player)
             
-            -- Teletransportar fuera
-            local exit = Workspace:FindFirstChild(GameConfig.Locations.ExitLocation)
-            if player.Character and exit then
+            local exit = Workspace:FindFirstChild("QueueSystem") and Workspace.QueueSystem:FindFirstChild("ExitSpawn")
+            if exit then
                 player.Character:PivotTo(exit.CFrame + Vector3.new(0, 3, 0))
             else
-                 player:LoadCharacter() -- Respawn simple si no hay salida
+                player:LoadCharacter()
             end
         end
     end
@@ -77,7 +104,6 @@ local function endTurn()
     currentAdmin = nil
     turnTimer = 0
     
-    -- Siguiente en la cola
     if #queue > 0 then
         local nextUserId = table.remove(queue, 1)
         local nextPlayer = Players:GetPlayerByUserId(nextUserId)
@@ -86,112 +112,94 @@ local function endTurn()
             currentAdmin = nextUserId
             turnTimer = GameConfig.Queue.UserTurnDuration
             
-            print("👑 ¡Nuevo Admin: " .. nextPlayer.Name .. "!")
+            print("👑 Nuevo Admin: " .. nextPlayer.Name)
             AdminTurnStarted:FireClient(nextPlayer)
+            InternalTurnStart:Fire(nextPlayer)
             
-            -- Teletransportar al trono
-            local throne = Workspace:FindFirstChild(GameConfig.Locations.AdminThrone)
-            if nextPlayer.Character and throne then
+            local throne = Workspace:FindFirstChild("QueueSystem") and Workspace.QueueSystem:FindFirstChild("AdminThrone")
+            if throne then
+                unlockPlayer(nextPlayer) -- En el trono sí puede moverse
                 nextPlayer.Character:PivotTo(throne.CFrame + Vector3.new(0, 3, 0))
             end
         else
-            -- Si el jugador se desconectó justo antes, intentamos con el siguiente
-            endTurn() 
+            endTurn()
         end
     end
-    
     updateQueueVisuals()
 end
 
 local function addToQueue(player)
-    -- Verificar si ya está en la cola o es el admin actual
+    -- Validación simple
     if currentAdmin == player.UserId then return end
-    for _, id in ipairs(queue) do
-        if id == player.UserId then return end
-    end
+    for _, id in ipairs(queue) do if id == player.UserId then return end end
     
     table.insert(queue, player.UserId)
-    print("➕ " .. player.Name .. " se unió a la cola. Posición: " .. #queue)
     updateQueueVisuals()
     
-    -- Si no hay nadie en el trono, empieza el turno inmediatamente
-    if not currentAdmin then
-        endTurn() -- Esto iniciará el turno del primero (que acaba de entrar)
-    end
+    if not currentAdmin then endTurn() end
 end
 
 local function removeFromQueue(player)
     for i, id in ipairs(queue) do
         if id == player.UserId then
             table.remove(queue, i)
+            unlockPlayer(player)
             break
         end
     end
     updateQueueVisuals()
-    
-    if currentAdmin == player.UserId then
-        endTurn()
-    end
+    if currentAdmin == player.UserId then endTurn() end
 end
 
--- === BUCLE PRINCIPAL (TIMER) ===
+-- === SKIP LOGIC (INTERCAMBIO) ===
+_G.QueueSystem = {
+    SkipOneSpot = function(player)
+        -- Buscar posición actual
+        local myIndex = nil
+        for i, id in ipairs(queue) do
+            if id == player.UserId then
+                myIndex = i
+                break
+            end
+        end
+        
+        if myIndex and myIndex > 1 then
+            -- Intercambiar con el de delante (myIndex - 1)
+            local targetIndex = myIndex - 1
+            local otherUserId = queue[targetIndex]
+            
+            queue[targetIndex] = player.UserId
+            queue[myIndex] = otherUserId
+            
+            print("🔀 " .. player.Name .. " saltó del puesto " .. myIndex .. " al " .. targetIndex)
+            updateQueueVisuals() -- Esto recalculará las posiciones físicas
+            return true
+        elseif myIndex == 1 then
+             -- Si ya es primero, quizás quiera forzar el fin del turno del admin para entrar YA?
+             -- Por ahora, no hace nada si ya eres primero
+             return false
+        end
+    end,
+    ForceTurnEnd = function() endTurn() end -- Para el pase de Admin Instantáneo
+}
+
+-- === LOOP & LISTENERS ===
 task.spawn(function()
     while true do
         task.wait(1)
         if currentAdmin then
             turnTimer = turnTimer - 1
-            if turnTimer <= 0 then
-                endTurn()
-            end
+            if turnTimer <= 0 then endTurn() end
         end
     end
 end)
 
--- === CONEXIONES ===
-
--- Detectar cuando un jugador toca la zona de "Unirse a Cola"
--- Esto requiere una Parte en Workspace llamada 'JoinQueuePad'
-local joinPad = Workspace:FindFirstChild("JoinQueuePad")
-if not joinPad then
-    -- Creamos una de prueba si no existe para que no falle el script
-    joinPad = Instance.new("Part")
-    joinPad.Name = "JoinQueuePad"
-    joinPad.Size = Vector3.new(10, 1, 10)
-    joinPad.Position = Vector3.new(0, 0, 20)
-    joinPad.Anchored = true
-    joinPad.BrickColor = BrickColor.new("Lime green")
-    joinPad.Parent = Workspace
-    
-    local txt = Instance.new("SurfaceGui", joinPad)
-    local lbl = Instance.new("TextLabel", txt)
-    lbl.Size = UDim2.new(1,0,1,0)
-    lbl.Text = "TOCA PARA ENTRAR A LA COLA"
-    lbl.TextScaled = true
+local joinPad = Workspace:WaitForChild("JoinQueuePad", 10)
+if joinPad then
+    joinPad.Touched:Connect(function(hit)
+        local player = Players:GetPlayerFromCharacter(hit.Parent)
+        if player then addToQueue(player) end
+    end)
 end
 
-joinPad.Touched:Connect(function(hit)
-    local player = Players:GetPlayerFromCharacter(hit.Parent)
-    if player then
-        addToQueue(player)
-    end
-end)
-
 Players.PlayerRemoving:Connect(removeFromQueue)
-
--- API Pública para otros scripts (como monetización)
-_G.QueueSystem = {
-    SkipToFront = function(player)
-        removeFromQueue(player)
-        table.insert(queue, 1, player.UserId) -- Poner el primero
-        updateQueueVisuals()
-        
-        -- Si no hay admin, entra ya
-        if not currentAdmin then
-            endTurn()
-        end
-    end,
-    
-    ForceTurnEnd = function()
-        endTurn()
-    end
-}
