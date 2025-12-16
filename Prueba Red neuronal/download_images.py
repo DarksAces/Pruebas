@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import sys
 import hashlib
+from PIL import Image
+import io
 
 def download_images_from_url(url, category, limit=50):
     # Validar categoría
@@ -56,47 +58,67 @@ def download_images_from_url(url, category, limit=50):
             # Convertir URL relativa a absoluta
             img_url = urljoin(url, img_url)
             
-            # Filtrar iconos pequeños o imágenes irrelevantes por extensión
-            if img_url.lower().endswith(('.svg', '.gif')):
+            # Filtrar por extensión
+            if not img_url.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                continue
+
+            # Filtros ANTI-RUIDO (Nombre del archivo/URL)
+            forbidden_terms = ['logo', 'icon', 'button', 'user', 'avatar', 'profile', 'symbol', 'sprite', 'pixel', 'search', 'menu', 'footer', 'header', 'nav']
+            if any(term in img_url.lower() for term in forbidden_terms):
                 continue
 
             try:
                 img_data = requests.get(img_url, headers=headers, timeout=5).content
                 
-                # Filtrar por tamaño (bytes) - ignorar imágenes muy pequeñas (< 5KB)
-                if len(img_data) < 5120: 
+                if len(img_data) < 15360: # 15KB min
+                    continue
+                
+                # --- ANÁLISIS DE IMAGEN CON PILLOW (Dimensiones y Ratio) ---
+                try:
+                    image_obj = Image.open(io.BytesIO(img_data))
+                    width, height = image_obj.size
+                    
+                    # 1. Filtro de Dimensiones Mínimas (Pixel)
+                    if width < 200 or height < 200:
+                        continue
+                        
+                    # 2. Filtro de Aspect Ratio (Evitar banners alargados)
+                    ratio = width / height
+                    if ratio > 2.5 or ratio < 0.4: # Muy ancho o muy alto
+                        continue
+                        
+                    # Conversión a RGB para asegurar compatibilidad (quita transparencia/paletas raras)
+                    if image_obj.mode in ('RGBA', 'P'):
+                         image_obj = image_obj.convert('RGB')
+                         
+                except Exception as e:
+                    # Si PIL falla al abrir (no es imagen válida), descartar
                     continue
                     
-                # Generar hash para nombre único y evitar duplicados
+                # Generar hash
                 img_hash = hashlib.md5(img_data).hexdigest()
                 if img_hash in img_hashes:
                     continue
                 img_hashes.add(img_hash)
                 
-                # Decidir destino (80% train, 20% validation)
-                # Usamos un contador simple: cada 5ta imagen va a validación
+                # Decidir destino (80/20)
                 if count % 5 == 0:
                     save_dir = val_dir
-                    split_name = "validation"
                 else:
                     save_dir = train_dir
-                    split_name = "train"
                 
-                ext = os.path.splitext(urlparse(img_url).path)[1]
-                if not ext or len(ext) > 5:
-                    ext = '.jpg' # Default extension
-                    
-                filename = f"{category}_{img_hash}{ext}"
+                # Guardar siempre como JPG para estandarizar
+                filename = f"{category}_{img_hash}.jpg"
                 filepath = os.path.join(save_dir, filename)
                 
-                # Evitar re-escritura si ya existe
                 if os.path.exists(filepath):
-                    print(f"[{count+1}/{limit}] Saltando (ya existe): {filename}")
-                    count += 1 # Contamos como procesada para llegar al límite y pasar a la siguiente
+                    count += 1
                     continue
 
-                with open(filepath, 'wb') as f:
-                    f.write(img_data)
+                # Guardamos usando PIL para asegurar el formato correcto
+                image_obj.save(filepath, "JPEG", quality=90)
+                # with open(filepath, 'wb') as f: f.write(img_data) # OLD WAY
+
                     
                 print(f"[{count+1}/{limit}] Guardada en {split_name}: {filename}")
                 count += 1
