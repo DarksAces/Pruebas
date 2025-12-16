@@ -14,7 +14,7 @@ def download_images_from_url(url, category, limit=50):
         'cyberpunk', 'steampunk', 'low_poly',
         'watercolor', 'oil_painting', '3d_render', 'vaporwave', 'fractal_art',
         'african_art', 'islamic_art', 'tattoo_art', 'origami', 'stained_glass',
-        'comics_manga', 'fashion', 'textures', 'vehicles'
+        'comics_manga', 'fashion', 'textures', 'vehicles', 'non_art', 'video_art'
     ]
     if category not in valid_categories:
         print(f"Error: Categoría no válida. Usa una de: {', '.join(valid_categories)}")
