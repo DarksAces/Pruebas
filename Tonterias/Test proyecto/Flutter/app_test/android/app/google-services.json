@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "471846902422",
+    "project_id": "app-test-c2cad",
+    "storage_bucket": "app-test-c2cad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:471846902422:android:34a1a20d8adefadfd8c0b7",
+        "android_client_info": {
+          "package_name": "com.example.app_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7DD_Y9u_RglHkRh6nMlxlBcnFXW12cmk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
