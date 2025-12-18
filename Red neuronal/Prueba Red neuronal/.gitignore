@@ -1,5 +1,0 @@
-dataset/
-venv/
-__pycache__/
-*.h5
-*.json
