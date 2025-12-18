@@ -1,0 +1,18 @@
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:app_citas/main.dart' as app;
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('App launch certification', (WidgetTester tester) async {
+    // start app
+    app.main();
+    await tester.pumpAndSettle();
+
+    // Verify we are at least on a screen (Auth or Home)
+    // Adjust based on initial state logic
+    // expect(find.text('Login'), findsOneWidget); // Example
+  });
+}

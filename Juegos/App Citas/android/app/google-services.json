@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210928148100",
+    "project_id": "citas-eb70d",
+    "storage_bucket": "citas-eb70d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210928148100:android:de43368b77a7813f02acd1",
+        "android_client_info": {
+          "package_name": "com.example.app_citas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZFmdwfMOTVHDKSKie7e12NerIni_iq10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
