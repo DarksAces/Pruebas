@@ -1,0 +1,9 @@
+tensorflow
+numpy
+pandas
+requests
+beautifulsoup4
+Pillow
+scikit-learn
+matplotlib
+icrawler
