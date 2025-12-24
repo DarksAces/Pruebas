@@ -173,5 +173,5 @@ if __name__ == "__main__":
         classifier = ArtClassifier()
         classifier.load_data()
         classifier.build_model()
-        classifier.train(epochs=5) # 5 epochs for quick test, increase for real usage
+        classifier.train(total_epochs=50) # Increased epochs for better training
         classifier.evaluate_and_save()
